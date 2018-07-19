@@ -5,6 +5,9 @@
 # Created: July 2018
 #
 
+###################################################
+# record that stores to what level of UVC the camera complies
+################################################
 record(ao, "$(P)$(R)UVCComplianceLevel){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
@@ -17,6 +20,9 @@ record(ai, "$(P)$(R)UVCComplianceLevel_RBV){
     field(SCAN, "I/O Intr")
 }
 
+##############################################
+# stores the number of reference counts for the UVC device
+################################################
 record(ao, "$(P)$(R)UVCReferenceCount){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
@@ -29,6 +35,9 @@ record(ai, "$(P)$(R)UVCReferenceCount_RBV){
     field(SCAN, "I/O Intr")
 }
 
+##############################################
+# stores the serial number for the UVC camera. Used for connecting to it
+################################################
 record(ao, "$(P)$(R)UVCSerialNumber){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
@@ -38,5 +47,110 @@ record(ao, "$(P)$(R)UVCSerialNumber){
 record(ai, "$(P)$(R)UVCSerialNumber_RBV){
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SERIAL")
+    field(SCAN, "I/O Intr")
+}
+
+##################################################
+# Stores the degree of Backlight compensation
+##################################################
+record(ao, "$(P)$(R)UVCBacklightCompensation){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_BACKLIGHT")
+}
+
+record(ai, "$(P)$(R)UVCBacklightCompensation_RBV){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_BACKLIGHT")
+    field(SCAN, "I/O Intr")
+}
+
+#####################################
+# Stores the Brightness value
+#####################################
+record(ao, "$(P)$(R)UVCBrightness){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_BRIGHTNESS")
+}
+
+record(ai, "$(P)$(R)UVCBrightness_RBV){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_BRIGHTNESS")
+    field(SCAN, "I/O Intr")
+}
+
+######################################
+# Stores the Contrast value
+######################################
+record(ao, "$(P)$(R)UVCContrast){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_CONTRAST")
+}
+
+record(ai, "$(P)$(R)UVCContrast_RBV){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_CONTRAST")
+    field(SCAN, "I/O Intr")
+}
+
+######################################
+# Stores the Gain value
+######################################
+record(ao, "$(P)$(R)UVCGain){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAIN")
+}
+
+record(ai, "$(P)$(R)UVCGain_RBV){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAIN")
+    field(SCAN, "I/O Intr")
+}
+
+######################################
+# Stores the Power line frequency value
+######################################
+record(ao, "$(P)$(R)UVCPowerLine){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_POWER")
+}
+
+record(ai, "$(P)$(R)UVCPowerLine_RBV){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_POWER")
+    field(SCAN, "I/O Intr")
+}
+
+######################################
+# Stores the Hue value
+######################################
+record(ao, "$(P)$(R)UVCHue){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_HUE")
+}
+
+record(ai, "$(P)$(R)UVCHue_RBV){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_HUE")
+    field(SCAN, "I/O Intr")
+}
+
+######################################
+# Stores the Saturation value
+######################################
+record(ao, "$(P)$(R)UVCSaturation){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SATURATION")
+}
+
+record(ai, "$(P)$(R)UVCSaturation_RBV){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SATURATION")
     field(SCAN, "I/O Intr")
 }
