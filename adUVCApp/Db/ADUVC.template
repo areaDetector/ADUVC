@@ -28,3 +28,15 @@ record(ai, "$(P)$(R)UVCReferenceCount_RBV){
     field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_REFCOUNT")
     field(SCAN, "I/O Intr")
 }
+
+record(ao, "$(P)$(R)UVCSerialNumber){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SERIAL")
+}
+
+record(ai, "$(P)$(R)UVCSerialNumber_RBV){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SERIAL")
+    field(SCAN, "I/O Intr")
+}

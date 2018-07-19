@@ -24,8 +24,9 @@
 #include "ADDriver.h"
 
 // PV definitions
-#define ADUVC_UVCComplianceLevelString "UVC_Compliance" //asynInt32
-#define ADUVC_ReferenceCountString "UVC_REFCOUNT"       //asynInt32
+#define ADUVC_UVCComplianceLevelString      "UVC_COMPLIANCE"    //asynInt32
+#define ADUVC_ReferenceCountString          "UVC_REFCOUNT"      //asynInt32
+#define ADUVC_SerialNumberString            "UVC_SERIAL"        //asynInt32
 
 /*
  * Class definition of the ADUVC driver. It inherits from the base ADDriver class
@@ -37,7 +38,7 @@ class ADUVC : ADDriver{
 
     public:
 
-        ADUVC(const char* portName, int detIndex, int maxBuffers, size_t maxMemory, int priority, int stackSize);
+        ADUVC(const char* portName, int devIndex, int maxBuffers, size_t maxMemory, int priority, int stackSize);
 
         //TODO: add overrides of ADDriver functions
 
@@ -47,11 +48,21 @@ class ADUVC : ADDriver{
         int ADUVC_UVCComplianceLevel;
         #define ADUVC_FIRST_PARAM ADUVC_UVCComplianceLevel
         int ADUVC_ReferenceCount;
+        int ADUVC_SerialNumber;
 
     private:
-        uvc_error_t status;
+
+        // variables
+        uvc_error_t deviceStatus;
         uvc_device_t* pdevice;
+        uvc_context_t* pdeviceContext;
+        uvc_device_handle_t* pdeviceHandle;
+        uvc_stream_ctrl_t deviceStreamCtrl;
         uvc_device_descriptor_t* pdeviceInfo;
-        libusb_device_handle* pdeviceHandle;
+
+        // functions
+        void ADUVC::reportUVCError(uvc_error_t status, const char* functionName);
+        bool ADUVC::connectToDeviceUVC();
+        void ADUVC::getDeviceInformation();
 };
 #endif
