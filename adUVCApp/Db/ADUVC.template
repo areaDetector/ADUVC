@@ -1,0 +1,30 @@
+#
+# EPICS records used by the UVC EPICS driver
+#
+# Author: Jakub Wlodek
+# Created: July 2018
+#
+
+record(ao, "$(P)$(R)UVCComplianceLevel){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_COMPLIANCE")
+}
+
+record(ai, "$(P)$(R)UVCComplianceLevel_RBV){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_COMPLIANCE")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)UVCReferenceCount){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_REFCOUNT")
+}
+
+record(ai, "$(P)$(R)UVCReferenceCount_RBV){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_REFCOUNT")
+    field(SCAN, "I/O Intr")
+}
