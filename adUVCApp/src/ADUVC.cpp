@@ -129,7 +129,7 @@ uvc_error_t ADUVC::acquireStop(){
     //TODO
 }
 
-void ADUVC::newFrameCallback(uvc_frame_t* fram, void* ptr){
+void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     void* pData;
     int aquiring;
     NDArray* pArray;
@@ -163,7 +163,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
         }
     }
     else{
-        if (function < DEX_FIRST_PARAM) {
+        if (function < ADUVC_FIRST_PARAM) {
             status = ADDriver::writeInt32(pasynUser, value);
         }
     }

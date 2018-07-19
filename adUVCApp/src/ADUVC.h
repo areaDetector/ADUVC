@@ -41,6 +41,7 @@ class ADUVC : ADDriver{
         ADUVC(const char* portName, int devIndex, int maxBuffers, size_t maxMemory, int priority, int stackSize);
 
         //TODO: add overrides of ADDriver functions
+        virtual asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value);
 
         ~ADUVC();
 
@@ -63,6 +64,9 @@ class ADUVC : ADDriver{
         // functions
         void ADUVC::reportUVCError(uvc_error_t status, const char* functionName);
         bool ADUVC::connectToDeviceUVC();
+        uvc_error_t ADUVC::acquireStart();
+        uvc_error_t ADUVC::aquireStop();
         void ADUVC::getDeviceInformation();
+        void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr);
 };
 #endif
