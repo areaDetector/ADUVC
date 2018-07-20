@@ -6,6 +6,21 @@
 #
 
 ###################################################
+# record that stores framerate. (UVC cameras only support certain framerates)
+################################################
+record(ao, "$(P)$(R)UVCFramerate){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_FRAMERATE")
+}
+
+record(ai, "$(P)$(R)UVCFramerate_RBV){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_FRAMERATE")
+    field(SCAN, "I/O Intr")
+}
+
+###################################################
 # record that stores to what level of UVC the camera complies
 ################################################
 record(ao, "$(P)$(R)UVCComplianceLevel){
