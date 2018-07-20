@@ -1,8 +1,12 @@
 # ADUVC
 
+### Author: Jakub Wlodek
+### Created: July 19, 2018
+### Copyright (c): 2018 Brookhaven National Laboratory
+
 ### An EPICS Driver for USB Video Class (UVC) devices
 
-This plugin is in development.
+This driver is in development.
 
 Some required libraries/packages for this driver will be libuvc which can be downloaded and built from github:  
 Link: https://int80k.com/libuvc/doc/
