@@ -67,7 +67,7 @@ class ADUVC : ADDriver{
         void ADUVC::reportUVCError(uvc_error_t status, const char* functionName);
         bool ADUVC::connectToDeviceUVC();
         uvc_error_t ADUVC::acquireStart();
-        uvc_error_t ADUVC::aquireStop();
+        void ADUVC::aquireStop();
         void ADUVC::getDeviceInformation();
         void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr);
         void imageHandlerThread();

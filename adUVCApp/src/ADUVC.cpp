@@ -140,6 +140,8 @@ uvc_error_t ADUVC::acquireStart(){
         return deviceStatus;
     }
     else{
+        setIntegerParam(ADNumImagesCounter, 0);
+        callParamCallbacks();
         deviceStatus = uvc_start_streaming(pdeviceHandle, &deviceStreamCtrl, newFrameCallback, pData, 0);
         if(deviceStatus<0){
             setIntegerParam(ADAcquire, 0);
@@ -157,10 +159,18 @@ uvc_error_t ADUVC::acquireStart(){
  * Function responsible for stopping aquisition of images from UVC camera
  * Calls uvc_stop_streaming function
  *
- * @return: uvc_error_t -> 0 if successful, otherwise return error code 
+ * @return: void
  */
-uvc_error_t ADUVC::acquireStop(){
-    //TODO
+void ADUVC::acquireStop(){
+    static const char* functionName = "acquireStop";
+    moving = 0;
+
+    //stop_streaming will block until last callback is processed.
+    uvc_stop_streaming(pdeviceHandle);
+    setIntegerParam(ADStatus, ADStatusIdle);
+    setIntegerParam(ADAcquire, 0);
+    callParamCallbacks();
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Stopping aquisition\n",driverName, functionName);
 }
 
 /*
@@ -176,19 +186,54 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     void* pData;
     int aquiring;
     NDArray* pArray;
-    NDDataType_t dataType = NDUInt16;
+    int dataType;
+    NDDataType_t ndDataType;
     epicsTimeStamp currentTime;
     static const char* functionName = "newFrameCallback";
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Entering callback function\n", driverName, functionName);
     this->lock();
+    getIntegerParam(NDDataType, &dataType);
+    ndDataType = (NDDataType_t) dataType;
 
 }
 
+/*
+ * Function that is used to set the length of the stream based on the operating mode.
+ * 1) in Single shot mode, only the thread sleeps for one second and only accepts the first image
+ * 2) in Snap shot mode, the thread will sleep for numFrames/framerate seconds, to get the correct number of frames
+ * 3) in continuous mode, the thread will sleep for one second at a time until it acquireStop() is called.
+ * 
+ * @return: void
+ */
 void ADUVC::imageHandlerThread(){
     static const char* functionName = "imageHandlerThread";
-    while(moving == 1){
-
+    int operatingMode;
+    int framrate;
+    int numFrames;
+    getIntegerParam(ADUVC_OperatingMode, &operatingMode);
+    getIntegerParam(ADUVC_Framerate, &framerate);
+    getIntegerParam(ADNumImages, &numFrames);
+    //single shot
+    if(operatingMode == 0){
+        sleep(1);
     }
+    // snap shot
+    else if(operting mode == 1){
+        int seconds = numFrames/framerate;
+        seconds = seconds + 1;
+        int second_counter = 0;
+        while(moving == 1 && second_counter!=seconds){
+            sleep(1);
+            second_counter = second_counter+1;
+        }
+    }
+    // continuous mode
+    else if(operatingMode ==2){
+        while(moving == 1){
+            sleep(1);
+        }
+    }
+    moving = 0;
 }
 
 /*
@@ -280,7 +325,7 @@ ADUVC::~ADUVC(){
     uvc_unref_device(pdevice);
     uvc_exit(pdeviceContext);
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,"ADUVC driver exiting\n");
-    delete(pdevice);
+    disconnect(this->pasynUserSelf);
 }
 
 
