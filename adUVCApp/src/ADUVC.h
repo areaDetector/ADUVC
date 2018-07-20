@@ -26,6 +26,7 @@
 // PV definitions
 #define ADUVC_UVCComplianceLevelString      "UVC_COMPLIANCE"    //asynInt32
 #define ADUVC_ReferenceCountString          "UVC_REFCOUNT"      //asynInt32
+#define ADUVC_FramerateString               "UVC_FRAMERATE"     //asynInt32
 #define ADUVC_SerialNumberString            "UVC_SERIAL"        //asynInt32
 
 /*
@@ -38,7 +39,7 @@ class ADUVC : ADDriver{
 
     public:
 
-        ADUVC(const char* portName, int devIndex, int maxBuffers, size_t maxMemory, int priority, int stackSize);
+        ADUVC(const char* portName, int serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize);
 
         //TODO: add overrides of ADDriver functions
         virtual asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value);
@@ -49,6 +50,7 @@ class ADUVC : ADDriver{
         int ADUVC_UVCComplianceLevel;
         #define ADUVC_FIRST_PARAM ADUVC_UVCComplianceLevel
         int ADUVC_ReferenceCount;
+        int ADUVC_Framerate;
         int ADUVC_SerialNumber;
 
     private:
@@ -68,5 +70,6 @@ class ADUVC : ADDriver{
         uvc_error_t ADUVC::aquireStop();
         void ADUVC::getDeviceInformation();
         void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr);
+        void imageHandlerThread();
 };
 #endif
