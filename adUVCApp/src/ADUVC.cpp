@@ -176,15 +176,27 @@ void ADUVC::acquireStop(){
 
 /*
  * Function responsible for converting between a uvc_frame_t type image to 
- * the EPICS area detector standard NDArray type. 
+ * the EPICS area detector standard NDArray type. First, we convert any given uvc_frame to 
+ * the rgb format. This is because all of the supported uvc formats can be converted into this type,
+ * simplyfying the conversion process. Then, the NDDataType is taken into account, and a scaling factor is used
  * 
- * 
- * 
- * 
- * 
- * 
+ * @params: frame -> frame collected from the uvc camera
+ * @params: pArray -> output of function. NDArray conversion of uvc frame
+ * @params: dataType -> data type of NDArray output image
+ * @return: void, but output into pArray
  */
 void ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType){
+    uvc_frame_format frameFormat = frame->frame_format;
+    switch(frameFormat){
+        case UVC_FRAME_FORMAT_YUYV:
+
+            break;
+        case UVC_FRAME_FORMAT_UYVY:
+            break;
+        case UVC_FRAME_FORMAT_MJPEG:
+            break;
+        case UVC_FRAME_FORMAT_RGB:
+    }
 
 }
 
@@ -210,19 +222,19 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     this->lock();
     getIntegerParam(NDDataType, &dataType);
     ndDataType = (NDDataType_t) dataType;
-    getIntegerParam(ADUVC_OperatingMode, &operatingMode);
+    getIntegerParam(ADImageMode, &operatingMode);
     //single shot mode
-    if(operatingMode == 0){
+    if(operatingMode == ADImageSingle){
         if(firstFrame){
 
         }
         firstFrame = false;
     }
     // block shot mode
-    else if(operatingMode == 1){
+    else if(operatingMode == ADImageMultiple){
 
     }
-    else if(operatingMode == 2){
+    else if(operatingMode == ADImageContinuous){
 
     }
     else{
@@ -248,11 +260,11 @@ void ADUVC::imageHandlerThread(){
     getIntegerParam(ADUVC_Framerate, &framerate);
     getIntegerParam(ADNumImages, &numFrames);
     //single shot
-    if(operatingMode == 0){
+    if(operatingMode == ADImageSingle){
         sleep(1);
     }
     // snap shot
-    else if(operting mode == 1){
+    else if(operting mode == ADImageMultiple){
         int seconds = numFrames/framerate;
         seconds = seconds + 1;
         int second_counter = 0;
@@ -262,7 +274,7 @@ void ADUVC::imageHandlerThread(){
         }
     }
     // continuous mode
-    else if(operatingMode ==2){
+    else if(operatingMode == ADImageContinuous){
         while(moving == 1){
             sleep(1);
         }
@@ -298,11 +310,11 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
             acquireStop();
         }
     }
-    else if(function == ADUVC_OperatingMode){
+    else if(function == ADImageMode){
         if(acquiring == 1) acquireStop();
-        if(value == 0) setIntegerParam(ADNumImages, 1);
-        else if(value == 1) setIntegerParam(ADNumImages, 300);
-        else if(value == 2) setIntegerParam(ADNumImages, 3000);
+        if(value == ADImageSingle) setIntegerParam(ADNumImages, 1);
+        else if(value == ADImageMultiple) setIntegerParam(ADNumImages, 300);
+        else if(value == ADImageContinuous) setIntegerParam(ADNumImages, 3000);
         else{
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported camera operating mode\n", driverName, functionName);
         }
