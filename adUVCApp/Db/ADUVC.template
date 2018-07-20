@@ -10,15 +10,33 @@
 ################################################################################################
 
 record(mbbo, "$(P)$(R)UVCOperatingMode"){
-
+    field(PINI, "YES")
+	field(DTYP, "asynInt32")
+	field(OUT, "@asyn($(PORT), $(ADDR=0),$(TIMEOUT=1))UVC_OPERATINGMODE"))
+	field(VAL, "1")
+	field(ZRST, "Single Shot")
+	field(ZRVL, "0")
+	field(ONST, "Block Shot")
+	field(ONVL, "1")
+	field(TWST, "Continuous")
+	field(TWVL, "2")
+    info(autosaveFields, "VAL")
 }
 
 record(mbbi, "$(P)$(R)UVCOperatingMode_RBV"){
-    
+    field(DTYP, "asynInt32")
+	field(INP, "@asyn($(PORT), $(ADDR=0),$(TIMEOUT=1))UVC_OPERATINGMODE"))
+	field(ZRST, "Single Shot")
+	field(ZRVL, "0")
+	field(ONST, "Block Shot")
+	field(ONVL, "1")
+	field(TWST, "Continuous")
+	field(TWVL, "2")
+    field(SCAN, "I/O Intr")
 }
 
 ################################################################################################
-# Camera Functions
+# Camera Device Information
 ################################################################################################
 
 ###################################################
@@ -80,6 +98,10 @@ record(ai, "$(P)$(R)UVCSerialNumber_RBV){
     field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SERIAL")
     field(SCAN, "I/O Intr")
 }
+
+################################################################################################
+# Additional Camera Functions (UNDER DEVELOPMENT -> Currently not in use)
+################################################################################################
 
 ##################################################
 # Stores the degree of Backlight compensation

@@ -15,15 +15,16 @@
 #define ADUVC_H
 
 // version numbers
-#define DRIVER_VERSION      0
-#define DRIVER_REVISION     0
-#define DRIVER_MODIFICATION 1
+#define ADUVC_VERSION      0
+#define ADUVC_REVISION     0
+#define ADUVC_MODIFICATION 2
 
 // includes
 #include <libuvc.h>
 #include "ADDriver.h"
 
 // PV definitions
+#define ADUVC_OperatingModeString           "UVC_OPERATINGMODE" //asynInt32
 #define ADUVC_UVCComplianceLevelString      "UVC_COMPLIANCE"    //asynInt32
 #define ADUVC_ReferenceCountString          "UVC_REFCOUNT"      //asynInt32
 #define ADUVC_FramerateString               "UVC_FRAMERATE"     //asynInt32
@@ -47,8 +48,9 @@ class ADUVC : ADDriver{
         ~ADUVC();
 
     protected:
+        int ADUVC_OperatingMode;
+        #define ADUVC_FIRST_PARAM ADUVC_OperatingMode
         int ADUVC_UVCComplianceLevel;
-        #define ADUVC_FIRST_PARAM ADUVC_UVCComplianceLevel
         int ADUVC_ReferenceCount;
         int ADUVC_Framerate;
         int ADUVC_SerialNumber;
