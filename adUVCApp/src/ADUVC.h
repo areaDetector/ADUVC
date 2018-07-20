@@ -70,7 +70,7 @@ class ADUVC : ADDriver{
         bool ADUVC::connectToDeviceUVC();
         uvc_error_t ADUVC::acquireStart();
         void ADUVC::aquireStop();
-        void ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType);
+        asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* arrayInfo, NDDataType_t dataType);
         void ADUVC::getDeviceInformation();
         void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr);
         void imageHandlerThread();

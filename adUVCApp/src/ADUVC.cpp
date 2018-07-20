@@ -30,6 +30,8 @@
 #include <libuvc.h>
 #include <libuvc_config.h>
 
+using namespace std
+
 static const char* driverName = "ADUVC";
 static const int moving = 0;
 static const bool firstFrame = true;
@@ -185,17 +187,46 @@ void ADUVC::acquireStop(){
  * @params: dataType -> data type of NDArray output image
  * @return: void, but output into pArray
  */
-void ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType){
+asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* arrayInfo, NDDataType_t dataType){
+    static const char* functionName = "uvc2NDArray";
+    uvc_frame_t* rgb;
+    rgb = uvc_allocate_frame(frame->width * frame->height *3);
+    if(!rgb){
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unable to allocate frame\n", driverName, functionName);
+        return asynError;
+    }
     uvc_frame_format frameFormat = frame->frame_format;
     switch(frameFormat){
         case UVC_FRAME_FORMAT_YUYV:
-
+            deviceStatus = uvc_any2rgb(frame, rgb);
             break;
         case UVC_FRAME_FORMAT_UYVY:
+            deviceStatus = uvc_any2rgb(frame, rgb);
             break;
         case UVC_FRAME_FORMAT_MJPEG:
+            deviceStatus = uvc_mjpeg2rgb(frame, rgb);
             break;
         case UVC_FRAME_FORMAT_RGB:
+            deviceStatus = uvc_any2rgb(frame, rgb);
+            break;
+        default:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported UVC format\n", driverName, functionName);
+            return asynError;
+    }
+    if(deviceStatus<0){
+        reportUVCError(deviceStatus, functionName);
+        return asynError;
+    }
+    else{
+        int dataSpan = rgb->width * rgb->height * 3;
+        unsigned char* dataInit = (unsigned char*) rgb->data;
+        unsigned char* dataEnd = dataInit+dataSpan;
+        this->pArrays[0] = pNDArrayPool->alloc(2, , dataType, 0, NULL);
+        if(this->pArrays[0]!=NULL){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Copying from frame to NDArray\n", driverName, functionName);
+            pArray = this->pArrays[0];
+
+
     }
 
 }
