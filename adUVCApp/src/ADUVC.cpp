@@ -226,8 +226,8 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* 
         if(this->pArrays[0]!=NULL){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Copying from frame to NDArray\n", driverName, functionName);
             pArray = this->pArrays[0];
-
-
+            //TODO
+        }
     }
 
 }
@@ -245,6 +245,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     void* pData;
     int aquiring;
     NDArray* pArray;
+    NDArrayInfo arrayInfo;
     int dataType;
     NDDataType_t ndDataType;
     int operatingMode;
@@ -257,21 +258,54 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     getIntegerParam(ADImageMode, &operatingMode);
     //single shot mode
     if(operatingMode == ADImageSingle){
-        if(firstFrame){
-
-        }
-        firstFrame = false;
+        int numImages;
+        getIntegerParam(ADNumImagesCounter, &numImages);
+        numImages++;
+        setIntegerParam(ADNumImagesCounter, numImages);
+        //This function needs to be finalized
+        uvc2NDArray(frame, &pArray);
+        acquireStop();
     }
     // block shot mode
     else if(operatingMode == ADImageMultiple){
-
+        int numImages;
+        int desiredImages;
+        getIntegerParam(ADNumImagesCounter, &numImages);
+        numImages++;
+        setIntegerParam(ADNumImagesCounter, numImages);
+        //This function needs to be finalized
+        uvc2NDArray(frame, &pArray);
+        getIntegerParam(ADNumImages, &desiredImages);
+        if(numImages>=desiredImages){
+            acquireStop();
+        }
     }
+    //continuous mode
     else if(operatingMode == ADImageContinuous){
-
+        int numImages;
+        getIntegerParam(ADNumImagesCounter, &numImages);
+        numImages++;
+        setIntegerParam(ADNumImagesCounter, numImages);
+        //This function needs to be finalized
+        uvc2NDArray(frame, &pArray);
     }
     else{
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported operating mode\n", driverName, functionName);
+        acquireStop();
+        return;
     }
+    pArray->getInfo(&arrayInfo);
+    int arrayCounter;
+    getIntegerParam(NDArrayCounter, &arrayCounter);
+    arrayCounter++;
+    setIntegerParam(NDArrayCounter, &arrayCounter);
+    setIntegerParam(NDArraySize, arrayInfo.totalBytes);
+    epicsTimeGetCurrent(&currentTime);
+    pArray->timeStamp = currentTime.secPastEpoch + currentTime.nsec/ONE_BILLION;
+    updateTimeStamp(&pArray->epicsTS);
+    callParamCallbacks();
+    getAttributes(pArray->pAttributeList);
+    doCallbacksGenericPointer(pArray, NDArrayData, 0);
 
 }
 
@@ -395,9 +429,9 @@ ADUVC::ADUVC(const char* portName, const char* serial, int framerate, int maxBuf
     setStringParam(NDDriverVersion, versionString);
 
 
-    bool connected = connectToDeviceUVC(serial);
+    asynStatus connected = connectToDeviceUVC(serial);
     
-    if(!connected){
+    if(connected == asynError){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Connection failed, abort\n", driverName, functionName);
     }
     else{
