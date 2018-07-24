@@ -43,7 +43,7 @@ static const bool firstFrame = true;
  * @params: all passed into constructor
  * @return: status
  */
-extern "C" int ADUVCConfig(const char* portName, int serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize){
+extern "C" int ADUVCConfig(const char* portName, const char* serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize){
     new ADUVC(portName, serial, framerate, maxBuffers, maxMemory, priority, stackSize);
     return(asynSuccess);
 }
@@ -77,15 +77,16 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
  * NOTE: this driver must have exclusive access to the device as per UVC standards.
  * 
  * @params: serial number of device to connect to
- * @return: bool -> true if connection is successful, false if failed
+ * @return: asynStatus -> true if connection is successful, false if failed
  */
-bool ADUVC::connectToDeviceUVC(int serialNumber){
+asynStatus ADUVC::connectToDeviceUVC(const char* serialNumber){
     static const char* functionName = "connectToDeviceUVC";
+    asynStatus status = asynSuccess;
     deviceStatus = uvc_init(&pdeviceContext, NULL);
 
     if(deviceStatus<0){
         reportUVCError(deviceStatus, functionName);
-        return false;
+        return asynError;
     }
     else{
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Initialized UVC context", driverName, functionName);
@@ -93,7 +94,7 @@ bool ADUVC::connectToDeviceUVC(int serialNumber){
     deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, 0, serialNumber);
     if(deviceStatus<0){
         reportUVCError(deviceStatus, functionName);
-        return false;
+        return asynError;
     }
     else{
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Found UVC device", driverName, functionName);
@@ -101,12 +102,12 @@ bool ADUVC::connectToDeviceUVC(int serialNumber){
     deviceStatus = uvc_open(pdevice, &pdeviceHandle);
     if(deviceStatus<0){
         reportUVCError(deviceStatus, functionName);
-        return false;
+        return asynError;
     }
     else{
         asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Opened UVC device", driverName, functionName);
     }
-    return true;
+    return status;
 }
 
 /*
@@ -120,7 +121,7 @@ void ADUVC::getDeviceInformation(){
     static const char* functionName = "getDeviceInformation";
     uvc_get_device_descriptor(pdeviceHandle->dev, pdeviceInfo);
     setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
-    setIntegerParam(ADUVC_SerialNumber, pdeviceInfo->serialNumber);
+    setStringParam(ADUVC_SerialNumber, pdeviceInfo->serialNumber);
     sprintf(modelName, "UVC Vendor: %d, UVC Product: ", pdeviceInfo->idVendor, pdeviceInfo->idProduct);
     setStringParam(ADModel, modelName);
 }
@@ -375,7 +376,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
  * @params: priority -> what thread priority this driver will execute with
  * @params: stackSize -> size of the driver on the stack
  */
-ADUVC::ADUVC(const char* portName, int serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize)
+ADUVC::ADUVC(const char* portName, const char* serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, (int)NUM_UVC_PARAMS, maxBuffers, maxMemory, asynEnumMask, asynEnumMask, ASYN_CANBLOCK, 1, priority, stackSize){
         
     int status = asynSuccess;
@@ -386,7 +387,7 @@ ADUVC::ADUVC(const char* portName, int serial, int framerate, int maxBuffers, si
     createParam(ADUVC_UVCComplianceLevelString,     asynParamInt32,     ADUVC_UVCComplianceLevel);
     createParam(ADUVC_ReferenceCountString,         asynParamInt32,     ADUVC_ReferenceCount);
     createParam(ADUVC_FramerateString,              asynParamInt32,     ADUVC_Framerate);
-    createParam(ADUVC_SerialNumberString,           asynParamInt32,     ADUVC_SerialNumber);
+    createParam(ADUVC_SerialNumberString,           asynParamOctet,     ADUVC_SerialNumber);
 
     setIntegerParam(ADUVC_Framerate, framerate);
     char versionString[25];

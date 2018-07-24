@@ -28,7 +28,7 @@
 #define ADUVC_UVCComplianceLevelString      "UVC_COMPLIANCE"    //asynInt32
 #define ADUVC_ReferenceCountString          "UVC_REFCOUNT"      //asynInt32
 #define ADUVC_FramerateString               "UVC_FRAMERATE"     //asynInt32
-#define ADUVC_SerialNumberString            "UVC_SERIAL"        //asynInt32
+#define ADUVC_SerialNumberString            "UVC_SERIAL"        //asynOctet
 
 /*
  * Class definition of the ADUVC driver. It inherits from the base ADDriver class
@@ -40,7 +40,7 @@ class ADUVC : ADDriver{
 
     public:
 
-        ADUVC(const char* portName, int serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize);
+        ADUVC(const char* portName, const char* serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize);
 
         //TODO: add overrides of ADDriver functions
         virtual asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value);
@@ -67,7 +67,7 @@ class ADUVC : ADDriver{
 
         // functions
         void ADUVC::reportUVCError(uvc_error_t status, const char* functionName);
-        bool ADUVC::connectToDeviceUVC();
+        bool ADUVC::connectToDeviceUVC(const char* serialNumber);
         uvc_error_t ADUVC::acquireStart();
         void ADUVC::aquireStop();
         asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* arrayInfo, NDDataType_t dataType);
