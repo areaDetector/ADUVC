@@ -471,3 +471,33 @@ ADUVC::~ADUVC(){
 
 
 
+/* Code for iocsh registration */
+
+/* UVCConfig -> These are the args passed to the constructor in the epics config function */
+static const iocshArg UVCConfigArg0 = { "Port name", iocshArgString };
+static const iocshArg UVCConfigArg1 = { "Serial number", iocshArgString };
+static const iocshArg UVCConfigArg2 = { "Framerate", iocshArgInt };
+static const iocshArg UVCConfigArg3 = { "maxBuffers", iocshArgInt };
+static const iocshArg UVCConfigArg4 = { "maxMemory", iocshArgInt };
+static const iocshArg UVCConfigArg5 = { "priority", iocshArgInt };
+static const iocshArg UVCConfigArg6 = { "stackSize", iocshArgInt };
+
+static const iocshArg * const UVCConfigArgs[] =
+        { &UVCConfigArg0, &UVCConfigArg1, &UVCConfigArg2,
+        &UVCConfigArg3, &UVCConfigArg4, &UVCConfigArg5,
+        &UVCConfigArg6 };
+
+static void configLambdaCallFunc(const iocshArgBuf *args) {
+    LambdaConfig(args[0].sval, args[1].sval, args[2].ival, args[3].ival,
+            args[4].ival, args[5].ival, args[6].ival);
+}
+
+static const iocshFuncDef configLambda = { "UVCConfig", 6, UVCConfigArgs };
+
+static void UVCRegister(void) {
+    iocshRegister(&configUVC, configUVCCallFunc);
+}
+
+extern "C" {
+    epicsExportRegistrar(UVCRegister);
+}
