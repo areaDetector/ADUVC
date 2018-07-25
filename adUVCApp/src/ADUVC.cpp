@@ -327,7 +327,7 @@ void ADUVC::imageHandlerThread(){
     getIntegerParam(ADNumImages, &numFrames);
     //single shot
     if(operatingMode == ADImageSingle){
-        sleep(1);
+        sleep_for(1000);
     }
     // snap shot
     else if(operting mode == ADImageMultiple){
@@ -335,14 +335,14 @@ void ADUVC::imageHandlerThread(){
         seconds = seconds + 1;
         int second_counter = 0;
         while(moving == 1 && second_counter!=seconds){
-            sleep(1);
+            sleep_for(1000);
             second_counter = second_counter+1;
         }
     }
     // continuous mode
     else if(operatingMode == ADImageContinuous){
         while(moving == 1){
-            sleep(1);
+            sleep_for(1000);
         }
     }
     moving = 0;
