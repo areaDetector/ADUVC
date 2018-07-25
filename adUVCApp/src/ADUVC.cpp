@@ -39,7 +39,7 @@ static const bool firstFrame = true;
 /*
  * External configuration function for ADUVC.
  * Envokes the constructor to create a new ADUVC object
- * 
+ *
  * @params: all passed into constructor
  * @return: status
  */
@@ -51,7 +51,7 @@ extern "C" int ADUVCConfig(const char* portName, const char* serial, int framera
 /*
  * Callback function called when IOC is terminated.
  * Deletes created object
- * 
+ *
  * @params: pPvt -> pointer to the ADUVC object created in ADUVCConfig
  */
 static void exitCallbackC(void* pPvt){
@@ -62,7 +62,7 @@ static void exitCallbackC(void* pPvt){
 
 /*
  * Function used to display UVC errors
- * 
+ *
  * @params: status -> uvc error passed to function
  * @params: functionName -> name of function in which uvc error occurred
  * return: void
@@ -75,7 +75,7 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
  * Function responsible for connecting to the UVC device. First, a device context is created,
  * then the device is identified, then opened.
  * NOTE: this driver must have exclusive access to the device as per UVC standards.
- * 
+ *
  * @params: serial number of device to connect to
  * @return: asynStatus -> true if connection is successful, false if failed
  */
@@ -114,14 +114,14 @@ asynStatus ADUVC::connectToDeviceUVC(const char* serialNumber){
  * Function responsible for getting device information once device has been connected.
  * Calls the uvc_get_device_descriptor function from libuvc, and gets the manufacturer,
  * serial, model.
- * 
+ *
  * @return: void
  */
 void ADUVC::getDeviceInformation(){
     static const char* functionName = "getDeviceInformation";
     uvc_get_device_descriptor(pdeviceHandle->dev, pdeviceInfo);
     setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
-    setStringParam(ADUVC_SerialNumber, pdeviceInfo->serialNumber);
+    //setStringParam(ADUVC_SerialNumber, pdeviceInfo->serialNumber);
     sprintf(modelName, "UVC Vendor: %d, UVC Product: ", pdeviceInfo->idVendor, pdeviceInfo->idProduct);
     setStringParam(ADModel, modelName);
 }
@@ -131,7 +131,7 @@ void ADUVC::getDeviceInformation(){
  * In the case of UVC devices, a function is called to first negotiate a stream with the camera at
  * a particular resolution and frame rate. Then the uvc_start_streaming function is called, with a 
  * function name being passed as a parameter as the callback function.
- * 
+ *
  * @return: uvc_error_t -> return 0 if successful, otherwise return error code
  */
 uvc_error_t ADUVC::acquireStart(){
@@ -154,6 +154,8 @@ uvc_error_t ADUVC::acquireStart(){
         }
         else{
             moving = 1;
+            setIntegerParam(ADStatus, ADMoving);
+            callParamCallbacks();
             imageHandlerThread();
         }
     }
@@ -178,11 +180,11 @@ void ADUVC::acquireStop(){
 }
 
 /*
- * Function responsible for converting between a uvc_frame_t type image to 
- * the EPICS area detector standard NDArray type. First, we convert any given uvc_frame to 
+ * Function responsible for converting between a uvc_frame_t type image to
+ * the EPICS area detector standard NDArray type. First, we convert any given uvc_frame to
  * the rgb format. This is because all of the supported uvc formats can be converted into this type,
  * simplyfying the conversion process. Then, the NDDataType is taken into account, and a scaling factor is used
- * 
+ *
  * @params: frame -> frame collected from the uvc camera
  * @params: pArray -> output of function. NDArray conversion of uvc frame
  * @params: dataType -> data type of NDArray output image
@@ -222,14 +224,28 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* 
         int dataSpan = rgb->width * rgb->height * 3;
         unsigned char* dataInit = (unsigned char*) rgb->data;
         unsigned char* dataEnd = dataInit+dataSpan;
-        this->pArrays[0] = pNDArrayPool->alloc(2, , dataType, 0, NULL);
+        int ndims;
+        size_t* dims;
+        //eventually add if else here for color v mono
+        ndims = 3
+        dims[0] = 3;
+        dims[1] = rgb->width;
+        dims[2] = rgb->height;
+        if(dataType!=NDUInt8){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Unsupported data format\n", driverName, functionName);
+            return asynError;
+        }
+        this->pArrays[0] = pNDArrayPool->alloc(ndims, dims, dataType, 0, NULL);
         if(this->pArrays[0]!=NULL){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Copying from frame to NDArray\n", driverName, functionName);
             pArray = this->pArrays[0];
-            //TODO
+            unsigned char* pArrayData = (unsigned char*) pArray->pData;
+            copy(dataInit, dataEnd, pArrayData);
+            //TODO: RELEASE RGB Frame
+            return asynSuccess;
         }
     }
-
+    return asynError;
 }
 
 /*
@@ -276,9 +292,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         //This function needs to be finalized
         uvc2NDArray(frame, &pArray);
         getIntegerParam(ADNumImages, &desiredImages);
-        if(numImages>=desiredImages){
-            acquireStop();
-        }
+	if(numImages>=desiredImages) acquireStop();
     }
     //continuous mode
     else if(operatingMode == ADImageContinuous){
@@ -345,6 +359,7 @@ void ADUVC::imageHandlerThread(){
             sleep_for(1000);
         }
     }
+    acquireStop();
     moving = 0;
 }
 
