@@ -20,7 +20,7 @@
 #define ADUVC_MODIFICATION 2
 
 // includes
-#include <libuvc.h>
+#include <libuvc/libuvc.h>
 #include "ADDriver.h"
 
 // PV definitions
@@ -43,7 +43,7 @@ class ADUVC : ADDriver{
         ADUVC(const char* portName, const char* serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize);
 
         //TODO: add overrides of ADDriver functions
-        virtual asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value);
+        virtual asynStatus writeInt32(asynUser* pasynUser, epicsInt32 value);
 
         ~ADUVC();
 
@@ -58,21 +58,35 @@ class ADUVC : ADDriver{
     private:
 
         // variables
+	// checks uvc device operations status
         uvc_error_t deviceStatus;
+	//pointer to device
         uvc_device_t* pdevice;
+	//pointer to device context. generated when connecting
         uvc_context_t* pdeviceContext;
+	//pointer to device handle. used for controlling device. Each UVC device can allow for one handle at a time
         uvc_device_handle_t* pdeviceHandle;
+	//pointer to device stream controller. used to controll streaming from device
         uvc_stream_ctrl_t deviceStreamCtrl;
+	//pointer containing device info, such as vendor, product id
         uvc_device_descriptor_t* pdeviceInfo;
 
         // functions
-        void ADUVC::reportUVCError(uvc_error_t status, const char* functionName);
-        bool ADUVC::connectToDeviceUVC(const char* serialNumber);
-        uvc_error_t ADUVC::acquireStart();
-        void ADUVC::aquireStop();
-        asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* arrayInfo, NDDataType_t dataType);
-        void ADUVC::getDeviceInformation();
-        void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr);
+	//function used to report errors in uvc operations
+        void reportUVCError(uvc_error_t status, const char* functionName);
+	//function used for connecting to a UVC device
+        bool connectToDeviceUVC(const char* serialNumber);
+	//function that begins image aquisition
+        uvc_error_t acquireStart();
+	//function that stops aquisition
+        void aquireStop();
+	//function that converts a UVC frame into an NDArray
+        asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* arrayInfo, NDDataType_t dataType);
+	//function that gets information from a UVC device
+        void getDeviceInformation();
+	//function used to process a uvc frame
+        void newFrameCallback(uvc_frame_t* frame, void* ptr);
+	//function that decides how long to aquire images (to support the various modes)
         void imageHandlerThread();
 };
 #endif

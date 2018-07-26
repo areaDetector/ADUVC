@@ -27,10 +27,10 @@
 #include "ADUVC.h"
 
 // libuvc includes
-#include <libuvc.h>
-#include <libuvc_config.h>
+#include <libuvc/libuvc.h>
+#include <libuvc/libuvc_config.h>
 
-using namespace std
+using namespace std;
 
 static const char* driverName = "ADUVC";
 static const int moving = 0;
