@@ -9,7 +9,7 @@ endif
 
 USR_CPPFLAGS += -std=c++11
 
-UVC_HOME = /epics/support/areaDetector-3-2/ADLambda
+UVC_HOME = /epics/support/areaDetector-3-2/ADUVC
 USR_INCLUDES += -I$(UVC_HOME)/include/libuvc
 
 LIBRARY_IOC = ADUVC
