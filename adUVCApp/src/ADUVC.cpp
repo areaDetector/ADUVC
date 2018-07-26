@@ -123,8 +123,10 @@ void ADUVC::getDeviceInformation(){
     uvc_get_device_descriptor(pdeviceHandle->dev, pdeviceInfo);
     setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
     //setStringParam(ADUVC_SerialNumber, pdeviceInfo->serialNumber);
-    sprintf(modelName, "UVC Vendor: %d, UVC Product: ", pdeviceInfo->idVendor, pdeviceInfo->idProduct);
+    sprintf(modelName, "UVC Vendor: %d, UVC Product: %d", pdeviceInfo->idVendor, pdeviceInfo->idProduct);
     setStringParam(ADModel, modelName);
+    callParamCallbacks();
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Finished Getting device information\n", driverName, functionName);
 }
 
 /*
@@ -135,7 +137,7 @@ void ADUVC::getDeviceInformation(){
  *
  * @return: uvc_error_t -> return 0 if successful, otherwise return error code
  */
-uvc_error_t ADUVC::acquireStart(){
+static uvc_error_t ADUVC::acquireStart(){
     static const char* functionName = "acquireStart";
     void* pData;
     deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, 640, 480, 30);
@@ -169,7 +171,7 @@ uvc_error_t ADUVC::acquireStart(){
  *
  * @return: void
  */
-void ADUVC::acquireStop(){
+static void ADUVC::acquireStop(){
     static const char* functionName = "acquireStop";
     moving = 0;
 
@@ -229,7 +231,7 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* 
         int ndims;
         size_t* dims;
         //eventually add if else here for color v mono
-        ndims = 3
+        ndims = 3;
         dims[0] = 3;
         dims[1] = rgb->width;
         dims[2] = rgb->height;
