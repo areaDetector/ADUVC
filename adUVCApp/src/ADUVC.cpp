@@ -35,6 +35,7 @@ using namespace std;
 static const char* driverName = "ADUVC";
 static int moving = 0;
 
+static const double ONE_BILLION = 1.E9;
 
 /*
  * External configuration function for ADUVC.
@@ -263,8 +264,6 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* 
  * @return: void
  */
 void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
-    void* pData;
-    int aquiring;
     NDArray* pArray;
     NDArrayInfo arrayInfo;
     int dataType;
@@ -284,7 +283,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
         //This function needs to be finalized
-        uvc2NDArray(frame, &pArray, ndDataType);
+        uvc2NDArray(frame, pArray, &arrayInfo, ndDataType);
         acquireStop();
     }
     // block shot mode
@@ -295,7 +294,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
         //This function needs to be finalized
-        uvc2NDArray(frame, &pArray, ndDataType);
+        uvc2NDArray(frame, pArray, &arrayInfo, ndDataType);
         getIntegerParam(ADNumImages, &desiredImages);
 	if(numImages>=desiredImages) acquireStop();
     }
@@ -306,7 +305,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
         //This function needs to be finalized
-        uvc2NDArray(frame, &pArray, ndDataType);
+        uvc2NDArray(frame, pArray, &arrayInfo, ndDataType);
     }
     else{
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported operating mode\n", driverName, functionName);
@@ -317,7 +316,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     int arrayCounter;
     getIntegerParam(NDArrayCounter, &arrayCounter);
     arrayCounter++;
-    setIntegerParam(NDArrayCounter, &arrayCounter);
+    setIntegerParam(NDArrayCounter, arrayCounter);
     setIntegerParam(NDArraySize, arrayInfo.totalBytes);
     epicsTimeGetCurrent(&currentTime);
     pArray->timeStamp = currentTime.secPastEpoch + currentTime.nsec/ONE_BILLION;
@@ -339,17 +338,18 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 void ADUVC::imageHandlerThread(){
     static const char* functionName = "imageHandlerThread";
     int operatingMode;
-    int framrate;
+    int framerate;
     int numFrames;
     getIntegerParam(ADUVC_OperatingMode, &operatingMode);
     getIntegerParam(ADUVC_Framerate, &framerate);
     getIntegerParam(ADNumImages, &numFrames);
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Starting image collection thread\n", driverName, functionName);
     //single shot
     if(operatingMode == ADImageSingle){
         sleep_for(1000);
     }
     // snap shot
-    else if(operting mode == ADImageMultiple){
+    else if(operatingMode == ADImageMultiple){
         int seconds = numFrames/framerate;
         seconds = seconds + 1;
         int second_counter = 0;
@@ -432,16 +432,14 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
  */
 ADUVC::ADUVC(const char* portName, const char* serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, (int)NUM_UVC_PARAMS, maxBuffers, maxMemory, asynEnumMask, asynEnumMask, ASYN_CANBLOCK, 1, priority, stackSize){
-        
-    int status = asynSuccess;
     static char* functionName = "ADUVC";
 
-    // create PV Params    
-    createParam(ADUVC_OperatingModeString,          asynParamInt32,     ADUVC_OperatingMode);
-    createParam(ADUVC_UVCComplianceLevelString,     asynParamInt32,     ADUVC_UVCComplianceLevel);
-    createParam(ADUVC_ReferenceCountString,         asynParamInt32,     ADUVC_ReferenceCount);
-    createParam(ADUVC_FramerateString,              asynParamInt32,     ADUVC_Framerate);
-    createParam(ADUVC_SerialNumberString,           asynParamOctet,     ADUVC_SerialNumber);
+    // create PV Params
+    createParam(ADUVC_OperatingModeString,          asynParamInt32,     &ADUVC_OperatingMode);
+    createParam(ADUVC_UVCComplianceLevelString,     asynParamInt32,     &ADUVC_UVCComplianceLevel);
+    createParam(ADUVC_ReferenceCountString,         asynParamInt32,     &ADUVC_ReferenceCount);
+    createParam(ADUVC_FramerateString,              asynParamInt32,     &ADUVC_Framerate);
+    createParam(ADUVC_SerialNumberString,           asynParamOctet,     &ADUVC_SerialNumber);
 
     setIntegerParam(ADUVC_Framerate, framerate);
     char versionString[25];
@@ -450,14 +448,14 @@ ADUVC::ADUVC(const char* portName, const char* serial, int framerate, int maxBuf
 
 
     asynStatus connected = connectToDeviceUVC(serial);
-    
+
     if(connected == asynError){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Connection failed, abort\n", driverName, functionName);
     }
     else{
         getDeviceInformation();
     }
-    
+
 }
 
 /*
@@ -493,11 +491,11 @@ static const iocshArg * const UVCConfigArgs[] =
         &UVCConfigArg6 };
 
 static void configUVCCallFunc(const iocshArgBuf *args) {
-    UVCConfig(args[0].sval, args[1].sval, args[2].ival, args[3].ival,
+    ADUVCConfig(args[0].sval, args[1].sval, args[2].ival, args[3].ival,
             args[4].ival, args[5].ival, args[6].ival);
 }
 
-static const iocshFuncDef configUVC = { "UVCConfig", 6, UVCConfigArgs };
+static const iocshFuncDef configUVC = { "ADUVCConfig", 6, UVCConfigArgs };
 
 static void UVCRegister(void) {
     iocshRegister(&configUVC, configUVCCallFunc);
