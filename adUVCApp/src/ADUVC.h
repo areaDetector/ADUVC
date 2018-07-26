@@ -1,13 +1,13 @@
 /*
  * Header file for the ADUVC EPICS driver
- * 
+ *
  * This file contains the definitions of PV params, and the definition of the ADUVC class and functions.
- * 
+ *
  * Author: Jakub Wlodek
  * Created: July 2018
- * 
+ *
  * Copyright (c) : 2018 Brookhaven National Laboratory
- * 
+ *
  */
 
 // header guard
@@ -17,7 +17,7 @@
 // version numbers
 #define ADUVC_VERSION      0
 #define ADUVC_REVISION     0
-#define ADUVC_MODIFICATION 2
+#define ADUVC_MODIFICATION 3
 
 // includes
 #include <libuvc/libuvc.h>
@@ -32,7 +32,7 @@
 
 /*
  * Class definition of the ADUVC driver. It inherits from the base ADDriver class
- * 
+ *
  * Includes constructor/destructor, PV params, function defs and variable defs
  *
  */
@@ -77,11 +77,11 @@ class ADUVC : ADDriver{
 	//function used for connecting to a UVC device
         asynStatus connectToDeviceUVC(const char* serialNumber);
 	//function that begins image aquisition
-        static uvc_error_t acquireStart();
+        uvc_error_t acquireStart();
 	//function that stops aquisition
-        static void acquireStop();
+        void acquireStop();
 	//function that converts a UVC frame into an NDArray
-        asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* arrayInfo, NDDataType_t dataType);
+        asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* arrayInfo, NDDataType_t &dataType);
 	//function that gets information from a UVC device
         void getDeviceInformation();
 	//function used to process a uvc frame

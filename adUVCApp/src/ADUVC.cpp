@@ -34,7 +34,7 @@ using namespace std;
 
 static const char* driverName = "ADUVC";
 static int moving = 0;
-static bool firstFrame = true;
+
 
 /*
  * External configuration function for ADUVC.
@@ -137,7 +137,7 @@ void ADUVC::getDeviceInformation(){
  *
  * @return: uvc_error_t -> return 0 if successful, otherwise return error code
  */
-static uvc_error_t ADUVC::acquireStart(){
+uvc_error_t ADUVC::acquireStart(){
     static const char* functionName = "acquireStart";
     void* pData;
     deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, 640, 480, 30);
@@ -171,7 +171,7 @@ static uvc_error_t ADUVC::acquireStart(){
  *
  * @return: void
  */
-static void ADUVC::acquireStop(){
+void ADUVC::acquireStop(){
     static const char* functionName = "acquireStop";
     moving = 0;
 
@@ -194,7 +194,7 @@ static void ADUVC::acquireStop(){
  * @params: dataType -> data type of NDArray output image
  * @return: void, but output into pArray
  */
-asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* arrayInfo, NDDataType_t dataType){
+asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* arrayInfo, NDDataType_t &dataType){
     static const char* functionName = "uvc2NDArray";
     uvc_frame_t* rgb;
     rgb = uvc_allocate_frame(frame->width * frame->height *3);
@@ -284,7 +284,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
         //This function needs to be finalized
-        uvc2NDArray(frame, &pArray);
+        uvc2NDArray(frame, &pArray, ndDataType);
         acquireStop();
     }
     // block shot mode
@@ -295,7 +295,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
         //This function needs to be finalized
-        uvc2NDArray(frame, &pArray);
+        uvc2NDArray(frame, &pArray, ndDataType);
         getIntegerParam(ADNumImages, &desiredImages);
 	if(numImages>=desiredImages) acquireStop();
     }
@@ -306,7 +306,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
         //This function needs to be finalized
-        uvc2NDArray(frame, &pArray);
+        uvc2NDArray(frame, &pArray, ndDataType);
     }
     else{
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported operating mode\n", driverName, functionName);
@@ -492,12 +492,12 @@ static const iocshArg * const UVCConfigArgs[] =
         &UVCConfigArg3, &UVCConfigArg4, &UVCConfigArg5,
         &UVCConfigArg6 };
 
-static void configLambdaCallFunc(const iocshArgBuf *args) {
-    LambdaConfig(args[0].sval, args[1].sval, args[2].ival, args[3].ival,
+static void configUVCCallFunc(const iocshArgBuf *args) {
+    UVCConfig(args[0].sval, args[1].sval, args[2].ival, args[3].ival,
             args[4].ival, args[5].ival, args[6].ival);
 }
 
-static const iocshFuncDef configLambda = { "UVCConfig", 6, UVCConfigArgs };
+static const iocshFuncDef configUVC = { "UVCConfig", 6, UVCConfigArgs };
 
 static void UVCRegister(void) {
     iocshRegister(&configUVC, configUVCCallFunc);
