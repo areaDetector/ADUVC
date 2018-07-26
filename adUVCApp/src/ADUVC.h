@@ -75,11 +75,11 @@ class ADUVC : ADDriver{
 	//function used to report errors in uvc operations
         void reportUVCError(uvc_error_t status, const char* functionName);
 	//function used for connecting to a UVC device
-        bool connectToDeviceUVC(const char* serialNumber);
+        asynStatus connectToDeviceUVC(const char* serialNumber);
 	//function that begins image aquisition
         uvc_error_t acquireStart();
 	//function that stops aquisition
-        void aquireStop();
+        void acquireStop();
 	//function that converts a UVC frame into an NDArray
         asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* arrayInfo, NDDataType_t dataType);
 	//function that gets information from a UVC device

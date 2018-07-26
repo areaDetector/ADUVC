@@ -33,8 +33,8 @@
 using namespace std;
 
 static const char* driverName = "ADUVC";
-static const int moving = 0;
-static const bool firstFrame = true;
+static int moving = 0;
+static bool firstFrame = true;
 
 /*
  * External configuration function for ADUVC.
@@ -119,6 +119,7 @@ asynStatus ADUVC::connectToDeviceUVC(const char* serialNumber){
  */
 void ADUVC::getDeviceInformation(){
     static const char* functionName = "getDeviceInformation";
+    char modelName[50];
     uvc_get_device_descriptor(pdeviceHandle->dev, pdeviceInfo);
     setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
     //setStringParam(ADUVC_SerialNumber, pdeviceInfo->serialNumber);
@@ -154,7 +155,8 @@ uvc_error_t ADUVC::acquireStart(){
         }
         else{
             moving = 1;
-            setIntegerParam(ADStatus, ADMoving);
+            setIntegerParam(ADStatus, ADStatusAcquire);
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Image aquisition start\n", driverName, functionName);
             callParamCallbacks();
             imageHandlerThread();
         }
