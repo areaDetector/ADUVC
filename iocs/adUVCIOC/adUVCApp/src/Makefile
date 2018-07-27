@@ -14,7 +14,7 @@ $(PROD_NAME)_DBD += adUVCSupport.dbd
 $(PROD_NAME)_SRCS += $(PROD_NAME)_registerRecordDeviceDriver.cpp $(PROD_NAME)Main.cpp
 
 # Add locally compiled object code
-$(PROD_NAME)_LIBS += ADUVC
+$(PROD_NAME)_LIBS += adUVC
 # We use SYS_LIBS here because liblambda is only built dynamically but we want to be able to build
 # either statically or dynamically
 $(PROD_NAME)_SYS_LIBS += uvc
