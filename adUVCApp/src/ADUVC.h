@@ -17,7 +17,7 @@
 // version numbers
 #define ADUVC_VERSION      0
 #define ADUVC_REVISION     0
-#define ADUVC_MODIFICATION 3
+#define ADUVC_MODIFICATION 4
 
 // includes
 #include <libuvc/libuvc.h>
@@ -44,6 +44,9 @@ class ADUVC : ADDriver{
 
         //TODO: add overrides of ADDriver functions
         virtual asynStatus writeInt32(asynUser* pasynUser, epicsInt32 value);
+
+        void newFrameCallback(uvc_frame_t* frame, void* ptr);
+
 
         ~ADUVC();
 
@@ -86,7 +89,7 @@ class ADUVC : ADDriver{
 	//function that gets information from a UVC device
         void getDeviceInformation();
 	//function used to process a uvc frame
-        static void newFrameCallback(uvc_frame_t* frame, void* ptr);
+        static void newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr);
 	//function that decides how long to aquire images (to support the various modes)
         void imageHandlerThread();
 
