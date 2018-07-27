@@ -160,6 +160,13 @@ void ADUVC::getDeviceInformation(){
 
 
 
+void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
+    ADUVC* pPvt = ((ADUVC*) ptr);
+    pPvt->newFrameCallback(frame, pPvt);
+}
+
+
+
 /*
  * Function that starts the acquisition of the camera.
  * In the case of UVC devices, a function is called to first negotiate a stream with the camera at
@@ -179,7 +186,7 @@ uvc_error_t ADUVC::acquireStart(){
     else{
         setIntegerParam(ADNumImagesCounter, 0);
         callParamCallbacks();
-        deviceStatus = uvc_start_streaming(pdeviceHandle, &deviceStreamCtrl, newFrameCallbackWrapper, this, 0);
+        deviceStatus = uvc_start_streaming(pdeviceHandle, &deviceStreamCtrl, ADUVC::newFrameCallbackWrapper, this, 0);
         if(deviceStatus<0){
             setIntegerParam(ADAcquire, 0);
             callParamCallbacks();
@@ -289,11 +296,6 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* 
 }
 
 
-
-static void newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
-    ADUVC* pPvt = ((ADUVC*) ptr);
-    pPvt->newFrameCallback(frame, pPvt);
-}
 
 
 /*
