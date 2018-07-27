@@ -89,6 +89,9 @@ class ADUVC : ADDriver{
         void newFrameCallback(uvc_frame_t* frame, void* ptr);
 	//function that decides how long to aquire images (to support the various modes)
         void imageHandlerThread();
+
+        asynStatus createImageHandlerThread();
+        void killImageHandlerThread();
 };
 
 #define NUM_UVC_PARAMS ((int)(&ADUVC_LAST_PARAM - &ADUVC_FIRST_PARAM + 1))
