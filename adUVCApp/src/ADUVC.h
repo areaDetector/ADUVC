@@ -86,7 +86,7 @@ class ADUVC : ADDriver{
 	//function that gets information from a UVC device
         void getDeviceInformation();
 	//function used to process a uvc frame
-        void newFrameCallback(uvc_frame_t* frame, void* ptr);
+        static void newFrameCallback(uvc_frame_t* frame, void* ptr);
 	//function that decides how long to aquire images (to support the various modes)
         void imageHandlerThread();
 

@@ -170,7 +170,6 @@ void ADUVC::getDeviceInformation(){
  */
 uvc_error_t ADUVC::acquireStart(){
     static const char* functionName = "acquireStart";
-    void* pData;
     deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, 640, 480, 30);
     if(deviceStatus<0){
         setIntegerParam(ADAcquire, 0);
@@ -180,7 +179,7 @@ uvc_error_t ADUVC::acquireStart(){
     else{
         setIntegerParam(ADNumImagesCounter, 0);
         callParamCallbacks();
-        deviceStatus = uvc_start_streaming(pdeviceHandle, &deviceStreamCtrl, newFrameCallback, pData, 0);
+        deviceStatus = uvc_start_streaming(pdeviceHandle, &deviceStreamCtrl, newFrameCallback, this, 0);
         if(deviceStatus<0){
             setIntegerParam(ADAcquire, 0);
             callParamCallbacks();
@@ -300,7 +299,8 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* 
  * @params: ptr -> void pointer with data from the frame
  * @return: void
  */
-void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
+static void newFrameCallback(uvc_frame_t* frame, void* ptr){
+    ADUVC* pPvt = ((ADUVC*) ptr);
     NDArray* pArray;
     NDArrayInfo arrayInfo;
     int dataType;
@@ -308,59 +308,60 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     int operatingMode;
     epicsTimeStamp currentTime;
     static const char* functionName = "newFrameCallback";
-    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Entering callback function\n", driverName, functionName);
-    this->lock();
-    getIntegerParam(NDDataType, &dataType);
+    asynPrint(pPvt->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Entering callback function\n", driverName, functionName);
+    pPvt->lock();
+    pPvt->getIntegerParam(pPvt->NDDataType, &dataType);
     ndDataType = (NDDataType_t) dataType;
-    getIntegerParam(ADImageMode, &operatingMode);
+    pPvt->getIntegerParam(pPvt->ADImageMode, &operatingMode);
     //single shot mode
     if(operatingMode == ADImageSingle){
         int numImages;
-        getIntegerParam(ADNumImagesCounter, &numImages);
+        ptr->getIntegerParam(ptr->ADNumImagesCounter, &numImages);
         numImages++;
-        setIntegerParam(ADNumImagesCounter, numImages);
+        ptr->setIntegerParam(ptr->ADNumImagesCounter, numImages);
         //This function needs to be finalized
-        uvc2NDArray(frame, pArray, &arrayInfo, ndDataType);
-        acquireStop();
+        ptr->uvc2NDArray(frame, pArray, &arrayInfo, ndDataType);
+        ptr->acquireStop();
     }
     // block shot mode
     else if(operatingMode == ADImageMultiple){
         int numImages;
         int desiredImages;
-        getIntegerParam(ADNumImagesCounter, &numImages);
+        ptr->getIntegerParam(ptr->ADNumImagesCounter, &numImages);
         numImages++;
-        setIntegerParam(ADNumImagesCounter, numImages);
+        ptr->setIntegerParam(ptr->ADNumImagesCounter, numImages);
         //This function needs to be finalized
-        uvc2NDArray(frame, pArray, &arrayInfo, ndDataType);
-        getIntegerParam(ADNumImages, &desiredImages);
-	if(numImages>=desiredImages) acquireStop();
+        ptr->uvc2NDArray(frame, pArray, &arrayInfo, ndDataType);
+        ptr->getIntegerParam(ADNumImages, &desiredImages);
+	    if(numImages>=desiredImages) ptr->acquireStop();
     }
     //continuous mode
     else if(operatingMode == ADImageContinuous){
         int numImages;
-        getIntegerParam(ADNumImagesCounter, &numImages);
+        ptr->getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
-        setIntegerParam(ADNumImagesCounter, numImages);
+        ptr->setIntegerParam(ADNumImagesCounter, numImages);
         //This function needs to be finalized
-        uvc2NDArray(frame, pArray, &arrayInfo, ndDataType);
+        ptr->uvc2NDArray(frame, pArray, &arrayInfo, ndDataType);
     }
     else{
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported operating mode\n", driverName, functionName);
-        acquireStop();
+        asynPrint(ptr->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported operating mode\n", driverName, functionName);
+        ptr->acquireStop();
         return;
     }
     pArray->getInfo(&arrayInfo);
     int arrayCounter;
-    getIntegerParam(NDArrayCounter, &arrayCounter);
+    ptr->getIntegerParam(NDArrayCounter, &arrayCounter);
     arrayCounter++;
-    setIntegerParam(NDArrayCounter, arrayCounter);
-    setIntegerParam(NDArraySize, arrayInfo.totalBytes);
+    ptr->setIntegerParam(NDArrayCounter, arrayCounter);
+    ptr->setIntegerParam(NDArraySize, arrayInfo.totalBytes);
     epicsTimeGetCurrent(&currentTime);
     pArray->timeStamp = currentTime.secPastEpoch + currentTime.nsec/ONE_BILLION;
-    updateTimeStamp(&pArray->epicsTS);
-    callParamCallbacks();
-    getAttributes(pArray->pAttributeList);
-    doCallbacksGenericPointer(pArray, NDArrayData, 0);
+    ptr->updateTimeStamp(&pArray->epicsTS);
+    ptr->callParamCallbacks();
+    ptr->getAttributes(pArray->pAttributeList);
+    ptr->doCallbacksGenericPointer(pArray, ptr->NDArrayData, 0);
+    ptr->unlock();
 
 }
 
