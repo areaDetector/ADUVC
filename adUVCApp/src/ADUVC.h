@@ -54,6 +54,7 @@ class ADUVC : ADDriver{
         int ADUVC_ReferenceCount;
         int ADUVC_Framerate;
         int ADUVC_SerialNumber;
+	#define ADUVC_LAST_PARAM ADUVC_SerialNumber
 
     private:
 
@@ -89,4 +90,7 @@ class ADUVC : ADDriver{
 	//function that decides how long to aquire images (to support the various modes)
         void imageHandlerThread();
 };
+
+#define NUM_UVC_PARAMS ((int)(&ADUVC_LAST_PARAM - &ADUVC_FIRST_PARAM + 1))
+
 #endif

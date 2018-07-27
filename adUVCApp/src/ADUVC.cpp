@@ -14,6 +14,11 @@
 #include <stdio.h>
 #include <string.h>
 
+//#ifdef LINUX
+#include <unistd.h>
+//#endif
+//WINDOWS include here
+
 // EPICS includes
 #include <epicsTime.h>
 #include <epicsThread.h>
@@ -121,7 +126,7 @@ asynStatus ADUVC::connectToDeviceUVC(const char* serialNumber){
 void ADUVC::getDeviceInformation(){
     static const char* functionName = "getDeviceInformation";
     char modelName[50];
-    uvc_get_device_descriptor(pdeviceHandle->dev, pdeviceInfo);
+    uvc_get_device_descriptor(pdevice, &pdeviceInfo);
     setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
     //setStringParam(ADUVC_SerialNumber, pdeviceInfo->serialNumber);
     sprintf(modelName, "UVC Vendor: %d, UVC Product: %d", pdeviceInfo->idVendor, pdeviceInfo->idProduct);
@@ -164,6 +169,7 @@ uvc_error_t ADUVC::acquireStart(){
             imageHandlerThread();
         }
     }
+    return deviceStatus;
 }
 
 /*
@@ -346,7 +352,7 @@ void ADUVC::imageHandlerThread(){
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Starting image collection thread\n", driverName, functionName);
     //single shot
     if(operatingMode == ADImageSingle){
-        sleep_for(1000);
+        usleep(1000);
     }
     // snap shot
     else if(operatingMode == ADImageMultiple){
@@ -354,14 +360,14 @@ void ADUVC::imageHandlerThread(){
         seconds = seconds + 1;
         int second_counter = 0;
         while(moving == 1 && second_counter!=seconds){
-            sleep_for(1000);
+            usleep(1000);
             second_counter = second_counter+1;
         }
     }
     // continuous mode
     else if(operatingMode == ADImageContinuous){
         while(moving == 1){
-            sleep_for(1000);
+            usleep(1000);
         }
     }
     acquireStop();
@@ -390,7 +396,10 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
     if(function == ADAcquire){
         if(value && !acquiring){
             deviceStatus = acquireStart();
-            if(deviceStatus < 0) reportUVCError(deviceStatus, functionName);
+            if(deviceStatus < 0){
+                reportUVCError(deviceStatus, functionName);
+                return asynError;
+            }
         }
         if(!value && acquiring){
             acquireStop();
@@ -403,6 +412,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
         else if(value == ADImageContinuous) setIntegerParam(ADNumImages, 3000);
         else{
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported camera operating mode\n", driverName, functionName);
+            return asynError;
         }
     }
     else{
@@ -414,8 +424,10 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
 
     if(status){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR status=%d, function=%d, value=%d\n", driverName, functionName, status, function, value);
+        return asynError;
     }
     else asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s function=%d value=%d\n", driverName, functionName, function, value);
+    return asynSuccess;
 }
 
 /*
@@ -432,7 +444,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
  */
 ADUVC::ADUVC(const char* portName, const char* serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, (int)NUM_UVC_PARAMS, maxBuffers, maxMemory, asynEnumMask, asynEnumMask, ASYN_CANBLOCK, 1, priority, stackSize){
-    static char* functionName = "ADUVC";
+    static const char* functionName = "ADUVC";
 
     // create PV Params
     createParam(ADUVC_OperatingModeString,          asynParamInt32,     &ADUVC_OperatingMode);
