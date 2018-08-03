@@ -14,10 +14,6 @@
 #include <stdio.h>
 #include <string.h>
 
-//#ifdef LINUX
-#include <unistd.h>
-//#endif
-//WINDOWS include here
 
 // EPICS includes
 #include <epicsTime.h>
@@ -116,15 +112,16 @@ asynStatus ADUVC::connectToDeviceUVC(const char* serialNumber){
         return asynError;
     }
     else{
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Initialized UVC context", driverName, functionName);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Initialized UVC context\n", driverName, functionName);
     }
+    printf("The serial is %s\n", serialNumber);
     deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, 0, serialNumber);
     if(deviceStatus<0){
         reportUVCError(deviceStatus, functionName);
         return asynError;
     }
     else{
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Found UVC device", driverName, functionName);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Found UVC device\n", driverName, functionName);
     }
     deviceStatus = uvc_open(pdevice, &pdeviceHandle);
     if(deviceStatus<0){
@@ -132,7 +129,7 @@ asynStatus ADUVC::connectToDeviceUVC(const char* serialNumber){
         return asynError;
     }
     else{
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Opened UVC device", driverName, functionName);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Opened UVC device\n", driverName, functionName);
     }
     return status;
 }
@@ -177,8 +174,10 @@ void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
  */
 uvc_error_t ADUVC::acquireStart(){
     static const char* functionName = "acquireStart";
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering aquire function\n", driverName, functionName);
     deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, 640, 480, 30);
     if(deviceStatus<0){
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR getting stream control\n", driverName, functionName);
         setIntegerParam(ADAcquire, 0);
         callParamCallbacks();
         return deviceStatus;
@@ -188,6 +187,7 @@ uvc_error_t ADUVC::acquireStart(){
         callParamCallbacks();
         deviceStatus = uvc_start_streaming(pdeviceHandle, &deviceStreamCtrl, ADUVC::newFrameCallbackWrapper, this, 0);
         if(deviceStatus<0){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR getting stream started\n", driverName, functionName);
             setIntegerParam(ADAcquire, 0);
             callParamCallbacks();
             return deviceStatus;
@@ -195,7 +195,7 @@ uvc_error_t ADUVC::acquireStart(){
         else{
             imageThreadKeepAlive = true;
             setIntegerParam(ADStatus, ADStatusAcquire);
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Image aquisition start\n", driverName, functionName);
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Image aquisition start\n", driverName, functionName);
             callParamCallbacks();
             imageHandlerThread();
         }
@@ -220,7 +220,7 @@ void ADUVC::acquireStop(){
     setIntegerParam(ADStatus, ADStatusIdle);
     setIntegerParam(ADAcquire, 0);
     callParamCallbacks();
-    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Stopping aquisition\n",driverName, functionName);
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Stopping aquisition\n",driverName, functionName);
 }
 
 
@@ -239,11 +239,13 @@ void ADUVC::acquireStop(){
 asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* arrayInfo, NDDataType_t &dataType){
     static const char* functionName = "uvc2NDArray";
     uvc_frame_t* rgb;
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering converion function\n", driverName, functionName);
     rgb = uvc_allocate_frame(frame->width * frame->height *3);
     if(!rgb){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unable to allocate frame\n", driverName, functionName);
         return asynError;
     }
+	/*
     uvc_frame_format frameFormat = frame->frame_format;
     switch(frameFormat){
         case UVC_FRAME_FORMAT_YUYV:
@@ -253,6 +255,7 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* 
             deviceStatus = uvc_any2rgb(frame, rgb);
             break;
         case UVC_FRAME_FORMAT_MJPEG:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Trying to convert mjpeg to rgb\n", driverName, functionName);
             deviceStatus = uvc_mjpeg2rgb(frame, rgb);
             break;
         case UVC_FRAME_FORMAT_RGB:
@@ -262,18 +265,20 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* 
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported UVC format\n", driverName, functionName);
             return asynError;
     }
+	*/
     if(deviceStatus<0){
         reportUVCError(deviceStatus, functionName);
         return asynError;
     }
     else{
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Trying to get rgb frame into NDArray\n", driverName, functionName);
         int dataSpan = rgb->width * rgb->height * 3;
         unsigned char* dataInit = (unsigned char*) rgb->data;
         unsigned char* dataEnd = dataInit+dataSpan;
         int ndims;
-        size_t* dims;
         //eventually add if else here for color v mono
         ndims = 3;
+        size_t dims[ndims];
         dims[0] = 3;
         dims[1] = rgb->width;
         dims[2] = rgb->height;
@@ -283,10 +288,11 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDArrayInfo* 
         }
         this->pArrays[0] = pNDArrayPool->alloc(ndims, dims, dataType, 0, NULL);
         if(this->pArrays[0]!=NULL){
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Copying from frame to NDArray\n", driverName, functionName);
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Copying from frame to NDArray\n", driverName, functionName);
             pArray = this->pArrays[0];
             unsigned char* pArrayData = (unsigned char*) pArray->pData;
-            copy(dataInit, dataEnd, pArrayData);
+            memcpy(pArrayData, dataInit, dataSpan);
+			asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Done copying into NDArray\n", driverName, functionName);
             uvc_free_frame(rgb);
             return asynSuccess;
         }
@@ -315,40 +321,39 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     int operatingMode;
     epicsTimeStamp currentTime;
     static const char* functionName = "newFrameCallback";
-    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Entering callback function\n", driverName, functionName);
-    this->lock();
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering callback function\n", driverName, functionName);
     getIntegerParam(NDDataType, &dataType);
     ndDataType = (NDDataType_t) dataType;
     getIntegerParam(ADImageMode, &operatingMode);
     //single shot mode
     if(operatingMode == ADImageSingle){
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering single function\n", driverName, functionName);
         int numImages;
         getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
-        //This function needs to be finalized
         uvc2NDArray(frame, pArray, &arrayInfo, ndDataType);
         acquireStop();
     }
     // block shot mode
     else if(operatingMode == ADImageMultiple){
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering multiple function\n", driverName, functionName);
         int numImages;
         int desiredImages;
         getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
-        //This function needs to be finalized
         uvc2NDArray(frame, pArray, &arrayInfo, ndDataType);
         getIntegerParam(ADNumImages, &desiredImages);
 	    if(numImages>=desiredImages) acquireStop();
     }
     //continuous mode
     else if(operatingMode == ADImageContinuous){
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering continuous function\n", driverName, functionName);
         int numImages;
         getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
-        //This function needs to be finalized
         uvc2NDArray(frame, pArray, &arrayInfo, ndDataType);
     }
     else{
@@ -368,8 +373,6 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     callParamCallbacks();
     getAttributes(pArray->pAttributeList);
     doCallbacksGenericPointer(pArray, NDArrayData, 0);
-    this->unlock();
-
 }
 
 
@@ -384,34 +387,10 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
  */
 void ADUVC::imageHandlerThread(){
     static const char* functionName = "imageHandlerThread";
-    int operatingMode;
-    int framerate;
-    int numFrames;
-    getIntegerParam(ADUVC_OperatingMode, &operatingMode);
-    getIntegerParam(ADUVC_Framerate, &framerate);
-    getIntegerParam(ADNumImages, &numFrames);
-    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Starting image collection thread\n", driverName, functionName);
-    //single shot
-    if(operatingMode == ADImageSingle){
-        usleep(1000);
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering image handler thread\n", driverName, functionName);
+    while(imageThreadKeepAlive){
+        epicsThreadSleep(0.000250);
     }
-    // snap shot
-    else if(operatingMode == ADImageMultiple){
-        int seconds = numFrames/framerate;
-        seconds = seconds + 1;
-        int second_counter = 0;
-        while(imageThreadKeepAlive==true && second_counter!=seconds){
-            usleep(1000);
-            second_counter = second_counter+1;
-        }
-    }
-    // continuous mode
-    else if(operatingMode == ADImageContinuous){
-        while(imageThreadKeepAlive==true){
-            usleep(1000);
-        }
-    }
-    acquireStop();
 }
 
 
@@ -435,6 +414,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
 
     if(function == ADAcquire){
         if(value && !acquiring){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering aquire through writeint32\n", driverName, functionName);
             deviceStatus = acquireStart();
             if(deviceStatus < 0){
                 reportUVCError(deviceStatus, functionName);
@@ -466,7 +446,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR status=%d, function=%d, value=%d\n", driverName, functionName, status, function, value);
         return asynError;
     }
-    else asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s function=%d value=%d\n", driverName, functionName, function, value);
+    else asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s function=%d value=%d\n", driverName, functionName, function, value);
     return asynSuccess;
 }
 
@@ -499,7 +479,7 @@ ADUVC::ADUVC(const char* portName, const char* serial, int framerate, int maxBuf
     char versionString[25];
     epicsSnprintf(versionString, sizeof(versionString), "%d.%d.%d", ADUVC_VERSION, ADUVC_REVISION, ADUVC_MODIFICATION);
     setStringParam(NDDriverVersion, versionString);
-
+    setStringParam(ADUVC_SerialNumber, serial);
 
     asynStatus connected = connectToDeviceUVC(serial);
 
@@ -507,7 +487,8 @@ ADUVC::ADUVC(const char* portName, const char* serial, int framerate, int maxBuf
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Connection failed, abort\n", driverName, functionName);
     }
     else{
-        getDeviceInformation();
+	    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Acquiring device information\n", driverName, functionName);
+		getDeviceInformation();
     }
 
     // when epics is exited, delete the instance of this class

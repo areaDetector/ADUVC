@@ -12,9 +12,9 @@ epicsEnvSet("PORT",   "UVC1")
 # The queue size for all plugins
 epicsEnvSet("QSIZE",  "30")
 # The maximim image width; used for row profiles in the NDPluginStats plugin
-epicsEnvSet("XSIZE",  "256")
+epicsEnvSet("XSIZE",  "640")
 # The maximim image height; used for column profiles in the NDPluginStats plugin
-epicsEnvSet("YSIZE",  "256")
+epicsEnvSet("YSIZE",  "480")
 # The maximum number of time seried points in the NDPluginStats plugin
 epicsEnvSet("NCHANS", "2048")
 # The maximum number of frames buffered in the NDPluginCircularBuff plugin
@@ -38,7 +38,7 @@ epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 
 
 # ADUVCConfig(const char* portName, const char* serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize)
-ADUVCConfig("$(PORT)", "serialNumber", 30,  0, 0, 0, 0)
+ADUVCConfig("$(PORT)", "10e536e9e4c4ee70", 30,  0, 0, 0, 0)
 epicsThreadSleep(2)
 
 asynSetTraceIOMask($(PORT), 0, 2)
