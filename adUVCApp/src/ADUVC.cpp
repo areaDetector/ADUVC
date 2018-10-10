@@ -492,13 +492,15 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
  *
  * @params: portName -> port for NDArray recieved from camera
  * @params: serial -> serial number of device to connect to
+ * @params: vendorID -> id of venor of device
+ * @params: productID -> id of device used to connect if serial is unavailable
  * @params: framerate -> framerate at which camera should operate
  * @params: maxBuffers -> max buffer size for NDArrays
  * @params: maxMemory -> maximum memory allocated for driver
  * @params: priority -> what thread priority this driver will execute with
  * @params: stackSize -> size of the driver on the stack
  */
-ADUVC::ADUVC(const char* portName, const char* serial, int framerate, int vendorID, int productID, int maxBuffers, size_t maxMemory, int priority, int stackSize)
+ADUVC::ADUVC(const char* portName, const char* serial, int vendorID, int productID, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, (int)NUM_UVC_PARAMS, maxBuffers, maxMemory, asynEnumMask, asynEnumMask, ASYN_CANBLOCK, 1, priority, stackSize){
     static const char* functionName = "ADUVC";
 

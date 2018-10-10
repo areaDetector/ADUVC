@@ -29,6 +29,8 @@ epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 # * 
 # * @params: portName -> port for NDArray recieved from camera
 # * @params: serial -> serial number of device to connect to
+# * @params: vendorID -> id of device vendor
+# * @params: productID -> id number for device to connect to
 # * @params: framerate -> framerate at which camera should operate
 # * @params: maxBuffers -> max buffer size for NDArrays
 # * @params: maxMemory -> maximum memory allocated for driver
@@ -36,9 +38,13 @@ epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 # * @params: stackSize -> size of the driver on the stack
 # */
 
+# If searching for device by serial number, put 0 and 0 for vendor/productID
+# ADUVCConfig(const char* portName, const char* serial, int vendorID, int productID, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize)
+#ADUVCConfig("$(PORT)", "10e536e9e4c4ee70", 0, 0, 30,  0, 0, 0, 0)
+#epicsThreadSleep(2)
 
-# ADUVCConfig(const char* portName, const char* serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize)
-ADUVCConfig("$(PORT)", "10e536e9e4c4ee70", 30,  0, 0, 0, 0)
+# If searching for device by product ID put "" or empty string for serial number
+ADUVCConfig("$(PORT)", "", 0, 25344, 30, 0, 0, 0, 0)
 epicsThreadSleep(2)
 
 asynSetTraceIOMask($(PORT), 0, 2)
