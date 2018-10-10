@@ -48,7 +48,7 @@ static const double ONE_BILLION = 1.E9;
  * @return: status
  */
 extern "C" int ADUVCConfig(const char* portName, const char* serial, int vendorID, int productID, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize){
-    new ADUVC(portName, serial, framerate, vendorID, productID, maxBuffers, maxMemory, priority, stackSize);
+    new ADUVC(portName, serial, vendorID, productID, framerate, maxBuffers, maxMemory, priority, stackSize);
     return(asynSuccess);
 }
 
@@ -516,6 +516,7 @@ ADUVC::ADUVC(const char* portName, const char* serial, int vendorID, int product
     setIntegerParam(ADUVC_Framerate, framerate);
     setIntegerParam(ADUVC_VendorID, vendorID);
     setIntegerParam(ADUVC_ProductID, productID);
+    printf("%d\n", productID);
     char versionString[25];
     epicsSnprintf(versionString, sizeof(versionString), "%d.%d.%d", ADUVC_VERSION, ADUVC_REVISION, ADUVC_MODIFICATION);
     setStringParam(NDDriverVersion, versionString);
