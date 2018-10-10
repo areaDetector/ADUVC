@@ -1,5 +1,11 @@
 #!bin/bash
 
+# Install the necessary packages
+sudo apt-get install libusb-1.0
+sudo apt-get install cmake
+sudo apt-get install libjpeg-dev
+
+# Install libuvc
 git clone https://github.com/ktossell/libuvc.git
 cd libuvc
 mkdir build
