@@ -85,7 +85,7 @@ class ADUVC : ADDriver{
 	//function that stops aquisition
         void acquireStop();
 	//function that converts a UVC frame into an NDArray
-        asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType);
+        asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, int imBytes);
 	//function that gets information from a UVC device
         void getDeviceInformation();
 	//function used to process a uvc frame
