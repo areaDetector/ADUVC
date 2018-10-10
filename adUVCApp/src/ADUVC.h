@@ -17,7 +17,7 @@
 // version numbers
 #define ADUVC_VERSION      0
 #define ADUVC_REVISION     0
-#define ADUVC_MODIFICATION 4
+#define ADUVC_MODIFICATION 5
 
 // includes
 #include <libuvc/libuvc.h>
@@ -29,6 +29,8 @@
 #define ADUVC_ReferenceCountString          "UVC_REFCOUNT"      //asynInt32
 #define ADUVC_FramerateString               "UVC_FRAMERATE"     //asynInt32
 #define ADUVC_SerialNumberString            "UVC_SERIAL"        //asynOctet
+#define ADUVC_VendorIDString                "UVC_VENDOR"        //asynInt32
+#define ADUVC_ProductIDString               "UVC_PRODUCT"       //asynInt32
 
 /*
  * Class definition of the ADUVC driver. It inherits from the base ADDriver class
@@ -40,7 +42,7 @@ class ADUVC : ADDriver{
 
     public:
 
-        ADUVC(const char* portName, const char* serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize);
+        ADUVC(const char* portName, const char* serial, int vendorID, int productID, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize);
 
         //TODO: add overrides of ADDriver functions
         virtual asynStatus writeInt32(asynUser* pasynUser, epicsInt32 value);
@@ -57,7 +59,9 @@ class ADUVC : ADDriver{
         int ADUVC_ReferenceCount;
         int ADUVC_Framerate;
         int ADUVC_SerialNumber;
-	#define ADUVC_LAST_PARAM ADUVC_SerialNumber
+        int ADUVC_VendorID;
+        int ADUVC_ProductID;
+	#define ADUVC_LAST_PARAM ADUVC_ProductID
 
     private:
 
@@ -79,7 +83,7 @@ class ADUVC : ADDriver{
 	//function used to report errors in uvc operations
         void reportUVCError(uvc_error_t status, const char* functionName);
 	//function used for connecting to a UVC device
-        asynStatus connectToDeviceUVC(const char* serialNumber);
+        asynStatus connectToDeviceUVC(int connectionType, const char* serialNumber, int productID);
 	//function that begins image aquisition
         uvc_error_t acquireStart();
 	//function that stops aquisition

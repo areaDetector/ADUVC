@@ -47,8 +47,8 @@ static const double ONE_BILLION = 1.E9;
  * @params: all passed into constructor
  * @return: status
  */
-extern "C" int ADUVCConfig(const char* portName, const char* serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize){
-    new ADUVC(portName, serial, framerate, maxBuffers, maxMemory, priority, stackSize);
+extern "C" int ADUVCConfig(const char* portName, const char* serial, int vendorID, int productID, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize){
+    new ADUVC(portName, serial, framerate, vendorID, productID, maxBuffers, maxMemory, priority, stackSize);
     return(asynSuccess);
 }
 
@@ -102,7 +102,7 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
  * @params: serial number of device to connect to
  * @return: asynStatus -> true if connection is successful, false if failed
  */
-asynStatus ADUVC::connectToDeviceUVC(const char* serialNumber){
+asynStatus ADUVC::connectToDeviceUVC(int connectionType, const char* serialNumber, int productID){
     static const char* functionName = "connectToDeviceUVC";
     asynStatus status = asynSuccess;
     deviceStatus = uvc_init(&pdeviceContext, NULL);
@@ -114,8 +114,14 @@ asynStatus ADUVC::connectToDeviceUVC(const char* serialNumber){
     else{
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Initialized UVC context\n", driverName, functionName);
     }
-    printf("The serial is %s\n", serialNumber);
-    deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, 0, serialNumber);
+    if(connectionType == 0){
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Searching for UVC device with serial number: %s\n", driverName, functionName, serialNumber);
+        deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, 0, serialNumber);
+    }
+    else{
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Searching for UVC device with Product ID: %d\n", driverName, functionName, productID);
+        deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, productID, NULL);
+    }
     if(deviceStatus<0){
         reportUVCError(deviceStatus, functionName);
         return asynError;
@@ -492,7 +498,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
  * @params: priority -> what thread priority this driver will execute with
  * @params: stackSize -> size of the driver on the stack
  */
-ADUVC::ADUVC(const char* portName, const char* serial, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize)
+ADUVC::ADUVC(const char* portName, const char* serial, int framerate, int vendorID, int productID, int maxBuffers, size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, (int)NUM_UVC_PARAMS, maxBuffers, maxMemory, asynEnumMask, asynEnumMask, ASYN_CANBLOCK, 1, priority, stackSize){
     static const char* functionName = "ADUVC";
 
@@ -502,14 +508,25 @@ ADUVC::ADUVC(const char* portName, const char* serial, int framerate, int maxBuf
     createParam(ADUVC_ReferenceCountString,         asynParamInt32,     &ADUVC_ReferenceCount);
     createParam(ADUVC_FramerateString,              asynParamInt32,     &ADUVC_Framerate);
     createParam(ADUVC_SerialNumberString,           asynParamOctet,     &ADUVC_SerialNumber);
+    createParam(ADUVC_VendorIDString,               asynParamInt32,     &ADUVC_VendorID);
+    createParam(ADUVC_ProductIDString,              asynParamInt32,     &ADUVC_ProductID);
 
     setIntegerParam(ADUVC_Framerate, framerate);
+    setIntegerParam(ADUVC_VendorID, vendorID);
+    setIntegerParam(ADUVC_ProductID, productID);
     char versionString[25];
     epicsSnprintf(versionString, sizeof(versionString), "%d.%d.%d", ADUVC_VERSION, ADUVC_REVISION, ADUVC_MODIFICATION);
     setStringParam(NDDriverVersion, versionString);
     setStringParam(ADUVC_SerialNumber, serial);
 
-    asynStatus connected = connectToDeviceUVC(serial);
+    asynStatus connected;
+
+    if(strlen(serial)!=0){
+        connected = connectToDeviceUVC(0, serial, productID);
+    }
+    else{
+        connected = connectToDeviceUVC(1, NULL, productID);
+    }
 
     if(connected == asynError){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Connection failed, abort\n", driverName, functionName);
@@ -545,31 +562,33 @@ ADUVC::~ADUVC(){
 /* Code for iocsh registration */
 
 /* UVCConfig -> These are the args passed to the constructor in the epics config function */
-static const iocshArg UVCConfigArg0 = { "Port name", iocshArgString };
-static const iocshArg UVCConfigArg1 = { "Serial number", iocshArgString };
-static const iocshArg UVCConfigArg2 = { "Framerate", iocshArgInt };
-static const iocshArg UVCConfigArg3 = { "maxBuffers", iocshArgInt };
-static const iocshArg UVCConfigArg4 = { "maxMemory", iocshArgInt };
-static const iocshArg UVCConfigArg5 = { "priority", iocshArgInt };
-static const iocshArg UVCConfigArg6 = { "stackSize", iocshArgInt };
+static const iocshArg UVCConfigArg0 = { "Port name",        iocshArgString };
+static const iocshArg UVCConfigArg1 = { "Serial number",    iocshArgString };
+static const iocshArg UVCConfigArg2 = { "Vendor ID",        iocshArgInt };
+static const iocshArg UVCConfigArg3 = { "Product ID",       iocshArgInt };
+static const iocshArg UVCConfigArg4 = { "Framerate",        iocshArgInt };
+static const iocshArg UVCConfigArg5 = { "maxBuffers",       iocshArgInt };
+static const iocshArg UVCConfigArg6 = { "maxMemory",        iocshArgInt };
+static const iocshArg UVCConfigArg7 = { "priority",         iocshArgInt };
+static const iocshArg UVCConfigArg8 = { "stackSize",        iocshArgInt };
 
 
 
 static const iocshArg * const UVCConfigArgs[] =
         { &UVCConfigArg0, &UVCConfigArg1, &UVCConfigArg2,
         &UVCConfigArg3, &UVCConfigArg4, &UVCConfigArg5,
-        &UVCConfigArg6 };
+        &UVCConfigArg6, &UVCConfigArg7, &UVCConfigArg8 };
 
 
 
 static void configUVCCallFunc(const iocshArgBuf *args) {
     ADUVCConfig(args[0].sval, args[1].sval, args[2].ival, args[3].ival,
-            args[4].ival, args[5].ival, args[6].ival);
+            args[4].ival, args[5].ival, args[6].ival, args[7].ival, args[8].ival);
 }
 
 
 
-static const iocshFuncDef configUVC = { "ADUVCConfig", 6, UVCConfigArgs };
+static const iocshFuncDef configUVC = { "ADUVCConfig", 8, UVCConfigArgs };
 
 
 
