@@ -18,7 +18,7 @@ adUVCSupport to install it, it should have been placed there automatically.
 
 #### Usage:
 
-To use the helper, run it as root. There are three possible commands:
+To use the helper, run it as root. These are the possible commands:
 
 ```
 ./uvc_locater -h 
@@ -45,3 +45,17 @@ OR
 This will print out detailed information about the camera, including supported video
 formats, framerates, and resolutions, all of which must be used in the st.cmd ioc
 startup script.
+
+```
+./uvc_locater -p $PRODUCT_ID
+```
+OR
+```
+./uvc_locater --product $PRODUCT_ID
+```
+This will print the same information as the search by serial, but will search by product ID.
+
+#### NEW ADDITION:
+
+Recently, I have found that in some cases the serial number of a UVC device will not be found, and in this case
+the product ID will be used to discover it.
