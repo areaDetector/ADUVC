@@ -7,3 +7,11 @@ libuvc/
 os/
 configuration/
 uvc_locater
+*/O.*
+*/dbd/*
+db/
+dbd/
+envPaths
+include
+O.Common/
+O.linux-x86_64/

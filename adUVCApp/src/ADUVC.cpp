@@ -155,9 +155,10 @@ void ADUVC::getDeviceInformation(){
     uvc_get_device_descriptor(pdevice, &pdeviceInfo);
     setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
     //setStringParam(ADUVC_SerialNumber, pdeviceInfo->serialNumber);
-    sprintf(modelName, "UVC Vendor: %d, UVC Product: %d", pdeviceInfo->idVendor, pdeviceInfo->idProduct);
+    sprintf(modelName, "%d", pdeviceInfo->idProduct);
     setStringParam(ADModel, modelName);
     callParamCallbacks();
+    uvc_free_device_descriptor(pdeviceInfo);
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Finished Getting device information\n", driverName, functionName);
 }
 
@@ -257,7 +258,7 @@ void ADUVC::acquireStop(){
 asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, int imBytes){
     static const char* functionName = "uvc2NDArray";
     uvc_frame_t* rgb;
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering converion function\n", driverName, functionName);
+    //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering converion function\n", driverName, functionName);
     rgb = uvc_allocate_frame(frame->width * frame->height *3);
     if(!rgb){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unable to allocate frame\n", driverName, functionName);
@@ -329,7 +330,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     int operatingMode;
     //epicsTimeStamp currentTime;
     static const char* functionName = "newFrameCallback";
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering callback function\n", driverName, functionName);
+    //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering callback function\n", driverName, functionName);
     getIntegerParam(NDDataType, &dataType);
     ndDataType = (NDDataType_t) dataType;
     getIntegerParam(ADImageMode, &operatingMode);
@@ -552,7 +553,6 @@ ADUVC::ADUVC(const char* portName, const char* serial, int vendorID, int product
 ADUVC::~ADUVC(){
     static const char* functionName = "~ADUVC";
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Calling all free functions for ADUVC\n", driverName, functionName);
-    uvc_free_device_descriptor(pdeviceInfo);
     uvc_close(pdeviceHandle);
     uvc_unref_device(pdevice);
     uvc_exit(pdeviceContext);
