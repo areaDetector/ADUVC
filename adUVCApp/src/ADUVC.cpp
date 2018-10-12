@@ -31,7 +31,11 @@
 #include <libuvc/libuvc.h>
 #include <libuvc/libuvc_config.h>
 
+// GraphicsMagick include (for copying image files)
+// #include <Magick++.h>
+
 using namespace std;
+// using namespace Magick;
 
 static const char* driverName = "ADUVC";
 static bool imageThreadKeepAlive = false;
@@ -305,6 +309,17 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
 		unsigned char* pArrayData = (unsigned char*) pArray->pData;
 		memcpy(pArrayData, dataInit, imBytes);
  		asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Done copying into NDArray\n", driverName, functionName);
+
+        int arrayCounter;
+        getIntegerParam(NDArrayCounter, &arrayCounter);
+        arrayCounter++;
+        setIntegerParam(NDArrayCounter, arrayCounter);
+	    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s %p Calling param callbacks\n",driverName, functionName, pArray);
+        callParamCallbacks();
+        getAttributes(pArray->pAttributeList);
+	    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Doing callbacks generic pointer\n",driverName, functionName);
+        doCallbacksGenericPointer(pArray, NDArrayData, 0);
+        pArray->release();
         uvc_free_frame(rgb);
         return asynSuccess;
     }
@@ -325,33 +340,51 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
 void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     NDArray* pArray;
     NDArrayInfo arrayInfo;
-    int dataType;
     NDDataType_t ndDataType;
     int operatingMode;
+    NDColorMode_t colorMode;
+
     //epicsTimeStamp currentTime;
     static const char* functionName = "newFrameCallback";
     //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering callback function\n", driverName, functionName);
-    getIntegerParam(NDDataType, &dataType);
-    ndDataType = (NDDataType_t) dataType;
-    getIntegerParam(ADImageMode, &operatingMode);
 	
-
 	// initialize the NDArray here to try and fix the segfault
 	int ndims = 3;
    	size_t dims[ndims];
    	dims[0] = 3;
     dims[1] = frame->width;
 	dims[2] = frame->height;
+    //map = "RGB";
+    colorMode = NDColorModeRGB1;
+    ndDataType = NDUInt8;
+
+    getIntegerParam(ADImageMode, &operatingMode);
+
+    //image.read(dims[1], dims[2], map, CharPixel, frame->data);
+    // release previous frame
+    // if(pArray) pArray->release();
+
 	this->pArrays[0] = pNDArrayPool->alloc(ndims, dims, ndDataType, 0, NULL);
 	if(this->pArrays[0]!=NULL){ 
         pArray = this->pArrays[0];   
     }
 	else{
-	  asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Unable to allocate array\n", driverName, functionName);
-	  return;
+        this->pArrays[0]->release();
+	    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Unable to allocate array\n", driverName, functionName);
+	    return;
 	}
-	
+
+    //trying to use graphicsmagick
+    //image.write(0,0,dims[1], dims[2], map, CharPixel, pArray->pData);
+    // Set image size and type parameters
+    setIntegerParam(ADSizeX, dims[1]);
+    setIntegerParam(NDArraySizeX, dims[1]);
+    setIntegerParam(ADSizeY, dims[2]);
+    setIntegerParam(NDArraySizeY, dims[2]);
     pArray->getInfo(&arrayInfo);
+    setIntegerParam(NDArraySize, (int)arrayInfo.totalBytes);
+    setIntegerParam(NDDataType, ndDataType);
+    setIntegerParam(NDColorMode, colorMode);
 
     //single shot mode
     if(operatingMode == ADImageSingle){
@@ -391,20 +424,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     }
 	asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Reached the end of the callback function\n",driverName, functionName);
     //pArray->getInfo(&arrayInfo);
-    int arrayCounter;
-    getIntegerParam(NDArrayCounter, &arrayCounter);
-    arrayCounter++;
-    setIntegerParam(NDArrayCounter, arrayCounter);
-    setIntegerParam(NDArraySize, arrayInfo.totalBytes);
-    //epicsTimeGetCurrent(&currentTime);
-    //pArray->timeStamp = currentTime.secPastEpoch + currentTime.nsec/ONE_BILLION;
-    //updateTimeStamp(&pArray->epicsTS);
-	asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s %p Calling param callbacks\n",driverName, functionName, pArray);
-    callParamCallbacks();
-    getAttributes(pArray->pAttributeList);
-	asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Doing callbacks generic pointer\n",driverName, functionName);
-    doCallbacksGenericPointer(pArray, NDArrayData, 0);
-    pArray->release();
+    
 }
 
 

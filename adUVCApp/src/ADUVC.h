@@ -23,6 +23,10 @@
 #include <libuvc/libuvc.h>
 #include "ADDriver.h"
 
+//#include <Magick++.h>
+
+//using namespace Magick;
+
 // PV definitions
 #define ADUVC_OperatingModeString           "UVC_OPERATINGMODE" //asynInt32
 #define ADUVC_UVCComplianceLevelString      "UVC_COMPLIANCE"    //asynInt32
@@ -64,6 +68,12 @@ class ADUVC : ADDriver{
 	#define ADUVC_LAST_PARAM ADUVC_ProductID
 
     private:
+
+        // Some data variables
+        //Image image;
+        epicsEventId startEventId;
+        epicsEventId endEventId;
+        
 
         // variables
 	// checks uvc device operations status
