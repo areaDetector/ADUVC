@@ -297,8 +297,10 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
     else{
    	    // needs work. For some reason the bytes reading is not correct, and the image is not displaying
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Trying to get rgb frame into NDArray\n", driverName, functionName);
-        unsigned char* dataInit = (unsigned char*) rgb->data;
+        //unsigned char* dataInit = (unsigned char*) rgb->data;
 
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Frame collected is:\n", driverName, functionName);
+        
 		//currently only support NDUInt8 (most UVC cameras only have this anyway)
         if(dataType!=NDUInt8){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Unsupported data format\n", driverName, functionName);
@@ -306,8 +308,7 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
         }
 		//I think this is where the issue is
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Copying from frame to NDArray\n", driverName, functionName);  
-		unsigned char* pArrayData = (unsigned char*) pArray->pData;
-		memcpy(pArrayData, dataInit, imBytes);
+		pArray->pData = rgb->data;
  		asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Done copying into NDArray\n", driverName, functionName);
 
         int arrayCounter;
@@ -351,9 +352,9 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 	// initialize the NDArray here to try and fix the segfault
 	int ndims = 3;
    	size_t dims[ndims];
-   	dims[0] = 3;
-    dims[1] = frame->width;
-	dims[2] = frame->height;
+    dims[0] = frame->width;
+	dims[1] = frame->height;
+    dims[2] = 3;
     //map = "RGB";
     colorMode = NDColorModeRGB1;
     ndDataType = NDUInt8;
@@ -377,10 +378,10 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     //trying to use graphicsmagick
     //image.write(0,0,dims[1], dims[2], map, CharPixel, pArray->pData);
     // Set image size and type parameters
-    setIntegerParam(ADSizeX, dims[1]);
-    setIntegerParam(NDArraySizeX, dims[1]);
-    setIntegerParam(ADSizeY, dims[2]);
-    setIntegerParam(NDArraySizeY, dims[2]);
+    setIntegerParam(ADSizeX, dims[0]);
+    setIntegerParam(NDArraySizeX, dims[0]);
+    setIntegerParam(ADSizeY, dims[1]);
+    setIntegerParam(NDArraySizeY, dims[1]);
     pArray->getInfo(&arrayInfo);
     setIntegerParam(NDArraySize, (int)arrayInfo.totalBytes);
     setIntegerParam(NDDataType, ndDataType);

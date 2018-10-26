@@ -56,7 +56,7 @@ void print_help(){
 /**
  * Callback function. Takes uvc_frame, converts it from mjpeg to rgb, then to an OpenCV Mat, then converts
  * to BGR
- * 
+ *
  * @params: frame -> uvc frame to convert
  * @params: ptr -> unused but required
  * @return: void
