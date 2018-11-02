@@ -16,3 +16,4 @@ include
 O.Common/
 O.linux-x86_64/
 capture_test
+.vscode/
