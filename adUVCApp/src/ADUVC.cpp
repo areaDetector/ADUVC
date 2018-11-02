@@ -38,9 +38,10 @@ using namespace std;
 // using namespace Magick;
 
 static const char* driverName = "ADUVC";
-static bool imageThreadKeepAlive = false;
+//static bool imageThreadKeepAlive = false;
 
 
+// Constants
 static const double ONE_BILLION = 1.E9;
 
 
@@ -79,7 +80,7 @@ static void exitCallbackC(void* pPvt){
  * @return: void
  */
 void ADUVC::killImageHandlerThread(){
-    imageThreadKeepAlive = false;
+    //imageThreadKeepAlive = false;
     epicsThreadSleep(0.000250);
 }
 
@@ -93,7 +94,8 @@ void ADUVC::killImageHandlerThread(){
  * return: void
  */
 void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s UVC Error: %s\n", driverName, functionName, uvc_strerror(status));
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s UVC Error: %s\n", 
+                driverName, functionName, uvc_strerror(status));
 }
 
 
@@ -159,8 +161,8 @@ void ADUVC::getDeviceInformation(){
     static const char* functionName = "getDeviceInformation";
     char modelName[50];
     uvc_get_device_descriptor(pdevice, &pdeviceInfo);
-    setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
-    //setStringParam(ADUVC_SerialNumber, pdeviceInfo->serialNumber);
+    if(pdeviceInfo->manufacturer!=NULL) setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
+    if(pdeviceInfo->serialNumber!=NULL) setStringParam(ADUVC_SerialNumber, pdeviceInfo->serialNumber);
     sprintf(modelName, "%d", pdeviceInfo->idProduct);
     setStringParam(ADModel, modelName);
     callParamCallbacks();
@@ -197,11 +199,11 @@ void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
  */
 uvc_error_t ADUVC::acquireStart(){
     static const char* functionName = "acquireStart";
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering aquire function\n", driverName, functionName);
+    //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering aquire function\n", driverName, functionName);
     //Temp for testing. Resolution, framerate, and format will be selectable in final release versions.
     deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, 640, 480, 30);
     if(deviceStatus<0){
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR getting stream control\n", driverName, functionName);
+        reportUVCError(deviceStatus, functionName);
         setIntegerParam(ADAcquire, 0);
         callParamCallbacks();
         return deviceStatus;
@@ -212,17 +214,15 @@ uvc_error_t ADUVC::acquireStart(){
         //Here is where we initialize the stream and set the callback function to the static wrapper and pass this.
         deviceStatus = uvc_start_streaming(pdeviceHandle, &deviceStreamCtrl, ADUVC::newFrameCallbackWrapper, this, 0);
         if(deviceStatus<0){
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR getting stream started\n", driverName, functionName);
+            reportUVCError(deviceStatus, functionName);
             setIntegerParam(ADAcquire, 0);
             callParamCallbacks();
             return deviceStatus;
         }
         else{
-            imageThreadKeepAlive = true;
             setIntegerParam(ADStatus, ADStatusAcquire);
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Image aquisition start\n", driverName, functionName);
             callParamCallbacks();
-            //imageHandlerThread(); -> This is not necessary. In fact it causes the IOC to freeze during aquisition
         }
     }
     return deviceStatus;
@@ -262,10 +262,9 @@ void ADUVC::acquireStop(){
  * @params: imBytes -> number of bytes in the image
  * @return: void, but output into pArray
  */
-asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, int imBytes){
+asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, int imBytes){
     static const char* functionName = "uvc2NDArray";
     uvc_frame_t* rgb;
-    //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering converion function\n", driverName, functionName);
     rgb = uvc_allocate_frame(frame->width * frame->height *3);
     if(!rgb){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unable to allocate frame\n", driverName, functionName);
@@ -281,7 +280,7 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
             deviceStatus = uvc_any2rgb(frame, rgb);
             break;
         case UVC_FRAME_FORMAT_MJPEG:
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Trying to convert mjpeg to rgb\n", driverName, functionName);
+            //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Trying to convert mjpeg to rgb\n", driverName, functionName);
             deviceStatus = uvc_mjpeg2rgb(frame, rgb);
             break;
         case UVC_FRAME_FORMAT_RGB:
@@ -298,30 +297,33 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
         return asynError;
     }
     else{
-   	    // needs work. For some reason the bytes reading is not correct, and the image is not displaying
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Trying to get rgb frame into NDArray\n", driverName, functionName);
-        //unsigned char* dataInit = (unsigned char*) rgb->data;
+   	    // needs work. The frame display but it seems like colors are not aligned.
+        //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Trying to get rgb frame into NDArray\n", driverName, functionName);
+        unsigned char* dataInit = (unsigned char*) rgb->data;
 
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Frame collected is:\n", driverName, functionName);
+        //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Frame collected is:\n", driverName, functionName);
         
-		//currently only support NDUInt8 (most UVC cameras only have this anyway)
-        if(dataType!=NDUInt8){
+		//currently only support NDUInt8 and RGB1(most UVC cameras only have this anyway)
+        if(dataType!=NDUInt8 && colorMode!=NDColorModeRGB1){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Unsupported data format\n", driverName, functionName);
             return asynError;
         }
 		//I think this is where the issue is
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Copying from frame to NDArray\n", driverName, functionName);  
-		pArray->pData = rgb->data;
- 		asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Done copying into NDArray\n", driverName, functionName);
+        //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Copying from frame to NDArray\n", driverName, functionName);  
+        memcpy(pArray->pData, dataInit, imBytes);
+        pArray->pAttributeList->add("ColorMode", "Color Mode", NDAttrInt32, &colorMode);
+
+ 		//asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Done copying into NDArray\n", driverName, functionName);
 
         int arrayCounter;
         getIntegerParam(NDArrayCounter, &arrayCounter);
         arrayCounter++;
         setIntegerParam(NDArrayCounter, arrayCounter);
-	    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s %p Calling param callbacks\n",driverName, functionName, pArray);
+	    //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s %p Calling param callbacks\n",driverName, functionName, pArray);
         callParamCallbacks();
         getAttributes(pArray->pAttributeList);
-	    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Doing callbacks generic pointer\n",driverName, functionName);
+	    //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Doing callbacks generic pointer\n",driverName, functionName);
+        //Sends image to PV
         doCallbacksGenericPointer(pArray, NDArrayData, 0);
         pArray->release();
         uvc_free_frame(rgb);
@@ -351,23 +353,18 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     //TODO: Timestamps for images
     //epicsTimeStamp currentTime;
     static const char* functionName = "newFrameCallback";
-    //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering callback function\n", driverName, functionName);
 	
 	// initialize the NDArray here to try and fix the segfault
 	int ndims = 3;
    	size_t dims[ndims];
-    dims[0] = frame->width;
-	dims[1] = frame->height;
-    dims[2] = 3;
-    //map = "RGB";
+    dims[0] = 3;
+    dims[1] = frame->width;
+	dims[2] = frame->height;
+    
     colorMode = NDColorModeRGB1;
     ndDataType = NDUInt8;
 
     getIntegerParam(ADImageMode, &operatingMode);
-
-    //image.read(dims[1], dims[2], map, CharPixel, frame->data);
-    // release previous frame
-    // if(pArray) pArray->release();
 
 	this->pArrays[0] = pNDArrayPool->alloc(ndims, dims, ndDataType, 0, NULL);
 	if(this->pArrays[0]!=NULL){ 
@@ -378,10 +375,10 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 	    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Unable to allocate array\n", driverName, functionName);
 	    return;
 	}
-    setIntegerParam(ADSizeX, dims[0]);
-    setIntegerParam(NDArraySizeX, dims[0]);
-    setIntegerParam(ADSizeY, dims[1]);
-    setIntegerParam(NDArraySizeY, dims[1]);
+    setIntegerParam(ADSizeX, dims[1]);
+    setIntegerParam(NDArraySizeX, dims[1]);
+    setIntegerParam(ADSizeY, dims[2]);
+    setIntegerParam(NDArraySizeY, dims[2]);
     pArray->getInfo(&arrayInfo);
     setIntegerParam(NDArraySize, (int)arrayInfo.totalBytes);
     setIntegerParam(NDDataType, ndDataType);
@@ -394,7 +391,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
-        uvc2NDArray(frame, pArray, ndDataType, arrayInfo.totalBytes);
+        uvc2NDArray(frame, pArray, ndDataType, colorMode, arrayInfo.totalBytes);
         acquireStop();
     }
     // block shot mode
@@ -405,25 +402,25 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
-        uvc2NDArray(frame, pArray, ndDataType, arrayInfo.totalBytes);
+        uvc2NDArray(frame, pArray, ndDataType, colorMode, arrayInfo.totalBytes);
         getIntegerParam(ADNumImages, &desiredImages);
 	    if(numImages>=desiredImages) acquireStop();
     }
     //continuous mode
     else if(operatingMode == ADImageContinuous){
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering continuous function\n", driverName, functionName);
+        //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering continuous function\n", driverName, functionName);
         int numImages;
         getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
-        uvc2NDArray(frame, pArray, ndDataType, arrayInfo.totalBytes);
+        uvc2NDArray(frame, pArray, ndDataType, colorMode, arrayInfo.totalBytes);
     }
     else{
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported operating mode\n", driverName, functionName);
         acquireStop();
         return;
     }
-	asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Reached the end of the callback function\n",driverName, functionName);
+	//asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Reached the end of the callback function\n",driverName, functionName);
     //pArray->getInfo(&arrayInfo);
     
 }
@@ -444,9 +441,6 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 void ADUVC::imageHandlerThread(){
     static const char* functionName = "imageHandlerThread";
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering image handler thread\n", driverName, functionName);
-    while(imageThreadKeepAlive){
-        epicsThreadSleep(0.000250);
-    }
 }
 
 
