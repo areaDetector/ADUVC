@@ -5,13 +5,17 @@
 Libuvc depends on libusb.1.*, which can be installed from your linux distribution, or from 
 source.
 ```
-sudo apt-get install libusb.1.0
-sudo apt-get install libusb-dev
+sudo apt install libusb.1.0
+sudo apt install libusb-dev
 ```
 
 #### Installation:
 
 Provided is a script that can be used for easily installing libuvc on a debain based machine. 
+```
+sudo bash installlibuvc.sh
+```
+
 It clones the github repository containing the library, runs cmake, and installs the libs into the 
 appropriate folder. Once this script has been run, simply compile the driver from the top level
 ADUVC directory.

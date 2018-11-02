@@ -1,5 +1,6 @@
 # UVC Device locater
 
+Author: Jakub Wlodek
 
 The .cpp file in this directory can be used to locate UVC devices and to get
 critical information about them.
@@ -9,6 +10,7 @@ critical information about them.
 To compile the helper program, switch to a root account, and compile using:
 
 ```
+sudo su
 g++ uvc_locater.cpp -o uvc_locater -luvc
 ```
 

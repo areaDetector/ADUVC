@@ -66,6 +66,7 @@ void newFrameCallback(uvc_frame_t* frame, void* ptr){
     uvc_error_t deviceStatus;
     printf("Entering callback function on frame number %d\n", frameNum);
 
+    //allocates frame for converting to rgb
     rgb = uvc_allocate_frame(frame->width * frame->height *3);
     if(!rgb) {
         printf("Abort: unable to allocate frame\n");
@@ -73,6 +74,7 @@ void newFrameCallback(uvc_frame_t* frame, void* ptr){
         return;
     }
 
+    //converts to rgb
     deviceStatus = uvc_mjpeg2rgb(frame, rgb);
     if(deviceStatus) {
         uvc_perror(deviceStatus, "uvc_mjpeg2rgb");
@@ -80,10 +82,12 @@ void newFrameCallback(uvc_frame_t* frame, void* ptr){
         return;
     }
 
+    //converts to opencv Mat
     Mat cvImg(rgb->height, rgb->width, CV_8UC3, (uchar*)rgb->data);
     //uvc_free_frame(frame);
     cvtColor(cvImg, cvImg, COLOR_RGB2BGR);
 
+    //displays
     imshow("UVC Image", cvImg);
     waitKey(1);
     frameNum = frameNum+1;
@@ -97,6 +101,7 @@ void newFrameCallback(uvc_frame_t* frame, void* ptr){
  */
 int main(int argc, char** argv){
 
+    //argument parsing
     char* serialNumber = "";
     int productID = 0;
     if(argv[1]!=NULL){
@@ -117,6 +122,8 @@ int main(int argc, char** argv){
         print_help();
         return -1;
     }
+
+    //connecting to uvc device
     uvc_context_t* context;
     uvc_device_t* device;
     uvc_device_handle_t* deviceHandle;
@@ -129,6 +136,7 @@ int main(int argc, char** argv){
         return status;
     }
 
+    //use serial or pID
     if(strcmp(serialNumber,"")!=0){
         printf("Trying to find device with serial number %s\n", serialNumber);
         status = uvc_find_device(context, &device, 0, 0, serialNumber);
@@ -150,6 +158,7 @@ int main(int argc, char** argv){
         return status;
     }
 
+    //connect to the device and start streaming for 200 frames
     status = uvc_get_stream_ctrl_format_size(deviceHandle, &ctrl, UVC_FRAME_FORMAT_MJPEG, 640, 480, 30);
     void* frame_data;
     if(status<0) uvc_perror(status, "get_mode");
@@ -167,6 +176,7 @@ int main(int argc, char** argv){
         uvc_unref_device(device);
     }
 
+    //disconnect from the device
     uvc_exit(context);
 
     return 0;

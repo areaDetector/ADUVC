@@ -1,5 +1,7 @@
 # UVC Capture test
 
+Author: Jakub Wlodek
+
 The program in this directory can be used to test if a connected UVC device can capture images without setting up the entire driver.
 
 ### Installation
@@ -13,6 +15,7 @@ sudo apt install libopencv-dev
 
 Once openCV and libuvc have been installed, compile the program as root using
 ```
+sudo su
 g++ capture_test.cpp -o capture_test -luvc $(pkg-config --cflags --libs opencv)
 ```
 
@@ -38,3 +41,5 @@ OR
 
 A window will open displaying what the camera can see.
 The window will stay open for 200 frames of video an will then close automatically.
+
+**NOTE** Currently only 640x480 images at 30fps are supported. User parameters will be added in future releases
