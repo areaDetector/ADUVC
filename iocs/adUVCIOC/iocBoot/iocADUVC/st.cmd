@@ -21,6 +21,8 @@ epicsEnvSet("NCHANS", "2048")
 epicsEnvSet("CBUFFS", "500")
 # The search path for database files
 epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
+# Size of data allowed 
+epicsEnvSet("EPICS_CA_MAX_ARRAY_BYTES", 10000000)
 #epicsThreadSleep(15)
 
 #/*

@@ -103,7 +103,9 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
  * then the device is identified, then opened.
  * NOTE: this driver must have exclusive access to the device as per UVC standards.
  *
- * @params: serial number of device to connect to
+ * @params: connectionType -> UVC can now connect with productID or serial ID. This flag switches
+ * @params: serialNumber -> serial number of device to connect to
+ * @params: productID -> product ID of camera to connect to
  * @return: asynStatus -> true if connection is successful, false if failed
  */
 asynStatus ADUVC::connectToDeviceUVC(int connectionType, const char* serialNumber, int productID){
@@ -169,10 +171,10 @@ void ADUVC::getDeviceInformation(){
 
 /*
  * Function used as a wrapper function for the callback.
- * This is necessary beacuse the callback function must be static for libuvc, but because it allows for a void*
- * this static wrapper function casts the 'this' pointer to void and calls the non static functions with the
- * actual callback. Mainly this is done to allow for calling functions without needing the object instance for
- * each call.
+ * This is necessary beacuse the callback function must be static for libuvc, meaning that function calls
+ * inside the callback function can only be run by using the driver name. Because libuvc allows for a void*
+ * to be passed through the callback function, however, the solution is to pass 'this' as the void pointer,
+ * cast it as an ADUVC pointer, and simply run the non-static callback function with that object.
  * 
  * @params: frame -> pointer to uvc_frame received
  * @params: ptr -> 'this' cast as a void pointer. It is cast back to ADUVC object and then new frame callback is called
@@ -196,7 +198,7 @@ void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
 uvc_error_t ADUVC::acquireStart(){
     static const char* functionName = "acquireStart";
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering aquire function\n", driverName, functionName);
-    //Temp for testing. Resolution, framerate, and format will be selectable.
+    //Temp for testing. Resolution, framerate, and format will be selectable in final release versions.
     deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, 640, 480, 30);
     if(deviceStatus<0){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR getting stream control\n", driverName, functionName);
@@ -236,7 +238,7 @@ uvc_error_t ADUVC::acquireStart(){
  */
 void ADUVC::acquireStop(){
     static const char* functionName = "acquireStop";
-    killImageHandlerThread();
+    //killImageHandlerThread(); -> doesnt do anything, libuvc makes its own aquistion thread
 
     //stop_streaming will block until last callback is processed.
     uvc_stop_streaming(pdeviceHandle);
@@ -257,6 +259,7 @@ void ADUVC::acquireStop(){
  * @params: frame -> frame collected from the uvc camera
  * @params: pArray -> output of function. NDArray conversion of uvc frame
  * @params: dataType -> data type of NDArray output image
+ * @params: imBytes -> number of bytes in the image
  * @return: void, but output into pArray
  */
 asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, int imBytes){
@@ -345,6 +348,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     int operatingMode;
     NDColorMode_t colorMode;
 
+    //TODO: Timestamps for images
     //epicsTimeStamp currentTime;
     static const char* functionName = "newFrameCallback";
     //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering callback function\n", driverName, functionName);
@@ -374,10 +378,6 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 	    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Unable to allocate array\n", driverName, functionName);
 	    return;
 	}
-
-    //trying to use graphicsmagick
-    //image.write(0,0,dims[1], dims[2], map, CharPixel, pArray->pData);
-    // Set image size and type parameters
     setIntegerParam(ADSizeX, dims[0]);
     setIntegerParam(NDArraySizeX, dims[0]);
     setIntegerParam(ADSizeY, dims[1]);
@@ -583,7 +583,7 @@ ADUVC::~ADUVC(){
 
 
 
-/* Code for iocsh registration */
+/* Code for ioc shell registration */
 
 /* UVCConfig -> These are the args passed to the constructor in the epics config function */
 static const iocshArg UVCConfigArg0 = { "Port name",        iocshArgString };
@@ -597,31 +597,31 @@ static const iocshArg UVCConfigArg7 = { "priority",         iocshArgInt };
 static const iocshArg UVCConfigArg8 = { "stackSize",        iocshArgInt };
 
 
-
+/* Array of config args */
 static const iocshArg * const UVCConfigArgs[] =
         { &UVCConfigArg0, &UVCConfigArg1, &UVCConfigArg2,
         &UVCConfigArg3, &UVCConfigArg4, &UVCConfigArg5,
         &UVCConfigArg6, &UVCConfigArg7, &UVCConfigArg8 };
 
 
-
+/* what function to call at config */
 static void configUVCCallFunc(const iocshArgBuf *args) {
     ADUVCConfig(args[0].sval, args[1].sval, args[2].ival, args[3].ival,
             args[4].ival, args[5].ival, args[6].ival, args[7].ival, args[8].ival);
 }
 
 
-
+/* information about the configuration function */
 static const iocshFuncDef configUVC = { "ADUVCConfig", 8, UVCConfigArgs };
 
 
-
+/* IOC register function */
 static void UVCRegister(void) {
     iocshRegister(&configUVC, configUVCCallFunc);
 }
 
 
-
+/* external function for IOC register */
 extern "C" {
     epicsExportRegistrar(UVCRegister);
 }
