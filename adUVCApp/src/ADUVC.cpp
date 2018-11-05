@@ -51,8 +51,8 @@ static const double ONE_BILLION = 1.E9;
  * @params: all passed into constructor
  * @return: status
  */
-extern "C" int ADUVCConfig(const char* portName, const char* serial, int vendorID, int productID, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize){
-    new ADUVC(portName, serial, vendorID, productID, framerate, maxBuffers, maxMemory, priority, stackSize);
+extern "C" int ADUVCConfig(const char* portName, const char* serial, int vendorID, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize){
+    new ADUVC(portName, serial, vendorID, productID, framerate, xsize, ysize, maxBuffers, maxMemory, priority, stackSize);
     return(asynSuccess);
 }
 
@@ -207,8 +207,14 @@ void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
  */
 uvc_error_t ADUVC::acquireStart(){
     static const char* functionName = "acquireStart";
-    //Temp for testing. Resolution, framerate, and format will be selectable in final release versions.
-    deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, 640, 480, 30);
+    // get values for image format from PVs set in IOC shell
+    int framerate;
+    int xsize;
+    int ysize;
+    getIntegerParam(ADUVC_Framerate, &framerate);
+    getIntegerParam(ADSizeX, &xsize);
+    getIntegerParam(ADSizeY, &ysize);
+    deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, xsize, ysize, framerate);
     if(deviceStatus<0){
         reportUVCError(deviceStatus, functionName);
         setIntegerParam(ADAcquire, 0);
@@ -555,7 +561,7 @@ void ADUVC::report(FILE* fp, int details){
  * @params: priority    -> what thread priority this driver will execute with
  * @params: stackSize   -> size of the driver on the stack
  */
-ADUVC::ADUVC(const char* portName, const char* serial, int vendorID, int productID, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize)
+ADUVC::ADUVC(const char* portName, const char* serial, int vendorID, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, (int)NUM_UVC_PARAMS, maxBuffers, maxMemory, asynEnumMask, asynEnumMask, ASYN_CANBLOCK, 1, priority, stackSize){
     static const char* functionName = "ADUVC";
 
@@ -568,8 +574,11 @@ ADUVC::ADUVC(const char* portName, const char* serial, int vendorID, int product
     createParam(ADUVC_VendorIDString,               asynParamInt32,     &ADUVC_VendorID);
     createParam(ADUVC_ProductIDString,              asynParamInt32,     &ADUVC_ProductID);
 
-    // set initial params
+    // set initial size and framerate params
     setIntegerParam(ADUVC_Framerate, framerate);
+    setIntegerParam(ADSizeX, xsize);
+    setIntegerParam(ADSizeY, ysize);
+
     setIntegerParam(ADUVC_VendorID, vendorID);
     setIntegerParam(ADUVC_ProductID, productID);
     printf("%d\n", productID);
@@ -624,28 +633,30 @@ static const iocshArg UVCConfigArg1 = { "Serial number",    iocshArgString };
 static const iocshArg UVCConfigArg2 = { "Vendor ID",        iocshArgInt };
 static const iocshArg UVCConfigArg3 = { "Product ID",       iocshArgInt };
 static const iocshArg UVCConfigArg4 = { "Framerate",        iocshArgInt };
-static const iocshArg UVCConfigArg5 = { "maxBuffers",       iocshArgInt };
-static const iocshArg UVCConfigArg6 = { "maxMemory",        iocshArgInt };
-static const iocshArg UVCConfigArg7 = { "priority",         iocshArgInt };
-static const iocshArg UVCConfigArg8 = { "stackSize",        iocshArgInt };
+static const iocshArg UVCConfigArg5 = { "XSize",            iocshArgInt };
+static const iocshArg UVCConfigArg6 = { "YSize",            iocshArgInt };
+static const iocshArg UVCConfigArg7 = { "maxBuffers",       iocshArgInt };
+static const iocshArg UVCConfigArg8 = { "maxMemory",        iocshArgInt };
+static const iocshArg UVCConfigArg9 = { "priority",         iocshArgInt };
+static const iocshArg UVCConfigArg10 = { "stackSize",        iocshArgInt };
 
 
 /* Array of config args */
 static const iocshArg * const UVCConfigArgs[] =
         { &UVCConfigArg0, &UVCConfigArg1, &UVCConfigArg2,
         &UVCConfigArg3, &UVCConfigArg4, &UVCConfigArg5,
-        &UVCConfigArg6, &UVCConfigArg7, &UVCConfigArg8 };
+        &UVCConfigArg6, &UVCConfigArg7, &UVCConfigArg8, &UVCConfigArg9, &UVCConfigArg10 };
 
 
 /* what function to call at config */
 static void configUVCCallFunc(const iocshArgBuf *args) {
     ADUVCConfig(args[0].sval, args[1].sval, args[2].ival, args[3].ival,
-            args[4].ival, args[5].ival, args[6].ival, args[7].ival, args[8].ival);
+            args[4].ival, args[5].ival, args[6].ival, args[7].ival, args[8].ival, args[9].ival, args[10].ival);
 }
 
 
 /* information about the configuration function */
-static const iocshFuncDef configUVC = { "ADUVCConfig", 8, UVCConfigArgs };
+static const iocshFuncDef configUVC = { "ADUVCConfig", 10, UVCConfigArgs };
 
 
 /* IOC register function */

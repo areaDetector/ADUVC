@@ -15,6 +15,8 @@ epicsEnvSet("QSIZE",  "30")
 epicsEnvSet("XSIZE",  "640")
 # The maximim image height; used for column profiles in the NDPluginStats plugin
 epicsEnvSet("YSIZE",  "480")
+# The framerate at which the stream will operate
+epicsEnvSet("FRAMERATE", "30");
 # The maximum number of time seried points in the NDPluginStats plugin
 epicsEnvSet("NCHANS", "2048")
 # The maximum number of frames buffered in the NDPluginCircularBuff plugin
@@ -34,6 +36,8 @@ epicsEnvSet("EPICS_CA_MAX_ARRAY_BYTES", 10000000)
 # * @params: vendorID -> id of device vendor
 # * @params: productID -> id number for device to connect to
 # * @params: framerate -> framerate at which camera should operate
+# * @params: xsize -> width of image
+# * @params: ysize -> height of image
 # * @params: maxBuffers -> max buffer size for NDArrays
 # * @params: maxMemory -> maximum memory allocated for driver
 # * @params: priority -> what thread priority this driver will execute with
@@ -41,12 +45,12 @@ epicsEnvSet("EPICS_CA_MAX_ARRAY_BYTES", 10000000)
 # */
 
 # If searching for device by serial number, put 0 and 0 for vendor/productID
-# ADUVCConfig(const char* portName, const char* serial, int vendorID, int productID, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize)
-#ADUVCConfig("$(PORT)", "10e536e9e4c4ee70", 0, 0, 30,  0, 0, 0, 0)
+# ADUVCConfig(const char* portName, const char* serial, int vendorID, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize)
+#ADUVCConfig("$(PORT)", "10e536e9e4c4ee70", 0, 0, "$(FRAMERATE)", "$(XSIZE)", "$(YSIZE)", 0, 0, 0, 0)
 #epicsThreadSleep(2)
 
 # If searching for device by product ID put "" or empty string for serial number
-ADUVCConfig("$(PORT)", "", 0, 25344, 30, 0, 0, 0, 0)
+ADUVCConfig("$(PORT)", "", 3141, 25344, "$(FRAMERATE)", "$(XSIZE)", "$(YSIZE)", 0, 0, 0, 0)
 epicsThreadSleep(2)
 
 asynSetTraceIOMask($(PORT), 0, 2)

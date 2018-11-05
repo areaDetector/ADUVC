@@ -44,7 +44,7 @@ class ADUVC : ADDriver{
     public:
 
         // Constructor
-        ADUVC(const char* portName, const char* serial, int vendorID, int productID, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize);
+        ADUVC(const char* portName, const char* serial, int vendorID, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize);
 
         //TODO: add overrides of ADDriver functions
 
