@@ -12,11 +12,11 @@ epicsEnvSet("PORT",   "UVC1")
 # The queue size for all plugins
 epicsEnvSet("QSIZE",  "30")
 # The maximim image width; used for row profiles in the NDPluginStats plugin
-epicsEnvSet("XSIZE",  "640")
+epicsEnvSet("XSIZE",  "320")
 # The maximim image height; used for column profiles in the NDPluginStats plugin
-epicsEnvSet("YSIZE",  "480")
+epicsEnvSet("YSIZE",  "240")
 # The framerate at which the stream will operate
-epicsEnvSet("FRAMERATE", "30");
+epicsEnvSet("FRAMERATE", "20");
 # The maximum number of time seried points in the NDPluginStats plugin
 epicsEnvSet("NCHANS", "2048")
 # The maximum number of frames buffered in the NDPluginCircularBuff plugin

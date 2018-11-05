@@ -540,7 +540,7 @@ void ADUVC::report(FILE* fp, int details){
         fprintf(fp, " Image Height          ->      %d\n", height);
         fprintf(fp, " -------------------------------------------------------------------\n");
         fprintf(fp, "\n");
-
+        
         ADDriver::report(fp, details);
     }
 }
