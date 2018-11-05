@@ -23,9 +23,6 @@
 #include <libuvc/libuvc.h>
 #include "ADDriver.h"
 
-//#include <Magick++.h>
-
-//using namespace Magick;
 
 // PV definitions
 #define ADUVC_OperatingModeString           "UVC_OPERATINGMODE" //asynInt32
@@ -46,14 +43,18 @@ class ADUVC : ADDriver{
 
     public:
 
+        // Constructor
         ADUVC(const char* portName, const char* serial, int vendorID, int productID, int framerate, int maxBuffers, size_t maxMemory, int priority, int stackSize);
 
         //TODO: add overrides of ADDriver functions
+
+        // ADDriver overrides
         virtual asynStatus writeInt32(asynUser* pasynUser, epicsInt32 value);
 
+        // Callback function envoked by the driver object through the wrapper
         void newFrameCallback(uvc_frame_t* frame, void* ptr);
 
-
+        // destructor. Disconnects from camera, deletes the object
         ~ADUVC();
 
     protected:
@@ -75,42 +76,62 @@ class ADUVC : ADDriver{
         epicsEventId endEventId;
         
 
-        // variables
+        // ----------------------------------------
+        // UVC Variables
+        //-----------------------------------------
+
 	// checks uvc device operations status
         uvc_error_t deviceStatus;
+
 	//pointer to device
         uvc_device_t* pdevice;
+
 	//pointer to device context. generated when connecting
         uvc_context_t* pdeviceContext;
+
 	//pointer to device handle. used for controlling device. Each UVC device can allow for one handle at a time
         uvc_device_handle_t* pdeviceHandle;
+
 	//pointer to device stream controller. used to controll streaming from device
         uvc_stream_ctrl_t deviceStreamCtrl;
+
 	//pointer containing device info, such as vendor, product id
         uvc_device_descriptor_t* pdeviceInfo;
 
-        // functions
+        //flag that stores if driver is connected to device
+        int connected = 0;
+
+
+        // ----------------------------------------
+        // UVC Functions
+        //-----------------------------------------
+
 	//function used to report errors in uvc operations
         void reportUVCError(uvc_error_t status, const char* functionName);
+
 	//function used for connecting to a UVC device
         asynStatus connectToDeviceUVC(int connectionType, const char* serialNumber, int productID);
+
+        //function used to disconnect from UVC device
+        asynStatus ADUVC::disconnectFromDeviceUVC();
+
 	//function that begins image aquisition
         uvc_error_t acquireStart();
+
 	//function that stops aquisition
         void acquireStop();
+
 	//function that converts a UVC frame into an NDArray
         asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, int imBytes);
+
 	//function that gets information from a UVC device
         void getDeviceInformation();
-	//function used to process a uvc frame
-        static void newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr);
-	//function that decides how long to aquire images (to support the various modes)
-        void imageHandlerThread();
 
-        asynStatus createImageHandlerThread();
-        void killImageHandlerThread();
+	// static wrapper function for callback. Necessary becuase callback in UVC must be static but we want the driver running the callback
+        static void newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr);
 };
 
+// Stores number of additional PV parameters are added by the driver
 #define NUM_UVC_PARAMS ((int)(&ADUVC_LAST_PARAM - &ADUVC_FIRST_PARAM + 1))
 
 #endif
