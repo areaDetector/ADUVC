@@ -497,6 +497,50 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
 
 
 
+
+/*
+ * Function used for reporting ADUVC device and library information to a external
+ * log file. The function first prints all libuvc specific information to the file,
+ * then continues on to the base ADDriver 'report' function
+ * 
+ * @params: fp      -> pointer to log file
+ * @params: details -> number of details to write to the file
+ * @return: void
+ */
+void ADUVC::report(FILE* fp, int details){
+    const char* functionName = "report";
+    int framerate;
+    int height;
+    int width;
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s reporting to file %s.\n",driverName, functionName, fp);
+    if(details > 0){
+        fprintf(fp, " LIBUVC Version        ->      %s.%s.%s\n", LIBUVC_VERSION_MAJOR, LIBUVC_VERSION_MINOR, LIBUVC_VERSION_PATCH);
+        fprintf(fp, " -------------------------------------------------------------------\n");
+        if(!connected){
+            fprintf(fp, " No connected devices\n");
+            ADDriver::report(fp, details);
+            return;
+        }
+        fprintf(fp, " Connected Device Information\n");
+        fprintf(fp, " Serial number         ->      %s\n", pdeviceInfo->serialNumber);
+        fprintf(fp, " VendorID              ->      %d\n", pdeviceInfo->idVendor);
+        fprintf(fp, " ProductID             ->      %d\n", pdeviceInfo->idProduct);
+        fprintf(fp, " UVC Compliance Level  ->      %d\n", pdeviceInfo->bcdUVC);
+        getIntegerParam(ADUVC_Framerate, &framerate);
+        getIntegerParam(ADSizeX, &width);
+        getIntegerParam(ADSizeY, &height);
+        fprintf(fp, " Camera Framerate      ->      %d\n", framerate);
+        fprintf(fp, " Image Width           ->      %d\n", width);
+        fprintf(fp, " Image Height          ->      %d\n", height);
+        fprintf(fp, " -------------------------------------------------------------------\n");
+        fprintf(fp, "\n");
+
+        ADDriver::report(fp, details);
+    }
+}
+
+
+
 /*
  * Constructor for ADUVC driver. Most params are passed to the parent ADDriver constructor.
  * Connects to the camera, then gets device information, and is ready to aquire images.

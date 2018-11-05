@@ -109,6 +109,9 @@ class ADUVC : ADDriver{
 	//function used to report errors in uvc operations
         void reportUVCError(uvc_error_t status, const char* functionName);
 
+        // reports device and driver info into a log file
+        void report(FILE* fp, int details);
+
 	//function used for connecting to a UVC device
         asynStatus connectToDeviceUVC(int connectionType, const char* serialNumber, int productID);
 
