@@ -13,7 +13,7 @@ sudo apt install libusb-dev
 
 Provided is a script that can be used for easily installing libuvc on a debain based machine. 
 ```
-sudo bash installlibuvc.sh
+bash installlibuvc.sh
 ```
 
 It clones the github repository containing the library, runs cmake, and installs the libs into the 

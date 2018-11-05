@@ -1,7 +1,7 @@
 # ADUVC
 
 Author: Jakub Wlodek  
-Corresponding Author: Kazimierz Gofron
+Corresponding Author: Kazimierz Gofron  
 Created: July 19, 2018  
 Last Updated: November 2, 2018  
 Copyright (c): 2018 Brookhaven National Laboratory  
@@ -21,7 +21,7 @@ If you wish to use the libjpeg version included with ADSupport, it is important 
 
 After libusb and the other dependencies have been installed, libuvc, the library for connecting to USB Video Class (UVC) devices must be installed. The easiest way to do this is to enter the adUVCSupport directory, and run the installlibuvc.sh script. The script must be run with sudo access:
 ```
-sudo bash installlibuvc.sh
+bash installlibuvc.sh
 ```
 This script will start by cloning the github repository for the libuvc library, and then build it with cmake. The resulting library and include files are then placed in the appropriate locations in the epics build path, as well as in the /usr/local directory, so that libuvc can be accessed in the other support functions. Once libuvc is installed, and epics-base, epics-modules, ADCore, and ADSupport have all been built as well, enter the top ADUVC directory, and simply run:
 ```
