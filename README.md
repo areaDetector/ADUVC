@@ -8,7 +8,7 @@ Copyright (c): 2018 Brookhaven National Laboratory
 
 ### An EPICS Driver for USB Video Class (UVC) devices
 
-This driver is in development, and is currently available in only beta form.
+This driver is in development, and is currently available in only beta form. (R0-1)
 
 ### Installation
 
