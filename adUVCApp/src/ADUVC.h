@@ -116,7 +116,7 @@ class ADUVC : ADDriver{
         asynStatus connectToDeviceUVC(int connectionType, const char* serialNumber, int productID);
 
         //function used to disconnect from UVC device
-        asynStatus ADUVC::disconnectFromDeviceUVC();
+        asynStatus disconnectFromDeviceUVC();
 
 	//function that begins image aquisition
         uvc_error_t acquireStart();

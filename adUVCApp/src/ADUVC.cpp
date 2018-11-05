@@ -518,9 +518,9 @@ void ADUVC::report(FILE* fp, int details){
     int framerate;
     int height;
     int width;
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s reporting to file %s.\n",driverName, functionName, fp);
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s reporting to external log file\n",driverName, functionName);
     if(details > 0){
-        fprintf(fp, " LIBUVC Version        ->      %s.%s.%s\n", LIBUVC_VERSION_MAJOR, LIBUVC_VERSION_MINOR, LIBUVC_VERSION_PATCH);
+        fprintf(fp, " LIBUVC Version        ->      %d.%d.%d\n", LIBUVC_VERSION_MAJOR, LIBUVC_VERSION_MINOR, LIBUVC_VERSION_PATCH);
         fprintf(fp, " -------------------------------------------------------------------\n");
         if(!connected){
             fprintf(fp, " No connected devices\n");
@@ -619,7 +619,7 @@ ADUVC::ADUVC(const char* portName, const char* serial, int vendorID, int product
 ADUVC::~ADUVC(){
     static const char* functionName = "~ADUVC";
     disconnectFromDeviceUVC();
-    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,"ADUVC driver exiting\n");
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,"%s::%s ADUVC driver exiting\n", driverName, functionName);
     disconnect(this->pasynUserSelf);
 }
 
