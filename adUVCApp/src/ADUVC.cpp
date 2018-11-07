@@ -51,8 +51,8 @@ static const double ONE_BILLION = 1.E9;
  * @params: all passed into constructor
  * @return: status
  */
-extern "C" int ADUVCConfig(const char* portName, const char* serial, int vendorID, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize){
-    new ADUVC(portName, serial, vendorID, productID, framerate, xsize, ysize, maxBuffers, maxMemory, priority, stackSize);
+extern "C" int ADUVCConfig(const char* portName, const char* serial, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize){
+    new ADUVC(portName, serial, productID, framerate, xsize, ysize, maxBuffers, maxMemory, priority, stackSize);
     return(asynSuccess);
 }
 
@@ -214,6 +214,7 @@ uvc_error_t ADUVC::acquireStart(){
     getIntegerParam(ADUVC_Framerate, &framerate);
     getIntegerParam(ADSizeX, &xsize);
     getIntegerParam(ADSizeY, &ysize);
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s x-size: %d, y-size %d, framerate %d\n", driverName, functionName, xsize, ysize, framerate);
     deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, xsize, ysize, framerate);
     if(deviceStatus<0){
         reportUVCError(deviceStatus, functionName);
@@ -324,7 +325,9 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
         }
 
         //Copy data from UVC frame to NDArray, and label it as the correct color mode
-        memcpy(pArray->pData, dataInit, imBytes);
+        //memcpy(pArray->pData, dataInit, imBytes);
+        //try to do this without memcpy for performance reasons
+        pArray->pData = rgb->data;
         pArray->pAttributeList->add("ColorMode", "Color Mode", NDAttrInt32, &colorMode);
 
         //increment the array counter
@@ -553,7 +556,6 @@ void ADUVC::report(FILE* fp, int details){
  *
  * @params: portName    -> port for NDArray recieved from camera
  * @params: serial      -> serial number of device to connect to
- * @params: vendorID    -> id of venor of device
  * @params: productID   -> id of device used to connect if serial is unavailable
  * @params: framerate   -> framerate at which camera should operate
  * @params: maxBuffers  -> max buffer size for NDArrays
@@ -561,7 +563,7 @@ void ADUVC::report(FILE* fp, int details){
  * @params: priority    -> what thread priority this driver will execute with
  * @params: stackSize   -> size of the driver on the stack
  */
-ADUVC::ADUVC(const char* portName, const char* serial, int vendorID, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize)
+ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, (int)NUM_UVC_PARAMS, maxBuffers, maxMemory, asynEnumMask, asynEnumMask, ASYN_CANBLOCK, 1, priority, stackSize){
     static const char* functionName = "ADUVC";
 
@@ -579,7 +581,6 @@ ADUVC::ADUVC(const char* portName, const char* serial, int vendorID, int product
     setIntegerParam(ADSizeX, xsize);
     setIntegerParam(ADSizeY, ysize);
 
-    setIntegerParam(ADUVC_VendorID, vendorID);
     setIntegerParam(ADUVC_ProductID, productID);
     printf("%d\n", productID);
     char versionString[25];
@@ -630,33 +631,32 @@ ADUVC::~ADUVC(){
 /* UVCConfig -> These are the args passed to the constructor in the epics config function */
 static const iocshArg UVCConfigArg0 = { "Port name",        iocshArgString };
 static const iocshArg UVCConfigArg1 = { "Serial number",    iocshArgString };
-static const iocshArg UVCConfigArg2 = { "Vendor ID",        iocshArgInt };
-static const iocshArg UVCConfigArg3 = { "Product ID",       iocshArgInt };
-static const iocshArg UVCConfigArg4 = { "Framerate",        iocshArgInt };
-static const iocshArg UVCConfigArg5 = { "XSize",            iocshArgInt };
-static const iocshArg UVCConfigArg6 = { "YSize",            iocshArgInt };
-static const iocshArg UVCConfigArg7 = { "maxBuffers",       iocshArgInt };
-static const iocshArg UVCConfigArg8 = { "maxMemory",        iocshArgInt };
-static const iocshArg UVCConfigArg9 = { "priority",         iocshArgInt };
-static const iocshArg UVCConfigArg10 = { "stackSize",        iocshArgInt };
+static const iocshArg UVCConfigArg2 = { "Product ID",       iocshArgInt };
+static const iocshArg UVCConfigArg3 = { "Framerate",        iocshArgInt };
+static const iocshArg UVCConfigArg4 = { "XSize",            iocshArgInt };
+static const iocshArg UVCConfigArg5 = { "YSize",            iocshArgInt };
+static const iocshArg UVCConfigArg6 = { "maxBuffers",       iocshArgInt };
+static const iocshArg UVCConfigArg7 = { "maxMemory",        iocshArgInt };
+static const iocshArg UVCConfigArg8 = { "priority",         iocshArgInt };
+static const iocshArg UVCConfigArg9 = { "stackSize",        iocshArgInt };
 
 
 /* Array of config args */
 static const iocshArg * const UVCConfigArgs[] =
         { &UVCConfigArg0, &UVCConfigArg1, &UVCConfigArg2,
         &UVCConfigArg3, &UVCConfigArg4, &UVCConfigArg5,
-        &UVCConfigArg6, &UVCConfigArg7, &UVCConfigArg8, &UVCConfigArg9, &UVCConfigArg10 };
+        &UVCConfigArg6, &UVCConfigArg7, &UVCConfigArg8, &UVCConfigArg9 };
 
 
 /* what function to call at config */
 static void configUVCCallFunc(const iocshArgBuf *args) {
     ADUVCConfig(args[0].sval, args[1].sval, args[2].ival, args[3].ival,
-            args[4].ival, args[5].ival, args[6].ival, args[7].ival, args[8].ival, args[9].ival, args[10].ival);
+            args[4].ival, args[5].ival, args[6].ival, args[7].ival, args[8].ival, args[9].ival);
 }
 
 
 /* information about the configuration function */
-static const iocshFuncDef configUVC = { "ADUVCConfig", 10, UVCConfigArgs };
+static const iocshFuncDef configUVC = { "ADUVCConfig", 9, UVCConfigArgs };
 
 
 /* IOC register function */
