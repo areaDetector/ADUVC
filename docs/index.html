@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>ADUVC Documentation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="adUVCdoc.css" />
 </head>
 <body>
     <h1>ADUVC</h1>
@@ -14,11 +15,54 @@
     <h4>Corresponding author: Kazimierz Gofron</h4>
     <hr/>
     <h4>Introduction:</h4>
-    <p>UVC, or USB Video Class is an open Video connection standard used for USB based cameras and webcams. Almost all consumer webcams support 
-        UVC, along with a large number of other consumer USB cameras of different form factors, ranging from penicl cameras to micro cameras.
+    <p class="text-section-local">
+        UVC, or USB Video Class is an open Video connection standard used for USB based cameras and webcams. Almost all consumer webcams support 
+        UVC, along with a large number of other consumer USB cameras of different form factors, ranging from pencil cameras to micro cameras.
         Some industrial cameras support the format as well. ADUVC is an area detector driver that adds support for UVC based cameras.
         It also includes some useful test programs to check if your UVC device is being recognized correctly.
     </p>
+    <hr />
+    <h4>Installation:</h4>
+    <p class="text-section-local">
+        Detailed installation instructions for the ADUVC driver can be seen in the <a href="https://github.com/jwlodek/ADUVC/blob/master/README.md">README</a>
+        file. To install ADUVC, you must first install libuvc and its dependancies. The simplest way to do this is to run the provided
+        bash script in the adUVCSupport directory of the repository. This installs libusub, libjpeg, and cmake, clones the
+        <a href="https://github.com/ktossell/libuvc">libuvc repository on github</a>, and then builds it using cmake. The dynamic library files
+        resulting from the build are placed in the /usr/local directory (on Linux), and include files must be placed in adUVCSupport/include. 
+        From here you may compile the support programs or the driver itself by entering the appropriate directory (the top ADUVC dir. for the 
+        driver), and compiling by switching to root and typing 'make'. The driver is now installed.
+    </p>
+    <hr />
+    <h4>Driver Contents:</h4>
+    <ul>
+        <li>installlibuvc.sh    ->  Installation script for libuvc and its dependancies.</li>
+        <li>cameraDetector      ->  C++ program that detects all connected UVC devices. Useful for finding serial/product number for IOC</li>
+        <li>imageCaptureTest    ->  C++ program that uses OpenCV to capture 200 frames from the camera to test if libuvc has been installed and the 
+            camera is connected.
+        </li>
+        <li>ADUVC driver        ->  The source code for the area detector driver itself in the adUVCApp/src directory.</li>
+        <li>iocADUVC            ->  Example ioc for use with the ADUVC driver. Shows how to connect to a camera in the EPICS IOC shell</li>
+    </ul>
+    <hr />
+    <h4>Usage:</h4>
+    <p class="text-section-local">
+        Once the driver is installed, you may start the ioc by entering the IOC folder and running 'sudo ./startEPICS.sh'. Sudo access is important
+        because access to UVC devices is limited to users with root permissions. You may then integrate ADUVC into your area detector screen setup.
+        In the current beta R0-1 version, there isn't a custom screen for the driver, as the implemented technology is mostly available in the 
+        ADBase screen. Custom screens are planned in future beta releases, and will be available prior to a R1-0 release.
+    </p>
+    <hr />
+    <h4>Release Notes:</h4>
+    <p class="text-section-local">
+        Release notes for the ADUVC driver are available on <a href="https://github.com/jwlodek/ADUVC/blob/master/RELEASE.md">Github</a>.
+    </p>
+    <hr />
+    <h4>Important links:</h4>
+    <ul>
+        <li>libuvc -> <a href="https://github.com/ktossell/libuvc">a cross-platform library for USB video devices</a></li>
+        <li><a href="https://github.com/jwlodek/ADUVC">ADUVC on Github</a></li>
+        <li><a href="https://github.com/areaDetector">areaDetector on Github</a></li>
+    </ul>
     
 </body>
 </html>
