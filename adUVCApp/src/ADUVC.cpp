@@ -169,8 +169,9 @@ void ADUVC::getDeviceInformation(){
     char modelName[50];
     uvc_get_device_descriptor(pdevice, &pdeviceInfo);
     if(pdeviceInfo->manufacturer!=NULL) setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
-    if(pdeviceInfo->serialNumber!=NULL) setStringParam(ADUVC_SerialNumber, pdeviceInfo->serialNumber);
-    sprintf(modelName, "%d", pdeviceInfo->idProduct);
+    if(pdeviceInfo->serialNumber!=NULL) setStringParam(ADSerialNumber, pdeviceInfo->serialNumber);
+    sprintf(modelName, "Vendor #: %d, Product #: %d", pdeviceInfo->idVendor, pdeviceInfo->idProduct);
+    setIntegerParam(ADUVC_UVCComplianceLevel, pdeviceInfo->bcdUVC);
     setStringParam(ADModel, modelName);
     callParamCallbacks();
     uvc_free_device_descriptor(pdeviceInfo);
@@ -568,26 +569,36 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
     static const char* functionName = "ADUVC";
 
     // create PV Params
-    createParam(ADUVC_OperatingModeString,          asynParamInt32,     &ADUVC_OperatingMode);
     createParam(ADUVC_UVCComplianceLevelString,     asynParamInt32,     &ADUVC_UVCComplianceLevel);
     createParam(ADUVC_ReferenceCountString,         asynParamInt32,     &ADUVC_ReferenceCount);
     createParam(ADUVC_FramerateString,              asynParamInt32,     &ADUVC_Framerate);
-    createParam(ADUVC_SerialNumberString,           asynParamOctet,     &ADUVC_SerialNumber);
     createParam(ADUVC_VendorIDString,               asynParamInt32,     &ADUVC_VendorID);
     createParam(ADUVC_ProductIDString,              asynParamInt32,     &ADUVC_ProductID);
+    createParam(ADUVC_BrightnessString,             asynParamInt32,     &ADUVC_Brightness);
+    createParam(ADUVC_ContrastString,               asynParamInt32,     &ADUVC_Contrast);
+    createParam(ADUVC_PowerLineString,              asynParamInt32,     &ADUVC_PowerLine);
+    createParam(ADUVC_HueString,                    asynParamInt32,     &ADUVC_Hue);
+    createParam(ADUVC_SaturationString,             asynParamInt32,     &ADUVC_Saturation);
 
     // set initial size and framerate params
     setIntegerParam(ADUVC_Framerate, framerate);
     setIntegerParam(ADSizeX, xsize);
     setIntegerParam(ADSizeY, ysize);
 
+    //sets serial number and productID
+    setStringParam(ADSerialNumber, serial);
     setIntegerParam(ADUVC_ProductID, productID);
-    printf("%d\n", productID);
+
+    //sets libuvc version
+    char uvcVersionString[25];
+    epicsSnprintf(uvcVersionString, sizeof(uvcVersionString), "%d.%d.%d", LIBUVC_VERSION_MAJOR, LIBUVC_VERSION_MINOR, LIBUVC_VERSION_PATCH);
+    setStringParam(ADSDKVersion, uvcVersionString);
+
+    //sets driver version
     char versionString[25];
     epicsSnprintf(versionString, sizeof(versionString), "%d.%d.%d", ADUVC_VERSION, ADUVC_REVISION, ADUVC_MODIFICATION);
     setStringParam(NDDriverVersion, versionString);
-    setStringParam(ADUVC_SerialNumber, serial);
-
+    
     asynStatus connected;
 
     // decide if connecting with serial number or productID

@@ -55,21 +55,6 @@ record(ai, "$(P)$(R)UVCReferenceCount_RBV"){
 }
 
 ##############################################
-# stores the serial number for the UVC camera. Used for connecting to it
-################################################
-record(stringout, "$(P)$(R)UVCSerialNumber"){
-    field(PINI, "YES")
-    field(DTYP, "asynOctetWrite")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SERIAL")
-}
-
-record(stringin, "$(P)$(R)UVCSerialNumber_RBV"){
-    field(DTYP, "asynOctetRead")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SERIAL")
-    field(SCAN, "I/O Intr")
-}
-
-##############################################
 # stores the vendor id for the UVC camera
 ################################################
 record(ao, "$(P)$(R)UVCVendorID"){
@@ -149,19 +134,19 @@ record(ai, "$(P)$(R)UVCContrast_RBV"){
 }
 
 ######################################
-# Stores the Gain value
+# Stores the Gain value -> deprecated because there is the ADGain PV already
 ######################################
-record(ao, "$(P)$(R)UVCGain"){
-    field(PINI, "YES")
-    field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAIN")
-}
-
-record(ai, "$(P)$(R)UVCGain_RBV"){
-    field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAIN")
-    field(SCAN, "I/O Intr")
-}
+#record(ao, "$(P)$(R)UVCGain"){
+#    field(PINI, "YES")
+#    field(DTYP, "asynInt32")
+#    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAIN")
+#}
+#
+#record(ai, "$(P)$(R)UVCGain_RBV"){
+#    field(DTYP, "asynInt32")
+#    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAIN")
+#    field(SCAN, "I/O Intr")
+#}
 
 ######################################
 # Stores the Power line frequency value

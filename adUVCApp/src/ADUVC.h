@@ -25,13 +25,17 @@
 
 
 // PV definitions
-#define ADUVC_OperatingModeString           "UVC_OPERATINGMODE" //asynInt32
-#define ADUVC_UVCComplianceLevelString      "UVC_COMPLIANCE"    //asynInt32
-#define ADUVC_ReferenceCountString          "UVC_REFCOUNT"      //asynInt32
-#define ADUVC_FramerateString               "UVC_FRAMERATE"     //asynInt32
-#define ADUVC_SerialNumberString            "UVC_SERIAL"        //asynOctet
-#define ADUVC_VendorIDString                "UVC_VENDOR"        //asynInt32
-#define ADUVC_ProductIDString               "UVC_PRODUCT"       //asynInt32
+
+#define ADUVC_UVCComplianceLevelString          "UVC_COMPLIANCE"        //asynInt32
+#define ADUVC_ReferenceCountString              "UVC_REFCOUNT"          //asynInt32
+#define ADUVC_FramerateString                   "UVC_FRAMERATE"         //asynInt32
+#define ADUVC_VendorIDString                    "UVC_VENDOR"            //asynInt32
+#define ADUVC_ProductIDString                   "UVC_PRODUCT"           //asynInt32
+#define ADUVC_BrightnessString                  "UVC_BRIGHTNESS"        //asynInt32
+#define ADUVC_ContrastString                    "UVC_CONTRAST"          //asynInt32
+#define ADUVC_PowerLineString                   "UVC_POWER"             //asynInt32
+#define ADUVC_HueString                         "UVC_HUE"               //asynInt32
+#define ADUVC_SaturationString                  "UVC_SATURATION"        //asynInt32    
 
 /*
  * Class definition of the ADUVC driver. It inherits from the base ADDriver class
@@ -58,14 +62,19 @@ class ADUVC : ADDriver{
         ~ADUVC();
 
     protected:
-        int ADUVC_OperatingMode;
-        #define ADUVC_FIRST_PARAM ADUVC_OperatingMode
+
+        
         int ADUVC_UVCComplianceLevel;
+        #define ADUVC_FIRST_PARAM ADUVC_UVCComplianceLevel
         int ADUVC_ReferenceCount;
         int ADUVC_Framerate;
-        int ADUVC_SerialNumber;
         int ADUVC_VendorID;
         int ADUVC_ProductID;
+        int ADUVC_Brightness;
+        int ADUVC_Contrast;
+        int ADUVC_PowerLine;
+        int ADUVC_Hue;
+        int ADUVC_Saturation;
 	#define ADUVC_LAST_PARAM ADUVC_ProductID
 
     private:
