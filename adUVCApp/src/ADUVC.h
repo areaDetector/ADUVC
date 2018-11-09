@@ -57,6 +57,7 @@ class ADUVC : ADDriver{
 
         // ADDriver overrides
         virtual asynStatus writeInt32(asynUser* pasynUser, epicsInt32 value);
+        virtual asynStatus writeFloat64(asynUser* pasynUser, epicsFloat64 value);
 
         // Callback function envoked by the driver object through the wrapper
         void newFrameCallback(uvc_frame_t* frame, void* ptr);

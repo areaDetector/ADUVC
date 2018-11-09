@@ -190,12 +190,12 @@ void ADUVC::getDeviceImageInformation(){
     uvc_get_sharpness(pdeviceHandle, &sharpness, UVC_GET_CUR);
 
     //put values into appropriate PVs
-    setIntegerParam(ADAcquireTime, (int) exposure);
+    setDoubleParam(ADAcquireTime, (double) exposure);
     setIntegerParam(ADUVC_Gamma, (int) gamma);
     setIntegerParam(ADUVC_BacklightCompensation, (int) backlightCompensation);
     setIntegerParam(ADUVC_Brightness, (int) brightness);
     setIntegerParam(ADUVC_Contrast, (int) contrast);
-    setIntegerParam(ADGain, (int) gain);
+    setDoubleParam(ADGain, (double) gain);
     setIntegerParam(ADUVC_PowerLine, (int) powerLineFrequency);
     setIntegerParam(ADUVC_Hue, (int) hue);
     setIntegerParam(ADUVC_Saturation, (int) saturation);
@@ -738,7 +738,6 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
         }
     }
     //setting different camera functions
-    else if(function == ADAcquireTime) setExposure(value);
     else if(function == ADUVC_Gamma) setGamma(value);
     else if(function == ADUVC_BacklightCompensation) setBacklightCompensation(value);
     else if(function == ADUVC_Brightness) setBrightness(value);
@@ -759,6 +758,45 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
         return asynError;
     }
     else asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s function=%d value=%d\n", driverName, functionName, function, value);
+    return asynSuccess;
+}
+
+
+/*
+ * Function overwriting ADDriver base function.
+ * Takes in a function (PV) changes, and a value it is changing to, and processes the input
+ * This is the same functionality as writeInt32, but for processing doubles.
+ *
+ * @params: pasynUser       -> asyn client who requests a write
+ * @params: value           -> int32 value to write
+ * @return: asynStatus      -> success if write was successful, else failure
+ */
+asynStatus ADUVC::writeFloat64(asynUser* pasynUser, epicsFloat64 value){
+    int function = pasynUser->reason;
+    int acquiring;
+    int status = asynSuccess;
+    static const char* functionName = "writeFloat64";
+    getIntegerParam(ADAcquire, &acquiring);
+
+    status = setDoubleParam(function, value);
+
+    if(function == ADAcquireTime){
+        if(acquiring) acquireStop();
+        setExposure((int) value);
+    }
+    else if(function == ADGain) setGain((int) value);
+    else{
+        if(function < ADUVC_FIRST_PARAM){
+            status = ADDriver::writeFloat64(pasynUser, value);
+        }
+    }
+    callParamCallbacks();
+
+    if(status){
+        asynPrint(this-> pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR status = %d, function =%d, value = %f\n", driverName, functionName, status, function, value);
+        return asynError;
+    }
+    else asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s function=%d value=%f\n", driverName, functionName, function, value);
     return asynSuccess;
 }
 
