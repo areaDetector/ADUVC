@@ -31,11 +31,14 @@
 #define ADUVC_FramerateString                   "UVC_FRAMERATE"         //asynInt32
 #define ADUVC_VendorIDString                    "UVC_VENDOR"            //asynInt32
 #define ADUVC_ProductIDString                   "UVC_PRODUCT"           //asynInt32
+#define ADUVC_GammaString                       "UVC_GAMMA"             //asynInt32
+#define ADUVC_BacklightCompensationString       "UVC_BACKLIGHT"         //asynInt32
 #define ADUVC_BrightnessString                  "UVC_BRIGHTNESS"        //asynInt32
 #define ADUVC_ContrastString                    "UVC_CONTRAST"          //asynInt32
 #define ADUVC_PowerLineString                   "UVC_POWER"             //asynInt32
 #define ADUVC_HueString                         "UVC_HUE"               //asynInt32
-#define ADUVC_SaturationString                  "UVC_SATURATION"        //asynInt32    
+#define ADUVC_SaturationString                  "UVC_SATURATION"        //asynInt32
+#define ADUVC_SharpnessString                   "UVC_SHARPNESS"         //asynInt32    
 
 /*
  * Class definition of the ADUVC driver. It inherits from the base ADDriver class
@@ -70,17 +73,19 @@ class ADUVC : ADDriver{
         int ADUVC_Framerate;
         int ADUVC_VendorID;
         int ADUVC_ProductID;
+        int ADUVC_Gamma;
+        int ADUVC_BacklightCompensation;
         int ADUVC_Brightness;
         int ADUVC_Contrast;
         int ADUVC_PowerLine;
         int ADUVC_Hue;
         int ADUVC_Saturation;
-	#define ADUVC_LAST_PARAM ADUVC_ProductID
+        int ADUVC_Sharpness;
+	#define ADUVC_LAST_PARAM ADUVC_Sharpness
 
     private:
 
         // Some data variables
-        //Image image;
         epicsEventId startEventId;
         epicsEventId endEventId;
         
@@ -110,9 +115,12 @@ class ADUVC : ADDriver{
         //flag that stores if driver is connected to device
         int connected = 0;
 
+        //flag that sees if shutter is on or off
+        int withShutter = 0;
+
 
         // ----------------------------------------
-        // UVC Functions
+        // UVC Functions - Logging/Reporting
         //-----------------------------------------
 
 	//function used to report errors in uvc operations
@@ -121,11 +129,31 @@ class ADUVC : ADDriver{
         // reports device and driver info into a log file
         void report(FILE* fp, int details);
 
+        // ----------------------------------------
+        // UVC Functions - Connecting to camera
+        //-----------------------------------------
+
 	//function used for connecting to a UVC device
         asynStatus connectToDeviceUVC(int connectionType, const char* serialNumber, int productID);
 
         //function used to disconnect from UVC device
         asynStatus disconnectFromDeviceUVC();
+
+        // ----------------------------------------
+        // UVC Functions - Camera functions
+        //-----------------------------------------
+
+        //function that sets exposure time
+        asynStatus setExposure(int exposureTime);
+        asynStatus setGamma(int gamma);
+        asynStatus setBacklightCompensation(int backlightCompensation);
+        asynStatus setBrightness(int brightness);
+        asynStatus setContrast(int contrast);
+        asynStatus setGain(int gain);
+        asynStatus setPowerLineFrequency(int powerLineFrequency);
+        asynStatus setHue(int hue);
+        asynStatus setSaturation(int saturation);
+        asynStatus setSharpness(int sharpness);
 
 	//function that begins image aquisition
         uvc_error_t acquireStart();
@@ -137,6 +165,7 @@ class ADUVC : ADDriver{
         asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, int imBytes);
 
 	//function that gets information from a UVC device
+        void getDeviceImageInformation();
         void getDeviceInformation();
 
 	// static wrapper function for callback. Necessary becuase callback in UVC must be static but we want the driver running the callback

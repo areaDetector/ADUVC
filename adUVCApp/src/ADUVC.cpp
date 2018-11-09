@@ -43,6 +43,10 @@ static const double ONE_BILLION = 1.E9;
 
 
 
+//---------------------------------------------------------
+// ADUVC Utility functions
+//---------------------------------------------------------
+
 /*
  * External configuration function for ADUVC.
  * Envokes the constructor to create a new ADUVC object
@@ -57,7 +61,6 @@ extern "C" int ADUVCConfig(const char* portName, const char* serial, int product
 }
 
 
-
 /*
  * Callback function called when IOC is terminated.
  * Deletes created object and frees UVC context
@@ -68,7 +71,6 @@ static void exitCallbackC(void* pPvt){
     ADUVC* pUVC = (ADUVC*) pPvt;
     delete(pUVC);
 }
-
 
 
 /*
@@ -84,6 +86,10 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
 }
 
 
+
+//-----------------------------------------------
+// ADUVC connection/disconnection functions
+//-----------------------------------------------
 
 /*
  * Function responsible for connecting to the UVC device. First, a device context is created,
@@ -135,7 +141,6 @@ asynStatus ADUVC::connectToDeviceUVC(int connectionType, const char* serialNumbe
 }
 
 
-
 /*
  * Function that disconnects from a connected UVC device.
  * Closes device handle and context, and unreferences the device pointer from memory
@@ -156,6 +161,50 @@ asynStatus ADUVC::disconnectFromDeviceUVC(){
 }
 
 
+/**
+ * Function responsible for getting image acquisition information
+ * Gets the exposure, gamma, backlight comp, brightness, contrast, gain, hue, power line, saturation, and
+ * sharpness from the camera, and sets the values to the appopriate PVs. Then it refreshes the PVs
+ * 
+ * @return: void
+ */
+void ADUVC::getDeviceImageInformation(){
+    const char* functionName = "getDeviceImageInformation";
+    uint32_t exposure;
+    uint16_t gamma, backlightCompensation, contrast, gain,  saturation, sharpness;
+    int16_t brightness, hue;
+    uint8_t powerLineFrequency;
+
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Populating camera function PVs.\n", driverName, functionName);
+
+    //get values from UVC camera
+    uvc_get_exposure_abs(pdeviceHandle, &exposure, UVC_GET_CUR);
+    uvc_get_gamma(pdeviceHandle, &gamma, UVC_GET_CUR);
+    uvc_get_backlight_compensation(pdeviceHandle, &backlightCompensation, UVC_GET_CUR);
+    uvc_get_brightness(pdeviceHandle, &brightness, UVC_GET_CUR);
+    uvc_get_contrast(pdeviceHandle, &contrast, UVC_GET_CUR);
+    uvc_get_gain(pdeviceHandle, &gain, UVC_GET_CUR);
+    uvc_get_power_line_frequency(pdeviceHandle, &powerLineFrequency, UVC_GET_CUR);
+    uvc_get_hue(pdeviceHandle, &hue, UVC_GET_CUR);
+    uvc_get_saturation(pdeviceHandle, &saturation, UVC_GET_CUR);
+    uvc_get_sharpness(pdeviceHandle, &sharpness, UVC_GET_CUR);
+
+    //put values into appropriate PVs
+    setIntegerParam(ADAcquireTime, (int) exposure);
+    setIntegerParam(ADUVC_Gamma, (int) gamma);
+    setIntegerParam(ADUVC_BacklightCompensation, (int) backlightCompensation);
+    setIntegerParam(ADUVC_Brightness, (int) brightness);
+    setIntegerParam(ADUVC_Contrast, (int) contrast);
+    setIntegerParam(ADGain, (int) gain);
+    setIntegerParam(ADUVC_PowerLine, (int) powerLineFrequency);
+    setIntegerParam(ADUVC_Hue, (int) hue);
+    setIntegerParam(ADUVC_Saturation, (int) saturation);
+    setIntegerParam(ADUVC_Sharpness, (int) sharpness);
+    
+    //refresh PV values
+    callParamCallbacks();
+}
+
 
 /*
  * Function responsible for getting device information once device has been connected.
@@ -170,33 +219,20 @@ void ADUVC::getDeviceInformation(){
     uvc_get_device_descriptor(pdevice, &pdeviceInfo);
     if(pdeviceInfo->manufacturer!=NULL) setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
     if(pdeviceInfo->serialNumber!=NULL) setStringParam(ADSerialNumber, pdeviceInfo->serialNumber);
-    sprintf(modelName, "Vendor #: %d, Product #: %d", pdeviceInfo->idVendor, pdeviceInfo->idProduct);
+    sprintf(modelName, "Vendor: %d, Product: %d", pdeviceInfo->idVendor, pdeviceInfo->idProduct);
     setIntegerParam(ADUVC_UVCComplianceLevel, pdeviceInfo->bcdUVC);
     setStringParam(ADModel, modelName);
     callParamCallbacks();
     uvc_free_device_descriptor(pdeviceInfo);
+    getDeviceImageInformation();
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Finished Getting device information\n", driverName, functionName);
 }
 
 
 
-/*
- * Function used as a wrapper function for the callback.
- * This is necessary beacuse the callback function must be static for libuvc, meaning that function calls
- * inside the callback function can only be run by using the driver name. Because libuvc allows for a void*
- * to be passed through the callback function, however, the solution is to pass 'this' as the void pointer,
- * cast it as an ADUVC pointer, and simply run the non-static callback function with that object.
- * 
- * @params: frame   -> pointer to uvc_frame received
- * @params: ptr     -> 'this' cast as a void pointer. It is cast back to ADUVC object and then new frame callback is called
- * @return: void
- */
-void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
-    ADUVC* pPvt = ((ADUVC*) ptr);
-    pPvt->newFrameCallback(frame, pPvt);
-}
-
-
+//----------------------------------------------------------------------
+// UVC acquisition start and stop functions
+//----------------------------------------------------------------------
 
 /*
  * Function that starts the acquisition of the camera.
@@ -245,7 +281,6 @@ uvc_error_t ADUVC::acquireStart(){
 }
 
 
-
 /*
  * Function responsible for stopping aquisition of images from UVC camera
  * Calls uvc_stop_streaming function
@@ -266,6 +301,27 @@ void ADUVC::acquireStop(){
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Stopping aquisition\n",driverName, functionName);
 }
 
+
+
+//-------------------------------------------------------
+// UVC Image Processing and callback functions
+//-------------------------------------------------------
+
+/*
+ * Function used as a wrapper function for the callback.
+ * This is necessary beacuse the callback function must be static for libuvc, meaning that function calls
+ * inside the callback function can only be run by using the driver name. Because libuvc allows for a void*
+ * to be passed through the callback function, however, the solution is to pass 'this' as the void pointer,
+ * cast it as an ADUVC pointer, and simply run the non-static callback function with that object.
+ * 
+ * @params: frame   -> pointer to uvc_frame received
+ * @params: ptr     -> 'this' cast as a void pointer. It is cast back to ADUVC object and then new frame callback is called
+ * @return: void
+ */
+void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
+    ADUVC* pPvt = ((ADUVC*) ptr);
+    pPvt->newFrameCallback(frame, pPvt);
+}
 
 
 /*
@@ -316,8 +372,8 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
     }
     else{
 
-        // cast frame data to char (8-bit/1-byte)
-        unsigned char* dataInit = (unsigned char*) rgb->data;
+        // cast frame data to char (8-bit/1-byte) Comment this out, just setting pointer to avoid memcpy
+        // unsigned char* dataInit = (unsigned char*) rgb->data;
 
 		//currently only support NDUInt8 and RGB1(most UVC cameras only have this anyway)
         if(dataType!=NDUInt8 && colorMode!=NDColorModeRGB1){
@@ -350,8 +406,6 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
         return asynSuccess;
     }
 }
-
-
 
 
 /*
@@ -450,6 +504,198 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 
 
 
+//---------------------------------------------------------
+// Base UVC Camera functionality
+//---------------------------------------------------------
+
+/**
+ * Function that sets exposure time in seconds
+ * 
+ * @params: exposureTime -> the exposure time in seconds
+ * @return: status
+ */
+asynStatus ADUVC::setExposure(int exposureTime){
+    const char* functionName = "setExposure";
+    asynStatus status = asynSuccess;
+
+    deviceStatus = uvc_set_exposure_abs(pdeviceHandle, exposureTime);
+    if(deviceStatus < 0){
+        reportUVCError(deviceStatus, functionName);
+        status = asynError;
+    }
+    return status;
+}
+
+
+/**
+ * Function that sets Gamma value
+ * 
+ * @params: gamma -> value for gamma
+ * @return: status
+ */
+asynStatus ADUVC::setGamma(int gamma){
+    const char* functionName = "setGamma";
+    asynStatus status = asynSuccess;
+
+    deviceStatus = uvc_set_gamma(pdeviceHandle, gamma);
+    if(deviceStatus < 0){
+        reportUVCError(deviceStatus, functionName);
+        status = asynError;
+    }
+    return status;
+}
+
+
+/**
+ * Function that sets backlight compensation. Used when camera has a light behind it that oversaturates image
+ * 
+ * @params: backlightCompensation -> degree of backlight comp.
+ * @return: status
+ */
+asynStatus ADUVC::setBacklightCompensation(int backlightCompensation){
+    const char* functionName = "setBacklightCompensation";
+    asynStatus status = asynSuccess;
+    deviceStatus = uvc_set_backlight_compensation(pdeviceHandle, backlightCompensation);
+    if(deviceStatus < 0){
+        reportUVCError(deviceStatus, functionName);
+        status = asynError;
+    }
+    return status;
+}
+
+
+/**
+ * Function that sets image brightness (similar to setGamma)
+ * 
+ * @params: brighness -> degree of brightness: for example, a 1.5 value would change a pixel value 30 to 45
+ * @return: status
+ */
+asynStatus ADUVC::setBrightness(int brightness){
+    const char* functionName = "setBrightness";
+    asynStatus status = asynSuccess;
+    deviceStatus = uvc_set_brightness(pdeviceHandle, brightness);
+    if(deviceStatus < 0){
+        reportUVCError(deviceStatus, functionName);
+        status = asynError;
+    }
+    return status;
+}
+
+
+/**
+ * Function that sets value for contrast. Higher value increases difference between whites and blacks
+ * 
+ * @params: contrast -> level of contrast
+ * @return: status
+ */
+asynStatus ADUVC::setContrast(int contrast){
+    const char* functionName = "setContrast";
+    asynStatus status = asynSuccess;
+    deviceStatus = uvc_set_contrast(pdeviceHandle, contrast);
+    if(deviceStatus < 0){
+        reportUVCError(deviceStatus, functionName);
+        status = asynError;
+    }
+    return status;
+}
+
+
+/**
+ * Function that sets camera gain value
+ * 
+ * @params: gain -> value for gain
+ * @return: status
+ */
+asynStatus ADUVC::setGain(int gain){
+    const char* functionName = "setGain";
+    asynStatus status = asynSuccess;
+    deviceStatus = uvc_set_gain(pdeviceHandle, gain);
+    if(deviceStatus < 0){
+        reportUVCError(deviceStatus, functionName);
+        status = asynError;
+    }
+    return status;
+}
+
+
+/**
+ * Function that sets Power line frequency. Used to avoid camera flicker when signal is not correct
+ * 
+ * @params: powerLineFrequency -> frequency value (50Hz, 60Hz etc.)
+ * @return status
+ */
+asynStatus ADUVC::setPowerLineFrequency(int powerLineFrequency){
+    const char* functionName = "setPowerLineFrequency";
+    asynStatus status = asynSuccess;
+    deviceStatus = uvc_set_power_line_frequency(pdeviceHandle, powerLineFrequency);
+    if(deviceStatus < 0){
+        reportUVCError(deviceStatus, functionName);
+        status = asynError;
+    }
+    return status;
+}
+
+
+/**
+ * Function that sets camera Hue. For example, a hue of 240 will result in a blue shifted image,
+ * while 0 will result in red-shifted
+ * 
+ * @params: hue -> value for image hue or tint
+ * @return: status
+ */
+asynStatus ADUVC::setHue(int hue){
+    const char* functionName = "setHue";
+    asynStatus status = asynSuccess;
+    deviceStatus = uvc_set_hue(pdeviceHandle, hue);
+    if(deviceStatus < 0){
+        reportUVCError(deviceStatus, functionName);
+        status = asynError;
+    }
+    return status;
+}
+
+
+/**
+ * Function that sets saturation. Higher value will result in more vivid colors
+ * 
+ * @params: saturation -> degree of saturation
+ * @return status
+ */
+asynStatus ADUVC::setSaturation(int saturation){
+    const char* functionName = "setSaturation";
+    asynStatus status = asynSuccess;
+    deviceStatus = uvc_set_saturation(pdeviceHandle, saturation);
+    if(deviceStatus < 0){
+        reportUVCError(deviceStatus, functionName);
+        status = asynError;
+    }
+    return status;
+}
+
+
+/**
+ * Function that sets the degree of sharpening. Too high will cause oversharpening
+ * 
+ * @params: sharpness -> degree of sharpening
+ * @return: status
+ */
+asynStatus ADUVC::setSharpness(int sharpness){
+    const char* functionName = "setSharpness";
+    asynStatus status = asynSuccess;
+    deviceStatus = uvc_set_sharpness(pdeviceHandle, sharpness);
+    if(deviceStatus < 0){
+        reportUVCError(deviceStatus, functionName);
+        status = asynError;
+    }
+    return status;
+}
+
+
+
+//-------------------------------------------------------------------------
+// ADDriver function overwrites
+//-------------------------------------------------------------------------
+
 /*
  * Function overwriting ADDriver base function.
  * Takes in a function (PV) changes, and a value it is changing to, and processes the input
@@ -466,7 +712,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
     getIntegerParam(ADAcquire, &acquiring);
 
     status = setIntegerParam(function, value);
-
+    // start/stop acquisition
     if(function == ADAcquire){
         if(value && !acquiring){
             //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering aquire\n", driverName, functionName);
@@ -480,6 +726,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
             acquireStop();
         }
     }
+    //switch image mode
     else if(function == ADImageMode){
         if(acquiring == 1) acquireStop();
         if(value == ADImageSingle) setIntegerParam(ADNumImages, 1);
@@ -490,6 +737,16 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
             return asynError;
         }
     }
+    //setting different camera functions
+    else if(function == ADAcquireTime) setExposure(value);
+    else if(function == ADUVC_Gamma) setGamma(value);
+    else if(function == ADUVC_BacklightCompensation) setBacklightCompensation(value);
+    else if(function == ADUVC_Brightness) setBrightness(value);
+    else if(function == ADUVC_Contrast) setContrast(value);
+    else if(function == ADUVC_Hue) setHue(value);
+    else if(function == ADUVC_PowerLine) setPowerLineFrequency(value);
+    else if(function == ADUVC_Saturation) setSaturation(value);
+    else if(function == ADUVC_Sharpness) setSharpness(value);
     else{
         if (function < ADUVC_FIRST_PARAM) {
             status = ADDriver::writeInt32(pasynUser, value);
@@ -504,8 +761,6 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
     else asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s function=%d value=%d\n", driverName, functionName, function, value);
     return asynSuccess;
 }
-
-
 
 
 /*
@@ -550,6 +805,10 @@ void ADUVC::report(FILE* fp, int details){
 }
 
 
+
+//----------------------------------------------------------------------------
+// ADUVC Constructor/Destructor
+//----------------------------------------------------------------------------
 
 /*
  * Constructor for ADUVC driver. Most params are passed to the parent ADDriver constructor.
@@ -624,7 +883,6 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
 }
 
 
-
 /*
  * ADUVC destructor. Called by the exitCallbackC function when IOC is shut down
  */
@@ -637,7 +895,9 @@ ADUVC::~ADUVC(){
 
 
 
-/* Code for ioc shell registration */
+//-------------------------------------------------------------
+// ADUVC ioc shell registration
+//-------------------------------------------------------------
 
 /* UVCConfig -> These are the args passed to the constructor in the epics config function */
 static const iocshArg UVCConfigArg0 = { "Port name",        iocshArgString };

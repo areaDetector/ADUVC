@@ -89,6 +89,21 @@ record(ai, "$(P)$(R)UVCProductID_RBV"){
 ################################################################################################
 
 ##################################################
+# Stores the degree of Gamma
+##################################################
+record(ao, "$(P)$(R)UVCGamma"){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAMMA")
+}
+
+record(ai, "$(P)$(R)UVCGamma_RBV"){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAMMA")
+    field(SCAN, "I/O Intr")
+}
+
+##################################################
 # Stores the degree of Backlight compensation
 ##################################################
 record(ao, "$(P)$(R)UVCBacklightCompensation"){
@@ -190,5 +205,20 @@ record(ao, "$(P)$(R)UVCSaturation"){
 record(ai, "$(P)$(R)UVCSaturation_RBV"){
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SATURATION")
+    field(SCAN, "I/O Intr")
+}
+
+######################################
+# Stores the Sharpness value
+######################################
+record(ao, "$(P)$(R)UVCSharpness"){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SHARPNESS")
+}
+
+record(ai, "$(P)$(R)UVCSharpness_RBV"){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SHARPNESS")
     field(SCAN, "I/O Intr")
 }

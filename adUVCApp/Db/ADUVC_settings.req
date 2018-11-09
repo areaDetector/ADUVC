@@ -1,0 +1,6 @@
+$(P)$(R)UVCBrightness
+$(P)$(R)UVCBacklightCompensation
+$(P)$(R)UVCContrast
+$(P)$(R)UVCPowerLine
+$(P)$(R)UVCHue
+$(P)$(R)UVCSaturation
