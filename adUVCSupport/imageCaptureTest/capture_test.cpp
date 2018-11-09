@@ -16,10 +16,8 @@
 #include <string.h>
 
 
-
 // uvc include
 #include <libuvc/libuvc.h>
-
 
 
 //opencv include
@@ -28,11 +26,9 @@
 #include <opencv2/core/core.hpp>
 
 
-
 // namespaces
 using namespace std;
 using namespace cv;
-
 
 
 //frame counter
@@ -49,6 +45,9 @@ void print_help(){
     printf("-s $SERIAL_NUMBER       ->      finds device using serial number.\n");
     printf("-p $PROD_ID             ->      finds device using productID.\n");
     printf("-h                      ->      prints this message.\n");
+    printf("Example call without dimensions: ./captureTest -p 23456\n");
+    printf("Example call with dimensions: ./captureTest -p 23456 1600 1200\n");
+    printf("You can specify dimensions, with width first, height second i.e. Xsize x Ysize\n");
 }
 
 
@@ -104,14 +103,18 @@ int main(int argc, char** argv){
     //argument parsing
     char* serialNumber = "";
     int productID = 0;
+    int height = 480;
+    int width = 640;
+
     if(argv[1]!=NULL){
         if(strcmp(argv[1], "-h")==0){
             print_help();
             return 0;
         }
     }
-    if(argc<2){
-        printf("Invalid arguments!");
+    printf("argc is %d\n", argc);
+    if(argc<2 || argc!=5){
+        printf("Invalid arguments!\n");
         print_help();
         return -1;
     }
@@ -121,6 +124,12 @@ int main(int argc, char** argv){
         printf("Invalid arguments!");
         print_help();
         return -1;
+    }
+
+    // If you want you can specify the size of the image as well
+    if(argc == 5){
+        width = atoi(argv[3]);
+        height = atoi(argv[4]);
     }
 
     //connecting to uvc device
@@ -149,19 +158,24 @@ int main(int argc, char** argv){
 
     if(status < 0){
         uvc_perror(status, "uvc_find_device");
+        print_help();
         return status;
     }
     puts("Device initalized and found");
     status = uvc_open(device, &deviceHandle);
     if(status < 0){
         uvc_perror(status, "uvc_open");
+        print_help();
         return status;
     }
 
     //connect to the device and start streaming for 200 frames
-    status = uvc_get_stream_ctrl_format_size(deviceHandle, &ctrl, UVC_FRAME_FORMAT_MJPEG, 640, 480, 30);
+    status = uvc_get_stream_ctrl_format_size(deviceHandle, &ctrl, UVC_FRAME_FORMAT_MJPEG, width, height, 30);
     void* frame_data;
-    if(status<0) uvc_perror(status, "get_mode");
+    if(status<0){
+        uvc_perror(status, "get_mode");
+        print_help();
+    } 
     else {
         status = uvc_start_streaming(deviceHandle, &ctrl, newFrameCallback, frame_data, 0);
         if(status<0)uvc_perror(status, "start_streaming");

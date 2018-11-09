@@ -42,4 +42,10 @@ OR
 A window will open displaying what the camera can see.
 The window will stay open for 200 frames of video an will then close automatically.
 
-**NOTE** Currently only 640x480 images at 30fps are supported. User parameters will be added in future releases
+You may also specify image dimensions. Run the camera detector in verbose mode to see what formats your camera supports, and then run:
+```
+./capture_test -p $PRODUCT_ID $XSize $Ysize
+```
+This will stream in the specified size.
+
+**NOTE** This program only streams in 30 fps, if you would like to stream at a different framerate you will have to edit the source.
