@@ -17,7 +17,7 @@
 // version numbers
 #define ADUVC_VERSION      0
 #define ADUVC_REVISION     1
-#define ADUVC_MODIFICATION 0
+#define ADUVC_MODIFICATION 2
 
 // includes
 #include <libuvc/libuvc.h>
@@ -31,6 +31,7 @@
 #define ADUVC_FramerateString                   "UVC_FRAMERATE"         //asynInt32
 #define ADUVC_VendorIDString                    "UVC_VENDOR"            //asynInt32
 #define ADUVC_ProductIDString                   "UVC_PRODUCT"           //asynInt32
+#define ADUVC_ImageFormatString                 "UVC_FORMAT"            //asynInt32
 #define ADUVC_GammaString                       "UVC_GAMMA"             //asynInt32
 #define ADUVC_BacklightCompensationString       "UVC_BACKLIGHT"         //asynInt32
 #define ADUVC_BrightnessString                  "UVC_BRIGHTNESS"        //asynInt32
@@ -74,6 +75,7 @@ class ADUVC : ADDriver{
         int ADUVC_Framerate;
         int ADUVC_VendorID;
         int ADUVC_ProductID;
+        int ADUVC_ImageFormat;
         int ADUVC_Gamma;
         int ADUVC_BacklightCompensation;
         int ADUVC_Brightness;
@@ -157,7 +159,7 @@ class ADUVC : ADDriver{
         asynStatus setSharpness(int sharpness);
 
 	//function that begins image aquisition
-        uvc_error_t acquireStart();
+        uvc_error_t acquireStart(int imageFormat);
 
 	//function that stops aquisition
         void acquireStop();

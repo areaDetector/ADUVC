@@ -240,9 +240,10 @@ void ADUVC::getDeviceInformation(){
  * a particular resolution and frame rate. Then the uvc_start_streaming function is called, with a 
  * function name being passed as a parameter as the callback function.
  *
+ * @params: imageFormat -> type of image format to use
  * @return: uvc_error_t -> return 0 if successful, otherwise return error code
  */
-uvc_error_t ADUVC::acquireStart(){
+uvc_error_t ADUVC::acquireStart(int imageFormat){
     static const char* functionName = "acquireStart";
     // get values for image format from PVs set in IOC shell
     int framerate;
@@ -251,8 +252,28 @@ uvc_error_t ADUVC::acquireStart(){
     getIntegerParam(ADUVC_Framerate, &framerate);
     getIntegerParam(ADSizeX, &xsize);
     getIntegerParam(ADSizeY, &ysize);
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s x-size: %d, y-size %d, framerate %d\n", driverName, functionName, xsize, ysize, framerate);
-    deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, xsize, ysize, framerate);
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Starting acquisition: x-size: %d, y-size %d, framerate %d\n", driverName, functionName, xsize, ysize, framerate);
+    switch(imageFormat){
+        case 0:
+            //MJPEG format
+            deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, xsize, ysize, framerate);
+            break;
+        case 1:
+            //RGB format
+            deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_RGB, xsize, ysize, framerate);
+            break;
+        case 2:
+            //YUYV format
+            deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_YUYV, xsize, ysize, framerate);
+            break;
+        default:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Cannot start acquisition invalid frame format\n", driverName, functionName);
+            deviceStatus = UVC_ERROR_NOT_SUPPORTED;
+            reportUVCError(deviceStatus, functionName);
+            setIntegerParam(ADAcquire, 0);
+            callParamCallbacks();
+            return deviceStatus;
+    }
     if(deviceStatus<0){
         reportUVCError(deviceStatus, functionName);
         setIntegerParam(ADAcquire, 0);
@@ -716,7 +737,9 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
     if(function == ADAcquire){
         if(value && !acquiring){
             //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering aquire\n", driverName, functionName);
-            deviceStatus = acquireStart();
+            int imageFormat;
+            getIntegerParam(ADUVC_ImageFormat, &imageFormat);
+            deviceStatus = acquireStart(imageFormat);
             if(deviceStatus < 0){
                 reportUVCError(deviceStatus, functionName);
                 return asynError;
@@ -736,6 +759,10 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported camera operating mode\n", driverName, functionName);
             return asynError;
         }
+    }
+    //switch image format
+    else if(function ==ADUVC_ImageFormat){
+        if(acquiring == 1) acquireStop();
     }
     //setting different camera functions
     else if(function == ADUVC_Gamma) setGamma(value);
@@ -871,6 +898,7 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
     createParam(ADUVC_FramerateString,              asynParamInt32,     &ADUVC_Framerate);
     createParam(ADUVC_VendorIDString,               asynParamInt32,     &ADUVC_VendorID);
     createParam(ADUVC_ProductIDString,              asynParamInt32,     &ADUVC_ProductID);
+    createParam(ADUVC_ImageFormatString,            asynParamInt32,     &ADUVC_ImageFormat);
     createParam(ADUVC_BrightnessString,             asynParamInt32,     &ADUVC_Brightness);
     createParam(ADUVC_ContrastString,               asynParamInt32,     &ADUVC_Contrast);
     createParam(ADUVC_PowerLineString,              asynParamInt32,     &ADUVC_PowerLine);

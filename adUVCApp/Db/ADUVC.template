@@ -84,6 +84,34 @@ record(ai, "$(P)$(R)UVCProductID_RBV"){
     field(SCAN, "I/O Intr")
 }
 
+##############################################
+# stores the image data type collected from the UVC Camera
+################################################
+record(mbbo, "$(P)$(R)UVCImageFormat"){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_FORMAT")
+    field(ZRST, "MJPEG")
+    field(ZRVL, "0")
+    field(ONST, "RGB")
+    field(ONVL, "1")
+    field(TWST, "YUYV/YUV2/YUV422")
+    field(TWVL, "2")
+    field(VAL, "0")
+    info(autosaveFields, "VAL")
+}
+record(mbbi, "$(P)$(R)UVCImageFormat_RBV"){
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR=0),$(TIMEOUT=1))UVC_FORMAT")
+    field(ZRST, "MJPEG")
+    field(ZRVL, "0")
+    field(ONST, "RBG")
+    field(ONVL, "1")
+    field(TWST, "YUYV/YUV2/YUV422")
+    field(TWVL, "2")
+    field(SCAN, "I/O Intr")
+}
+
 ################################################################################################
 # Additional Camera Functions (UNDER DEVELOPMENT -> Currently not in use)
 ################################################################################################
