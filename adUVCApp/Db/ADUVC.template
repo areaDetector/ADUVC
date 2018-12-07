@@ -95,7 +95,7 @@ record(mbbo, "$(P)$(R)UVCImageFormat"){
     field(ZRVL, "0")
     field(ONST, "RGB")
     field(ONVL, "1")
-    field(TWST, "YUYV/YUV2/YUV422")
+    field(TWST, "YUYV")
     field(TWVL, "2")
     field(VAL, "0")
     info(autosaveFields, "VAL")
@@ -107,7 +107,7 @@ record(mbbi, "$(P)$(R)UVCImageFormat_RBV"){
     field(ZRVL, "0")
     field(ONST, "RBG")
     field(ONVL, "1")
-    field(TWST, "YUYV/YUV2/YUV422")
+    field(TWST, "YUYV")
     field(TWVL, "2")
     field(SCAN, "I/O Intr")
 }
