@@ -17,7 +17,7 @@
 // version numbers
 #define ADUVC_VERSION      0
 #define ADUVC_REVISION     1
-#define ADUVC_MODIFICATION 2
+#define ADUVC_MODIFICATION 3
 
 // includes
 #include <libuvc/libuvc.h>
@@ -40,6 +40,15 @@
 #define ADUVC_HueString                         "UVC_HUE"               //asynInt32
 #define ADUVC_SaturationString                  "UVC_SATURATION"        //asynInt32
 #define ADUVC_SharpnessString                   "UVC_SHARPNESS"         //asynInt32    
+
+
+/* enum for getting format from PV */
+typedef enum {
+    ADUVC_FrameMJPEG    = 0,
+    ADUVC_FrameRGB      = 1,
+    ADUVC_FrameYUYV     = 2,
+} ADUVC_FrameFormat_t;
+
 
 /*
  * Class definition of the ADUVC driver. It inherits from the base ADDriver class
@@ -159,7 +168,7 @@ class ADUVC : ADDriver{
         asynStatus setSharpness(int sharpness);
 
 	//function that begins image aquisition
-        uvc_error_t acquireStart(int imageFormat);
+        uvc_error_t acquireStart(uvc_frame_format format);
 
 	//function that stops aquisition
         void acquireStop();
@@ -170,6 +179,8 @@ class ADUVC : ADDriver{
 	//function that gets information from a UVC device
         void getDeviceImageInformation();
         void getDeviceInformation();
+
+        uvc_frame_format getFormatFromPV();
 
 	// static wrapper function for callback. Necessary becuase callback in UVC must be static but we want the driver running the callback
         static void newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr);

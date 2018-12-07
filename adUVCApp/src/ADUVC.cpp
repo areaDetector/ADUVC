@@ -83,6 +83,12 @@ static void exitCallbackC(void* pPvt){
 void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s UVC Error: %s\n", 
                 driverName, functionName, uvc_strerror(status));
+    if(status != UVC_ERROR_NOT_FOUND){
+    char statusMessage[25];
+        epicsSnprintf(statusMessage, sizeof(statusMessage), "UVC Error: %s\n", uvc_strerror(status));
+        setStringParam(ADStatusMessage, statusMessage);
+        callParamCallbacks();
+    }
 }
 
 
@@ -229,6 +235,30 @@ void ADUVC::getDeviceInformation(){
 }
 
 
+/**
+ * Function responsible for converting value from PV into UVC frame format type
+ * 
+ * @return: uvc_frame_format    -> conversion if valid, unknown if invalid
+ */
+uvc_frame_format ADUVC::getFormatFromPV(){
+    const char* functionName = "getFormatFromPV";
+    int format;
+    getIntegerParam(ADUVC_ImageFormat, &format);
+    ADUVC_FrameFormat_t frameFormat = (ADUVC_FrameFormat_t) format;
+    switch(frameFormat){
+        case ADUVC_FrameMJPEG:
+            return UVC_FRAME_FORMAT_MJPEG;
+        case ADUVC_FrameRGB:
+            return UVC_FRAME_FORMAT_RGB;
+        case ADUVC_FrameYUYV:
+            return UVC_FRAME_FORMAT_YUYV;
+        default:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Error: invalid frame format\n", driverName, functionName);
+            return UVC_FRAME_FORMAT_UNKNOWN;
+    }
+}
+
+
 
 //----------------------------------------------------------------------
 // UVC acquisition start and stop functions
@@ -243,7 +273,7 @@ void ADUVC::getDeviceInformation(){
  * @params: imageFormat -> type of image format to use
  * @return: uvc_error_t -> return 0 if successful, otherwise return error code
  */
-uvc_error_t ADUVC::acquireStart(int imageFormat){
+uvc_error_t ADUVC::acquireStart(uvc_frame_format imageFormat){
     static const char* functionName = "acquireStart";
     // get values for image format from PVs set in IOC shell
     int framerate;
@@ -254,15 +284,15 @@ uvc_error_t ADUVC::acquireStart(int imageFormat){
     getIntegerParam(ADSizeY, &ysize);
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Starting acquisition: x-size: %d, y-size %d, framerate %d\n", driverName, functionName, xsize, ysize, framerate);
     switch(imageFormat){
-        case 0:
+        case UVC_FRAME_FORMAT_MJPEG:
             //MJPEG format
             deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, xsize, ysize, framerate);
             break;
-        case 1:
+        case UVC_FRAME_FORMAT_RGB:
             //RGB format
             deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_RGB, xsize, ysize, framerate);
             break;
-        case 2:
+        case UVC_FRAME_FORMAT_YUYV:
             //YUYV format
             deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_YUYV, xsize, ysize, framerate);
             break;
@@ -271,12 +301,14 @@ uvc_error_t ADUVC::acquireStart(int imageFormat){
             deviceStatus = UVC_ERROR_NOT_SUPPORTED;
             reportUVCError(deviceStatus, functionName);
             setIntegerParam(ADAcquire, 0);
+            setIntegerParam(ADStatus, ADStatusIdle);
             callParamCallbacks();
             return deviceStatus;
     }
     if(deviceStatus<0){
         reportUVCError(deviceStatus, functionName);
         setIntegerParam(ADAcquire, 0);
+        setIntegerParam(ADStatus, ADStatusIdle);
         callParamCallbacks();
         return deviceStatus;
     }
@@ -289,6 +321,7 @@ uvc_error_t ADUVC::acquireStart(int imageFormat){
         if(deviceStatus<0){
             reportUVCError(deviceStatus, functionName);
             setIntegerParam(ADAcquire, 0);
+            setIntegerParam(ADStatus, ADStatusIdle);
             callParamCallbacks();
             return deviceStatus;
         }
@@ -737,9 +770,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
     if(function == ADAcquire){
         if(value && !acquiring){
             //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering aquire\n", driverName, functionName);
-            int imageFormat;
-            getIntegerParam(ADUVC_ImageFormat, &imageFormat);
-            deviceStatus = acquireStart(imageFormat);
+            deviceStatus = acquireStart(getFormatFromPV());
             if(deviceStatus < 0){
                 reportUVCError(deviceStatus, functionName);
                 return asynError;
@@ -761,7 +792,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
         }
     }
     //switch image format
-    else if(function ==ADUVC_ImageFormat){
+    else if(function == ADUVC_ImageFormat || function == ADUVC_Framerate){
         if(acquiring == 1) acquireStop();
     }
     //setting different camera functions
@@ -914,7 +945,9 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
     setIntegerParam(ADSizeY, ysize);
 
     //sets serial number and productID
-    setStringParam(ADSerialNumber, serial);
+    if(strcmp(serial, "") == 0) setStringParam(ADSerialNumber, "No Serial Detected");
+    else setStringParam(ADSerialNumber, serial);
+
     setIntegerParam(ADUVC_ProductID, productID);
 
     //sets libuvc version
