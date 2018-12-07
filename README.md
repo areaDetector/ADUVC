@@ -8,7 +8,7 @@ Copyright (c): 2018 Brookhaven National Laboratory
 
 ### An EPICS Driver for USB Video Class (UVC) devices
 
-This driver is in development, and is currently available in only beta form. (R0-1)
+There is currently one release version of this driver (R1-0). Release notes are available on https://jwlodek.github.io/ADUVC. Please report any problems or feature requests on the issues page on https://github.com/jwlodek/ADUVC.
 
 ### Installation
 
@@ -81,3 +81,7 @@ There are also several more traditional industrial cameras that use the UVC stan
 ### Some Known Issues
 
 * When building libuvc, the system level jpeg library is used in cmake, but once ADSupport is compiled, a different version is used. This causes an error when converting mjpeg to rgb. THe solution is to either compile libuvc with the jpeg lib in ADSupport, or to set JPEG_EXTERNAL = YES in the CONFIG_SITE.local file in the top level AD configuration directory
+* Certain cameras only support one framerate per frame size, so setting the framerate PV may not affect the actual image rate
+* Not all cameras support RGB raw images, and so YUYV may be the only supported raw image format
+* In cheaper cameras framerate drops when there is lots of motion. This is due to image processing on the camera itself, not due to the driver.
+

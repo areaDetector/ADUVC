@@ -15,9 +15,9 @@
 #define ADUVC_H
 
 // version numbers
-#define ADUVC_VERSION      0
-#define ADUVC_REVISION     1
-#define ADUVC_MODIFICATION 3
+#define ADUVC_VERSION      1
+#define ADUVC_REVISION     0
+#define ADUVC_MODIFICATION 0
 
 // includes
 #include <libuvc/libuvc.h>
