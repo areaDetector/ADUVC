@@ -16,7 +16,7 @@ epicsEnvSet("XSIZE",  "640")
 # The maximim image height; used for column profiles in the NDPluginStats plugin
 epicsEnvSet("YSIZE",  "480")
 # The framerate at which the stream will operate
-epicsEnvSet("FRAMERATE", "10");
+epicsEnvSet("FRAMERATE", "30");
 # The maximum number of time seried points in the NDPluginStats plugin
 epicsEnvSet("NCHANS", "2048")
 # The maximum number of frames buffered in the NDPluginCircularBuff plugin

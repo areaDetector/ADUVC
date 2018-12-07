@@ -130,6 +130,7 @@ class ADUVC : ADDriver{
         //flag that sees if shutter is on or off
         int withShutter = 0;
 
+        int firstFrame = 0;
 
         // ----------------------------------------
         // UVC Functions - Logging/Reporting

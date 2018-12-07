@@ -83,8 +83,8 @@ static void exitCallbackC(void* pPvt){
 void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s UVC Error: %s\n", 
                 driverName, functionName, uvc_strerror(status));
-    if(status != UVC_ERROR_NOT_FOUND){
-    char statusMessage[25];
+    if(status != UVC_ERROR_OTHER){
+        char statusMessage[25];
         epicsSnprintf(statusMessage, sizeof(statusMessage), "UVC Error: %s\n", uvc_strerror(status));
         setStringParam(ADStatusMessage, statusMessage);
         callParamCallbacks();
@@ -351,6 +351,7 @@ void ADUVC::acquireStop(){
     //update PV values
     setIntegerParam(ADStatus, ADStatusIdle);
     setIntegerParam(ADAcquire, 0);
+    this->firstFrame = 0;
     callParamCallbacks();
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Stopping aquisition\n",driverName, functionName);
 }
@@ -374,7 +375,8 @@ void ADUVC::acquireStop(){
  */
 void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
     ADUVC* pPvt = ((ADUVC*) ptr);
-    pPvt->newFrameCallback(frame, pPvt);
+    if(pPvt->firstFrame == 0) pPvt->firstFrame = 1;
+    else pPvt->newFrameCallback(frame, pPvt);
 }
 
 
@@ -525,6 +527,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         setIntegerParam(ADNumImagesCounter, numImages);
         uvc2NDArray(frame, pArray, ndDataType, colorMode, arrayInfo.totalBytes);
         acquireStop();
+        
     }
     // block shot mode stops once numImages reaches the number of desired images
     else if(operatingMode == ADImageMultiple){
