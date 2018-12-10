@@ -60,7 +60,7 @@ record(ai, "$(P)$(R)UVCReferenceCount_RBV"){
 record(ao, "$(P)$(R)UVCVendorID"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT)<$(ADDR),$(TIMEOUT))UVC_VENDOR")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_VENDOR")
 }
 
 record(ai, "$(P)$(R)UVCVendorID_RBV"){
@@ -75,7 +75,7 @@ record(ai, "$(P)$(R)UVCVendorID_RBV"){
 record(ao, "$(P)$(R)UVCProductID"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT)<$(ADDR),$(TIMEOUT))UVC_PRODUCT")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_PRODUCT")
 }
 
 record(ai, "$(P)$(R)UVCProductID_RBV"){
