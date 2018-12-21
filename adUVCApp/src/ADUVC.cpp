@@ -351,7 +351,6 @@ void ADUVC::acquireStop(){
     //update PV values
     setIntegerParam(ADStatus, ADStatusIdle);
     setIntegerParam(ADAcquire, 0);
-    this->firstFrame = 0;
     callParamCallbacks();
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Stopping aquisition\n",driverName, functionName);
 }
@@ -375,8 +374,7 @@ void ADUVC::acquireStop(){
  */
 void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
     ADUVC* pPvt = ((ADUVC*) ptr);
-    if(pPvt->firstFrame == 0) pPvt->firstFrame = 1;
-    else pPvt->newFrameCallback(frame, pPvt);
+    pPvt->newFrameCallback(frame, pPvt);
 }
 
 
@@ -440,7 +438,10 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
         //Copy data from UVC frame to NDArray, and label it as the correct color mode
         //memcpy(pArray->pData, dataInit, imBytes);
         //try to do this without memcpy for performance reasons
-        pArray->pData = rgb->data;
+        //pArray->pData = rgb->data;
+        NDArrayInfo arrayInfo;
+        pArray->getInfo(&arrayInfo);
+        memcpy(pArray->pData, rgb->data, arrayInfo.totalBytes);
         pArray->pAttributeList->add("ColorMode", "Color Mode", NDAttrInt32, &colorMode);
 
         //increment the array counter
