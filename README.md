@@ -84,4 +84,5 @@ There are also several more traditional industrial cameras that use the UVC stan
 * Certain cameras only support one framerate per frame size, so setting the framerate PV may not affect the actual image rate
 * Not all cameras support RGB raw images, and so YUYV may be the only supported raw image format
 * In cheaper cameras framerate drops when there is lots of motion. This is due to image processing on the camera itself, not due to the driver.
+* First frame in mjpeg stream can be corrupted, causing a UVC Error, however, the driver continues and each subsequent frame is uncorrupted.
 
