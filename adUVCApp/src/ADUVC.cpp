@@ -47,12 +47,12 @@ static const double ONE_BILLION = 1.E9;
 // ADUVC Utility functions
 //---------------------------------------------------------
 
-/*
+/**
  * External configuration function for ADUVC.
  * Envokes the constructor to create a new ADUVC object
  * This is the function that initializes the driver, and is called in the IOC startup script
  *
- * @params: all passed into constructor
+ * @params[in]: all passed into constructor
  * @return: status
  */
 extern "C" int ADUVCConfig(const char* portName, const char* serial, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize){
@@ -61,11 +61,11 @@ extern "C" int ADUVCConfig(const char* portName, const char* serial, int product
 }
 
 
-/*
+/**
  * Callback function called when IOC is terminated.
  * Deletes created object and frees UVC context
  *
- * @params: pPvt -> pointer to the ADUVC object created in ADUVCConfig
+ * @params[in]: pPvt -> pointer to the ADUVC object created in ADUVCConfig
  */
 static void exitCallbackC(void* pPvt){
     ADUVC* pUVC = (ADUVC*) pPvt;
@@ -73,11 +73,11 @@ static void exitCallbackC(void* pPvt){
 }
 
 
-/*
+/**
  * Function used to display UVC errors
  *
- * @params: status          -> uvc error passed to function
- * @params: functionName    -> name of function in which uvc error occurred
+ * @params[in]: status          -> uvc error passed to function
+ * @params[in]: functionName    -> name of function in which uvc error occurred
  * return: void
  */
 void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
@@ -97,14 +97,14 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
 // ADUVC connection/disconnection functions
 //-----------------------------------------------
 
-/*
+/**
  * Function responsible for connecting to the UVC device. First, a device context is created,
  * then the device is identified, then opened.
  * NOTE: this driver must have exclusive access to the device as per UVC standards.
  *
- * @params: connectionType  -> UVC can now connect with productID or serial ID. This flag switches
- * @params: serialNumber    -> serial number of device to connect to
- * @params: productID       -> product ID of camera to connect to
+ * @params[in]: connectionType  -> UVC can now connect with productID or serial ID. This flag switches
+ * @params[in]: serialNumber    -> serial number of device to connect to
+ * @params[in]: productID       -> product ID of camera to connect to
  * @return: asynStatus      -> true if connection is successful, false if failed
  */
 asynStatus ADUVC::connectToDeviceUVC(int connectionType, const char* serialNumber, int productID){
@@ -147,12 +147,11 @@ asynStatus ADUVC::connectToDeviceUVC(int connectionType, const char* serialNumbe
 }
 
 
-/*
+/**
  * Function that disconnects from a connected UVC device.
  * Closes device handle and context, and unreferences the device pointer from memory
  * 
  * @return: asynStatus -> success if device existed and was disconnected, error if there was no device connected
- * 
  */
 asynStatus ADUVC::disconnectFromDeviceUVC(){
     const char* functionName = "disconnectFromDeviceUVC";
@@ -270,7 +269,7 @@ uvc_frame_format ADUVC::getFormatFromPV(){
  * a particular resolution and frame rate. Then the uvc_start_streaming function is called, with a 
  * function name being passed as a parameter as the callback function.
  *
- * @params: imageFormat -> type of image format to use
+ * @params[in]: imageFormat -> type of image format to use
  * @return: uvc_error_t -> return 0 if successful, otherwise return error code
  */
 uvc_error_t ADUVC::acquireStart(uvc_frame_format imageFormat){
@@ -368,8 +367,8 @@ void ADUVC::acquireStop(){
  * to be passed through the callback function, however, the solution is to pass 'this' as the void pointer,
  * cast it as an ADUVC pointer, and simply run the non-static callback function with that object.
  * 
- * @params: frame   -> pointer to uvc_frame received
- * @params: ptr     -> 'this' cast as a void pointer. It is cast back to ADUVC object and then new frame callback is called
+ * @params[in]:  frame   -> pointer to uvc_frame received
+ * @params[out]: ptr     -> 'this' cast as a void pointer. It is cast back to ADUVC object and then new frame callback is called
  * @return: void
  */
 void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
@@ -384,11 +383,11 @@ void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
  * the rgb format. This is because all of the supported uvc formats can be converted into this type,
  * simplyfying the conversion process. Then, the NDDataType is taken into account, and a scaling factor is used
  *
- * @params: frame       -> frame collected from the uvc camera
- * @params: pArray      -> output of function. NDArray conversion of uvc frame
- * @params: dataType    -> data type of NDArray output image
- * @params: colorMode   -> image color mode. So far only RGB1 is supported
- * @params: imBytes     -> number of bytes in the image
+ * @params[in]:  frame       -> frame collected from the uvc camera
+ * @params[out]: pArray      -> output of function. NDArray conversion of uvc frame
+ * @params[in]:  dataType    -> data type of NDArray output image
+ * @params[in]:  colorMode   -> image color mode. So far only RGB1 is supported
+ * @params[in]:  imBytes     -> number of bytes in the image
  * @return: void, but output into pArray
  */
 asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, int imBytes){
@@ -436,8 +435,6 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
         }
 
         //Copy data from UVC frame to NDArray, and label it as the correct color mode
-        //memcpy(pArray->pData, dataInit, imBytes);
-        //try to do this without memcpy for performance reasons
         //pArray->pData = rgb->data;
         NDArrayInfo arrayInfo;
         pArray->getInfo(&arrayInfo);
@@ -471,8 +468,8 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
  * into this allocated NDArray. Then, based on the operating mode, the acquisition moves to the 
  * next frame, or stops. The NDArray is passed on to the doCallbacksGenericPointer function.
  *
- * @params: frame   -> uvc_frame recieved from the camera
- * @params: ptr     -> void pointer with data from the frame
+ * @params[in]: frame   -> uvc_frame recieved from the camera
+ * @params[in]: ptr     -> void pointer with data from the frame
  * @return: void
  */
 void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
@@ -487,11 +484,11 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     static const char* functionName = "newFrameCallback";
 	
 	// initialize the NDArray here. Otherwise causes segfault. Currently onlu 24bit rgb supported
-	int ndims = 3;
-   	size_t dims[ndims];
+    int ndims = 3;
+    size_t dims[ndims];
     dims[0] = 3;
     dims[1] = frame->width;
-	dims[2] = frame->height;
+    dims[2] = frame->height;
     
     //only color mode  and data type currently supported
     colorMode = NDColorModeRGB1;
@@ -500,15 +497,15 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     getIntegerParam(ADImageMode, &operatingMode);
 
     // allocate memory for a new NDArray, and set pArray to a pointer for this memory
-	this->pArrays[0] = pNDArrayPool->alloc(ndims, dims, ndDataType, 0, NULL);
-	if(this->pArrays[0]!=NULL){ 
+    this->pArrays[0] = pNDArrayPool->alloc(ndims, dims, ndDataType, 0, NULL);
+    if(this->pArrays[0]!=NULL){ 
         pArray = this->pArrays[0];   
     }
-	else{
+    else{
         this->pArrays[0]->release();
-	    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Unable to allocate array\n", driverName, functionName);
-	    return;
-	}
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Unable to allocate array\n", driverName, functionName);
+        return;
+    }
 
     // Update camera image parameters
     setIntegerParam(ADSizeX, dims[1]);
@@ -569,7 +566,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 /**
  * Function that sets exposure time in seconds
  * 
- * @params: exposureTime -> the exposure time in seconds
+ * @params[in]: exposureTime -> the exposure time in seconds
  * @return: status
  */
 asynStatus ADUVC::setExposure(int exposureTime){
@@ -588,7 +585,7 @@ asynStatus ADUVC::setExposure(int exposureTime){
 /**
  * Function that sets Gamma value
  * 
- * @params: gamma -> value for gamma
+ * @params[in]: gamma -> value for gamma
  * @return: status
  */
 asynStatus ADUVC::setGamma(int gamma){
@@ -607,7 +604,7 @@ asynStatus ADUVC::setGamma(int gamma){
 /**
  * Function that sets backlight compensation. Used when camera has a light behind it that oversaturates image
  * 
- * @params: backlightCompensation -> degree of backlight comp.
+ * @params[in]: backlightCompensation -> degree of backlight comp.
  * @return: status
  */
 asynStatus ADUVC::setBacklightCompensation(int backlightCompensation){
@@ -625,7 +622,7 @@ asynStatus ADUVC::setBacklightCompensation(int backlightCompensation){
 /**
  * Function that sets image brightness (similar to setGamma)
  * 
- * @params: brighness -> degree of brightness: for example, a 1.5 value would change a pixel value 30 to 45
+ * @params[in]: brighness -> degree of brightness: for example, a 1.5 value would change a pixel value 30 to 45
  * @return: status
  */
 asynStatus ADUVC::setBrightness(int brightness){
@@ -643,7 +640,7 @@ asynStatus ADUVC::setBrightness(int brightness){
 /**
  * Function that sets value for contrast. Higher value increases difference between whites and blacks
  * 
- * @params: contrast -> level of contrast
+ * @params[in]: contrast -> level of contrast
  * @return: status
  */
 asynStatus ADUVC::setContrast(int contrast){
@@ -661,7 +658,7 @@ asynStatus ADUVC::setContrast(int contrast){
 /**
  * Function that sets camera gain value
  * 
- * @params: gain -> value for gain
+ * @params[in]: gain -> value for gain
  * @return: status
  */
 asynStatus ADUVC::setGain(int gain){
@@ -679,7 +676,7 @@ asynStatus ADUVC::setGain(int gain){
 /**
  * Function that sets Power line frequency. Used to avoid camera flicker when signal is not correct
  * 
- * @params: powerLineFrequency -> frequency value (50Hz, 60Hz etc.)
+ * @params[in]: powerLineFrequency -> frequency value (50Hz, 60Hz etc.)
  * @return status
  */
 asynStatus ADUVC::setPowerLineFrequency(int powerLineFrequency){
@@ -698,7 +695,7 @@ asynStatus ADUVC::setPowerLineFrequency(int powerLineFrequency){
  * Function that sets camera Hue. For example, a hue of 240 will result in a blue shifted image,
  * while 0 will result in red-shifted
  * 
- * @params: hue -> value for image hue or tint
+ * @params[in]: hue -> value for image hue or tint
  * @return: status
  */
 asynStatus ADUVC::setHue(int hue){
@@ -716,7 +713,7 @@ asynStatus ADUVC::setHue(int hue){
 /**
  * Function that sets saturation. Higher value will result in more vivid colors
  * 
- * @params: saturation -> degree of saturation
+ * @params[in]: saturation -> degree of saturation
  * @return status
  */
 asynStatus ADUVC::setSaturation(int saturation){
@@ -734,7 +731,7 @@ asynStatus ADUVC::setSaturation(int saturation){
 /**
  * Function that sets the degree of sharpening. Too high will cause oversharpening
  * 
- * @params: sharpness -> degree of sharpening
+ * @params[in]: sharpness -> degree of sharpening
  * @return: status
  */
 asynStatus ADUVC::setSharpness(int sharpness){
@@ -758,8 +755,8 @@ asynStatus ADUVC::setSharpness(int sharpness){
  * Function overwriting ADDriver base function.
  * Takes in a function (PV) changes, and a value it is changing to, and processes the input
  *
- * @params: pasynUser       -> asyn client who requests a write
- * @params: value           -> int32 value to write
+ * @params[in]: pasynUser       -> asyn client who requests a write
+ * @params[in]: value           -> int32 value to write
  * @return: asynStatus      -> success if write was successful, else failure
  */
 asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
@@ -829,8 +826,8 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
  * Takes in a function (PV) changes, and a value it is changing to, and processes the input
  * This is the same functionality as writeInt32, but for processing doubles.
  *
- * @params: pasynUser       -> asyn client who requests a write
- * @params: value           -> int32 value to write
+ * @params[in]: pasynUser       -> asyn client who requests a write
+ * @params[in]: value           -> int32 value to write
  * @return: asynStatus      -> success if write was successful, else failure
  */
 asynStatus ADUVC::writeFloat64(asynUser* pasynUser, epicsFloat64 value){
@@ -868,8 +865,8 @@ asynStatus ADUVC::writeFloat64(asynUser* pasynUser, epicsFloat64 value){
  * log file. The function first prints all libuvc specific information to the file,
  * then continues on to the base ADDriver 'report' function
  * 
- * @params: fp      -> pointer to log file
- * @params: details -> number of details to write to the file
+ * @params[in]: fp      -> pointer to log file
+ * @params[in]: details -> number of details to write to the file
  * @return: void
  */
 void ADUVC::report(FILE* fp, int details){
@@ -914,14 +911,14 @@ void ADUVC::report(FILE* fp, int details){
  * Constructor for ADUVC driver. Most params are passed to the parent ADDriver constructor.
  * Connects to the camera, then gets device information, and is ready to aquire images.
  *
- * @params: portName    -> port for NDArray recieved from camera
- * @params: serial      -> serial number of device to connect to
- * @params: productID   -> id of device used to connect if serial is unavailable
- * @params: framerate   -> framerate at which camera should operate
- * @params: maxBuffers  -> max buffer size for NDArrays
- * @params: maxMemory   -> maximum memory allocated for driver
- * @params: priority    -> what thread priority this driver will execute with
- * @params: stackSize   -> size of the driver on the stack
+ * @params[in]: portName    -> port for NDArray recieved from camera
+ * @params[in]: serial      -> serial number of device to connect to
+ * @params[in]: productID   -> id of device used to connect if serial is unavailable
+ * @params[in]: framerate   -> framerate at which camera should operate
+ * @params[in]: maxBuffers  -> max buffer size for NDArrays
+ * @params[in]: maxMemory   -> maximum memory allocated for driver
+ * @params[in]: priority    -> what thread priority this driver will execute with
+ * @params[in]: stackSize   -> size of the driver on the stack
  */
 ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, (int)NUM_UVC_PARAMS, maxBuffers, maxMemory, asynEnumMask, asynEnumMask, ASYN_CANBLOCK, 1, priority, stackSize){
