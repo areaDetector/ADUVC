@@ -97,6 +97,8 @@ record(mbbo, "$(P)$(R)UVCImageFormat"){
     field(ONVL, "1")
     field(TWST, "YUYV")
     field(TWVL, "2")
+    field(THST, "Uncompressed")
+    field(THVL, "3")
     field(VAL, "0")
     info(autosaveFields, "VAL")
 }
@@ -109,6 +111,8 @@ record(mbbi, "$(P)$(R)UVCImageFormat_RBV"){
     field(ONVL, "1")
     field(TWST, "YUYV")
     field(TWVL, "2")
+    field(THST, "Uncompressed")
+    field(THVL, "3")
     field(SCAN, "I/O Intr")
 }
 

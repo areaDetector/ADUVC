@@ -44,10 +44,12 @@
 
 /* enum for getting format from PV */
 typedef enum {
-    ADUVC_FrameMJPEG    = 0,
-    ADUVC_FrameRGB      = 1,
-    ADUVC_FrameYUYV     = 2,
+    ADUVC_FrameMJPEG            = 0,
+    ADUVC_FrameRGB              = 1,
+    ADUVC_FrameYUYV             = 2,
+    ADUVC_FrameUncompressed     = 3,
 } ADUVC_FrameFormat_t;
+
 
 
 /*
