@@ -7,6 +7,21 @@ ADUVC requires libusb, libuvc, epics-base, epics-modules, ADCore, and ADSupport.
 Release Notes
 =============
 
+R1-1 (???-January-2019)
+-----
+* Key detector features implemented:
+    * Support for Uncompressed and Grayscale images
+    * Support for 16-bit images
+    * Image timestamps
+
+* Key fixes and improvements
+    * Memory copying fixed to remove race condition that could cause plugins to crash
+    * Improved conversion between frame format and PV
+    * Updated documentation with params[in]/[out]
+    * Added LICENSE
+    * Code formatting cleaned up (removed all tab characters)
+    
+
 R1-0 (7-December-2018)
 -----
 * Key detector features implemented:
