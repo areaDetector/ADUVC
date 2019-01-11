@@ -251,6 +251,14 @@ uvc_frame_format ADUVC::getFormatFromPV(){
             return UVC_FRAME_FORMAT_RGB;
         case ADUVC_FrameYUYV:
             return UVC_FRAME_FORMAT_YUYV;
+        case ADUVC_FrameGray8:
+            return UVC_FRAME_FORMAT_GRAY8;
+        case ADUVC_FrameGray16:
+            return UVC_FRAME_FORMAT_GRAY16;
+        case ADUVC_FrameUYVY:
+            return UVC_FRAME_FORMAT_UYVY;
+        case ADUVC_FrameUncompressed:
+            return UVC_FRAME_FORMAT_UNCOMPRESSED;
         default:
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Error: invalid frame format\n", driverName, functionName);
             return UVC_FRAME_FORMAT_UNKNOWN;
@@ -281,30 +289,14 @@ uvc_error_t ADUVC::acquireStart(uvc_frame_format imageFormat){
     getIntegerParam(ADUVC_Framerate, &framerate);
     getIntegerParam(ADSizeX, &xsize);
     getIntegerParam(ADSizeY, &ysize);
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Starting acquisition: x-size: %d, y-size %d, framerate %d\n", driverName, functionName, xsize, ysize, framerate);
-    switch(imageFormat){
-        case UVC_FRAME_FORMAT_MJPEG:
-            //MJPEG format
-            deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_MJPEG, xsize, ysize, framerate);
-            break;
-        case UVC_FRAME_FORMAT_RGB:
-            //RGB format
-            deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_RGB, xsize, ysize, framerate);
-            break;
-        case UVC_FRAME_FORMAT_YUYV:
-            //YUYV format
-            deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, UVC_FRAME_FORMAT_YUYV, xsize, ysize, framerate);
-            break;
-        default:
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Cannot start acquisition invalid frame format\n", driverName, functionName);
-            deviceStatus = UVC_ERROR_NOT_SUPPORTED;
-            reportUVCError(deviceStatus, functionName);
-            setIntegerParam(ADAcquire, 0);
-            setIntegerParam(ADStatus, ADStatusIdle);
-            callParamCallbacks();
-            return deviceStatus;
-    }
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Starting acquisition: x-size: %d, y-size %d, framerate %d\n", driverName, functionName, xsize, ysize, framerate);
+        
+    deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, imageFormat, xsize, ysize, framerate);
+    if(imageFormat == UVC_FRAME_FORMAT_UNCOMPRESSED) printf("opening stream for uncompressed\n");
+
     if(deviceStatus<0){
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Cannot start acquisition invalid frame format\n", driverName, functionName);
+        deviceStatus = UVC_ERROR_NOT_SUPPORTED;
         reportUVCError(deviceStatus, functionName);
         setIntegerParam(ADAcquire, 0);
         setIntegerParam(ADStatus, ADStatusIdle);
@@ -326,7 +318,7 @@ uvc_error_t ADUVC::acquireStart(uvc_frame_format imageFormat){
         }
         else{
             setIntegerParam(ADStatus, ADStatusAcquire);
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Image aquisition start\n", driverName, functionName);
+            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Image aquisition start\n", driverName, functionName);
             callParamCallbacks();
         }
     }
@@ -392,73 +384,77 @@ void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
  */
 asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, int imBytes){
     static const char* functionName = "uvc2NDArray";
-    uvc_frame_t* rgb;
-    rgb = uvc_allocate_frame(frame->width * frame->height *3);
-    if(!rgb){
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unable to allocate frame\n", driverName, functionName);
-        return asynError;
-    }
-	// convert any uvc frame format to rgb (to simplify the converson to NDArray, since area detector supports the rgb format)
-    uvc_frame_format frameFormat = frame->frame_format;
-    switch(frameFormat){
-        case UVC_FRAME_FORMAT_YUYV:
-            deviceStatus = uvc_any2rgb(frame, rgb);
-            break;
-        case UVC_FRAME_FORMAT_UYVY:
-            deviceStatus = uvc_any2rgb(frame, rgb);
-            break;
-        case UVC_FRAME_FORMAT_MJPEG:
-            deviceStatus = uvc_mjpeg2rgb(frame, rgb);
-            break;
-        case UVC_FRAME_FORMAT_RGB:
-            deviceStatus = uvc_any2rgb(frame, rgb);
-            break;
-        default:
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported UVC format\n", driverName, functionName);
-			uvc_free_frame(rgb);
-            return asynError;
-    }
-    if(deviceStatus<0){
-        reportUVCError(deviceStatus, functionName);
-		uvc_free_frame(rgb);
-        return asynError;
-    }
-    else{
-
-        // cast frame data to char (8-bit/1-byte) Comment this out, just setting pointer to avoid memcpy
-        // unsigned char* dataInit = (unsigned char*) rgb->data;
-
-		//currently only support NDUInt8 and RGB1(most UVC cameras only have this anyway)
-        if(dataType!=NDUInt8 && colorMode!=NDColorModeRGB1){
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Unsupported data format\n", driverName, functionName);
+    // if data is grayscale, we do not need to convert it, we just copy over the data.
+    if(colorMode == NDColorModeMono){
+        if(frame->data_bytes != imBytes){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Error invalid frame size. Frame has %d bytes and array has %d bytes\n", driverName, functionName, frame->data_bytes, imBytes);
             return asynError;
         }
-
-        //Copy data from UVC frame to NDArray, and label it as the correct color mode
-        //pArray->pData = rgb->data;
-        NDArrayInfo arrayInfo;
-        pArray->getInfo(&arrayInfo);
-        memcpy(pArray->pData, rgb->data, arrayInfo.totalBytes);
-        pArray->pAttributeList->add("ColorMode", "Color Mode", NDAttrInt32, &colorMode);
-
-        //increment the array counter
-        int arrayCounter;
-        getIntegerParam(NDArrayCounter, &arrayCounter);
-        arrayCounter++;
-        setIntegerParam(NDArrayCounter, arrayCounter);
-
-        //refresh PVs
-        callParamCallbacks();
-
-        //Sends image to the ArrayDataPV
-        getAttributes(pArray->pAttributeList);
-        doCallbacksGenericPointer(pArray, NDArrayData, 0);
-
-        //frees up memory
-        pArray->release();
-        uvc_free_frame(rgb);
-        return asynSuccess;
+        else{
+            if(dataType == NDUInt8 || dataType == NDInt8) memcpy((unsigned char*) pArray->pData,(unsigned char*) frame->data, imBytes);
+            else memcpy((uint16_t*) pArray->pData, (uint16_t*) frame->data, imBytes);
+        }
     }
+    //otherwise we need to convert to a common type (rgb)
+    else{
+        // non grayscale images have 3 channels, so frame size * 3
+        uvc_frame_t* rgb = uvc_allocate_frame(frame->width * frame->height *3);
+        if(!rgb){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unable to allocate frame\n", driverName, functionName);
+            return asynError;
+        }
+	    // convert any uvc frame format to rgb (to simplify the converson to NDArray, since area detector supports the rgb format)
+        uvc_frame_format frameFormat = frame->frame_format;
+        switch(frameFormat){
+            case UVC_FRAME_FORMAT_YUYV:
+                deviceStatus = uvc_any2rgb(frame, rgb);
+                break;
+            case UVC_FRAME_FORMAT_UYVY:
+                deviceStatus = uvc_any2rgb(frame, rgb);
+                break;
+            case UVC_FRAME_FORMAT_MJPEG:
+                deviceStatus = uvc_mjpeg2rgb(frame, rgb);
+                break;
+            case UVC_FRAME_FORMAT_RGB:
+                deviceStatus = uvc_any2rgb(frame, rgb);
+                break;
+            default:
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported UVC format\n", driverName, functionName);
+	    		uvc_free_frame(rgb);
+                return asynError;
+        }
+        if(deviceStatus<0){
+            reportUVCError(deviceStatus, functionName);
+		    uvc_free_frame(rgb);
+            return asynError;
+        }
+        else{
+            if(rgb->data_bytes != imBytes){
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Error invalid frame sizeFrame has %d bytes and array has %d bytes\n", driverName, functionName, rgb->data_bytes, imBytes);
+                uvc_free_frame(rgb);
+                return asynError;
+            }
+            else{
+                memcpy(pArray->pData, rgb->data, imBytes);
+            }
+        }
+        uvc_free_frame(rgb);
+    }
+    pArray->pAttributeList->add("DataType", "Data Type", NDAttrInt32, &dataType);
+    pArray->pAttributeList->add("ColorMode", "Color Mode", NDAttrInt32, &colorMode);
+    //increment the array counter
+    int arrayCounter;
+    getIntegerParam(NDArrayCounter, &arrayCounter);
+    arrayCounter++;
+    setIntegerParam(NDArrayCounter, arrayCounter);
+    //refresh PVs
+    callParamCallbacks();
+    //Sends image to the ArrayDataPV
+    getAttributes(pArray->pAttributeList);
+    doCallbacksGenericPointer(pArray, NDArrayData, 0);
+    //frees up memory
+    pArray->release();
+    return asynSuccess;
 }
 
 
@@ -475,29 +471,35 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
 void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     NDArray* pArray;
     NDArrayInfo arrayInfo;
-    NDDataType_t ndDataType;
+    int dataType;
     int operatingMode;
-    NDColorMode_t colorMode;
+    int colorMode;
+    int ndims;
 
     //TODO: Timestamps for images
     //epicsTimeStamp currentTime;
     static const char* functionName = "newFrameCallback";
 	
-	// initialize the NDArray here. Otherwise causes segfault. Currently onlu 24bit rgb supported
-    int ndims = 3;
+    getIntegerParam(NDColorMode, &colorMode);
+    getIntegerParam(NDDataType, &dataType);
+
+    if((NDColorMode_t) colorMode == NDColorModeMono) ndims = 2;
+    else ndims = 3;
     size_t dims[ndims];
-    dims[0] = 3;
-    dims[1] = frame->width;
-    dims[2] = frame->height;
-    
-    //only color mode  and data type currently supported
-    colorMode = NDColorModeRGB1;
-    ndDataType = NDUInt8;
+    if(ndims == 2){
+        dims[0] = frame->width;
+        dims[1] = frame->height;
+    }
+    else{
+        dims[0] = 3;
+        dims[1] = frame->width;
+        dims[2] = frame->height;
+    }
 
     getIntegerParam(ADImageMode, &operatingMode);
 
     // allocate memory for a new NDArray, and set pArray to a pointer for this memory
-    this->pArrays[0] = pNDArrayPool->alloc(ndims, dims, ndDataType, 0, NULL);
+    this->pArrays[0] = pNDArrayPool->alloc(ndims, dims, (NDDataType_t) dataType, 0, NULL);
     if(this->pArrays[0]!=NULL){ 
         pArray = this->pArrays[0];   
     }
@@ -508,14 +510,10 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     }
 
     // Update camera image parameters
-    setIntegerParam(ADSizeX, dims[1]);
-    setIntegerParam(NDArraySizeX, dims[1]);
-    setIntegerParam(ADSizeY, dims[2]);
-    setIntegerParam(NDArraySizeY, dims[2]);
     pArray->getInfo(&arrayInfo);
     setIntegerParam(NDArraySize, (int)arrayInfo.totalBytes);
-    setIntegerParam(NDDataType, ndDataType);
-    setIntegerParam(NDColorMode, colorMode);
+    setIntegerParam(NDArraySizeX, arrayInfo.xSize);
+    setIntegerParam(NDArraySizeY, arrayInfo.ySize);
 
     //single shot mode stops after one images
     if(operatingMode == ADImageSingle){
@@ -523,7 +521,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
-        uvc2NDArray(frame, pArray, ndDataType, colorMode, arrayInfo.totalBytes);
+        uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, arrayInfo.totalBytes);
         acquireStop();
         
     }
@@ -534,7 +532,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
-        uvc2NDArray(frame, pArray, ndDataType, colorMode, arrayInfo.totalBytes);
+        uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, arrayInfo.totalBytes);
         getIntegerParam(ADNumImages, &desiredImages);
 	    if(numImages>=desiredImages){
             acquireStop();
@@ -547,7 +545,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
-        uvc2NDArray(frame, pArray, ndDataType, colorMode, arrayInfo.totalBytes);
+        uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, arrayInfo.totalBytes);
     }
     else{
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported operating mode\n", driverName, functionName);

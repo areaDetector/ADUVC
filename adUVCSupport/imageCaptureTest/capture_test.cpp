@@ -86,8 +86,15 @@ void newFrameCallback(uvc_frame_t* frame, void* ptr){
         cvImg = Mat(rgb->height, rgb->width, CV_8UC3, (uchar*)rgb->data);
         cvtColor(cvImg, cvImg, COLOR_RGB2BGR);
     }
+    else if(frame->frame_format == UVC_FRAME_FORMAT_YUYV){
+        printf("Copying uncompressed frame\n");
+        cvImg = Mat(frame->height, frame->width, CV_16SC1, (uchar*) frame->data);
+    }
     else{
-        cvImg = Mat(frame->height, frame->width, CV_16UC1, (uchar*) frame->data);
+        printf("Illegal frame format %d\n", frame->frame_format);
+        uvc_free_frame(rgb);
+        frameNum = frameNum + 1;
+        return;
     }
 
     //displays
