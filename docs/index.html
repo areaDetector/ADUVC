@@ -56,9 +56,85 @@
     <p class="text-section-local">The ADUVC Base screen. Based on the ADBase screen with added controls specific to ADUVC.</p>
     <hr />
     <h4>Release Notes:</h4>
-    <p class="text-section-local">
-        Release notes for the ADUVC driver are available on <a href="https://github.com/epicsNSLS2-areaDetector/ADUVC/blob/master/RELEASE.md">Github</a>.
-    </p>
+    <div class="text-section-local">
+    <!--RELEASE START-->
+<h4>R1-1 (???-January-2019)</h4>
+<ul>
+<li>
+<p>Key detector features implemented:</p>
+<ul>
+<li>Support for Uncompressed and Grayscale images</li>
+<li>Support for 16-bit images</li>
+<li>Image timestamps</li>
+</ul>
+</li>
+<li>
+<p>Key fixes and improvements</p>
+<ul>
+<li>Memory copying fixed to remove race condition that could cause plugins to crash</li>
+<li>Improved conversion between frame format and PV</li>
+<li>Updated documentation with params[in]/[out]</li>
+<li>Added LICENSE</li>
+<li>Code formatting cleaned up (removed all tab characters)</li>
+</ul>
+</li>
+</ul>
+<h4>R1-0 (7-December-2018)</h4>
+<ul>
+<li>
+<p>Key detector features implemented:</p>
+<ul>
+<li>UVC Camera features (Sharpness, Backlight, Brightness, Gain, etc.)</li>
+<li>More format support (MJPEG, RGB, YUYV)</li>
+<li>Frame size and framerate selection (Previously only 640x480 @ 30 fps)</li>
+<li>Custom CSS Screen Added</li>
+</ul>
+</li>
+<li>
+<p>Key fixes and improvements</p>
+<ul>
+<li>Fixed error where first frame in stream was corrupt</li>
+<li>Fixed IOC autosave feature</li>
+<li>Resolved frame drop due to motion (camera dependant)</li>
+</ul>
+</li>
+</ul>
+<h4>R0-1 (Beta) (5-November-2018)</h4>
+<ul>
+<li>
+<p>Key detector features implemented:  </p>
+<ul>
+<li>Image Acquisition supported and tested.</li>
+<li>Acquisition mode selection supported and tested</li>
+<li>Diagnostic information acquisition</li>
+<li>Plugin interoperability tested</li>
+<li>Detector IOC written and tested</li>
+<li>Driver report function implemented</li>
+</ul>
+</li>
+<li>
+<p>Key Support Features Added</p>
+<ul>
+<li>Documentation for installation and usage</li>
+<li>Camera Detector program for detecting UVC cameras and diagnostics</li>
+<li>Image Acquisition program for testing camera image acquisition</li>
+<li>libuvc installation script included</li>
+</ul>
+</li>
+<li>
+<p>Limitations</p>
+<ul>
+<li>Only tested on linux-x86_64 systems</li>
+<li>Framerate goes down during motion (likely due to mjpeg compression)</li>
+<li>IOC autosave feature not working correctly</li>
+<li>Many UVC camera functions not yet implemented</li>
+<li>Limited format support (only mjpeg)</li>
+<li>Frame size must be specified in the IOC</li>
+<li>No custom screens (uses ADBase screen)</li>
+</ul>
+</li>
+</ul></ul>    <!--RELEASE END-->
+    </div>
     <hr />
     <h4>Issues and pull requests:</h4>
     <p class="text-section-local">
