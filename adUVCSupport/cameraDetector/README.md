@@ -57,7 +57,9 @@ OR
 ```
 This will print the same information as the search by serial, but will search by product ID.
 
-#### NEW ADDITION:
+#### Finding supported data types:
 
-Recently, I have found that in some cases the serial number of a UVC device will not be found, and in this case
-the product ID will be used to discover it.
+Some pointers for finding supported data types:
+
+* Run the locater in detailed mode on the specific camera. Supported frame formats will be listed as Uncompressed or MJPEG
+* For Uncompressed formats, look at the 'GUID' field, and this will tell you which format is used for uncompressed. (Y16 -> Gray16, YUY2 -> YUYV, etc.)
