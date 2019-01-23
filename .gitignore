@@ -19,3 +19,4 @@ capture_test
 .vscode/
 auto_settings.sav*
 debug.*
+*.jpg

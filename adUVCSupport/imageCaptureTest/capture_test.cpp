@@ -73,18 +73,29 @@ void newFrameCallback(uvc_frame_t* frame, void* ptr){
         return;
     }
 
+    Mat cvImg;
+
     //converts to rgb
-    deviceStatus = uvc_mjpeg2rgb(frame, rgb);
-    if(deviceStatus) {
-        uvc_perror(deviceStatus, "uvc_mjpeg2rgb");
+    if(frame->frame_format == UVC_FRAME_FORMAT_MJPEG){
+        deviceStatus = uvc_mjpeg2rgb(frame, rgb);
+        if(deviceStatus) {
+            uvc_perror(deviceStatus, "uvc_mjpeg2rgb");
+            uvc_free_frame(rgb);
+            return;
+        }
+        cvImg = Mat(rgb->height, rgb->width, CV_8UC3, (uchar*)rgb->data);
+        cvtColor(cvImg, cvImg, COLOR_RGB2BGR);
+    }
+    else if(frame->frame_format == UVC_FRAME_FORMAT_YUYV){
+        printf("Copying uncompressed frame\n");
+        cvImg = Mat(frame->height, frame->width, CV_16SC1, (uchar*) frame->data);
+    }
+    else{
+        printf("Illegal frame format %d\n", frame->frame_format);
         uvc_free_frame(rgb);
+        frameNum = frameNum + 1;
         return;
     }
-
-    //converts to opencv Mat
-    Mat cvImg(rgb->height, rgb->width, CV_8UC3, (uchar*)rgb->data);
-    //uvc_free_frame(frame);
-    cvtColor(cvImg, cvImg, COLOR_RGB2BGR);
 
     //displays
     imshow("UVC Image", cvImg);
@@ -113,7 +124,7 @@ int main(int argc, char** argv){
         }
     }
     printf("argc is %d\n", argc);
-    if(argc<2 || argc!=5){
+    if(argc<2 && argc!=5){
         printf("Invalid arguments!\n");
         print_help();
         return -1;
@@ -169,8 +180,8 @@ int main(int argc, char** argv){
         return status;
     }
 
-    //connect to the device and start streaming for 200 frames
-    status = uvc_get_stream_ctrl_format_size(deviceHandle, &ctrl, UVC_FRAME_FORMAT_MJPEG, width, height, 30);
+    //connect to the device and start streaming for 200 frames. Change frame format here to use different formats
+    status = uvc_get_stream_ctrl_format_size(deviceHandle, &ctrl, UVC_FRAME_FORMAT_UNCOMPRESSED, width, height, 30);
     void* frame_data;
     if(status<0){
         uvc_perror(status, "get_mode");
