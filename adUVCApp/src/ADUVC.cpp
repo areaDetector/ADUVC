@@ -570,7 +570,6 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 asynStatus ADUVC::setExposure(int exposureTime){
     const char* functionName = "setExposure";
     asynStatus status = asynSuccess;
-
     deviceStatus = uvc_set_exposure_abs(pdeviceHandle, exposureTime);
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
