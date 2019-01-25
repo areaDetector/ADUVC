@@ -509,6 +509,8 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         return;
     }
 
+    updateTimeStamp(&pArray->epicsTS);
+    
     // Update camera image parameters
     pArray->getInfo(&arrayInfo);
     setIntegerParam(NDArraySize, (int)arrayInfo.totalBytes);
