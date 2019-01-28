@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 # Install libuvc by cloning from github and running cmake
 git clone https://github.com/ktossell/libuvc.git

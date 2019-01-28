@@ -16,7 +16,7 @@
 
 // version numbers
 #define ADUVC_VERSION      1
-#define ADUVC_REVISION     0
+#define ADUVC_REVISION     1
 #define ADUVC_MODIFICATION 0
 
 // includes
@@ -180,7 +180,7 @@ class ADUVC : ADDriver{
         void acquireStop();
 
 	//function that converts a UVC frame into an NDArray
-        asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, int imBytes);
+        asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, size_t imBytes);
 
 	//function that gets information from a UVC device
         void getDeviceImageInformation();

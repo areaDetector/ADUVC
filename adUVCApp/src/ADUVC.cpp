@@ -382,12 +382,12 @@ void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
  * @params[in]:  imBytes     -> number of bytes in the image
  * @return: void, but output into pArray
  */
-asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, int imBytes){
+asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, size_t imBytes){
     static const char* functionName = "uvc2NDArray";
     // if data is grayscale, we do not need to convert it, we just copy over the data.
     if(colorMode == NDColorModeMono){
         if(frame->data_bytes != imBytes){
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Error invalid frame size. Frame has %d bytes and array has %d bytes\n", driverName, functionName, frame->data_bytes, imBytes);
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Error invalid frame size. Frame has %d bytes and array has %d bytes\n", driverName, functionName, (int) frame->data_bytes, (int) imBytes);
             return asynError;
         }
         else{
@@ -430,7 +430,7 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
         }
         else{
             if(rgb->data_bytes != imBytes){
-                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Error invalid frame sizeFrame has %d bytes and array has %d bytes\n", driverName, functionName, rgb->data_bytes, imBytes);
+                asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Error invalid frame sizeFrame has %d bytes and array has %d bytes\n", driverName, functionName, (int) rgb->data_bytes, (int) imBytes);
                 uvc_free_frame(rgb);
                 return asynError;
             }
@@ -509,6 +509,8 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         return;
     }
 
+    updateTimeStamp(&pArray->epicsTS);
+
     // Update camera image parameters
     pArray->getInfo(&arrayInfo);
     setIntegerParam(NDArraySize, (int)arrayInfo.totalBytes);
@@ -570,7 +572,6 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 asynStatus ADUVC::setExposure(int exposureTime){
     const char* functionName = "setExposure";
     asynStatus status = asynSuccess;
-
     deviceStatus = uvc_set_exposure_abs(pdeviceHandle, exposureTime);
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
