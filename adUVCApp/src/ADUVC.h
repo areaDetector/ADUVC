@@ -16,7 +16,7 @@
 
 // version numbers
 #define ADUVC_VERSION      1
-#define ADUVC_REVISION     0
+#define ADUVC_REVISION     1
 #define ADUVC_MODIFICATION 0
 
 // includes
