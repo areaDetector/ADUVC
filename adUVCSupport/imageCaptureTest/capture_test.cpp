@@ -181,7 +181,7 @@ int main(int argc, char** argv){
     }
 
     //connect to the device and start streaming for 200 frames. Change frame format here to use different formats
-    status = uvc_get_stream_ctrl_format_size(deviceHandle, &ctrl, UVC_FRAME_FORMAT_UNCOMPRESSED, width, height, 30);
+    status = uvc_get_stream_ctrl_format_size(deviceHandle, &ctrl, UVC_FRAME_FORMAT_MJPEG, width, height, 30);
     void* frame_data;
     if(status<0){
         uvc_perror(status, "get_mode");
