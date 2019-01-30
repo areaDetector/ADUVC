@@ -8,7 +8,7 @@ Copyright (c): 2018-2019 Brookhaven National Laboratory
 
 ### An EPICS Driver for USB Video Class (UVC) devices
 
-There is currently one release version of this driver (R1-0). Release notes are available on https://jwlodek.github.io/ADUVC. Please report any problems or feature requests on the issues page on https://github.com/jwlodek/ADUVC.
+Release versions of this driver are available on Github. Release notes are available on https://jwlodek.github.io/ADUVC. Please report any problems or feature requests on the issues page on https://github.com/jwlodek/ADUVC.
 
 ### Installation
 
