@@ -3,8 +3,8 @@
 Author: Jakub Wlodek  
 Corresponding Author: Kazimierz Gofron  
 Created: July 19, 2018  
-Last Updated: November 2, 2018  
-Copyright (c): 2018 Brookhaven National Laboratory  
+Last Updated: January 18, 2018  
+Copyright (c): 2018-2019 Brookhaven National Laboratory  
 
 ### An EPICS Driver for USB Video Class (UVC) devices
 
