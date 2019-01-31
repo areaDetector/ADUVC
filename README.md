@@ -19,9 +19,9 @@ sudo apt install libusb-dev libjpeg-dev cmake
 ```
 If you wish to use the libjpeg version included with ADSupport, it is important to specifiy that during the build of libuvc, because otherwise there will be a conflict when building ADUVC. The simplest solution is to set JPEG_EXTERNAL=YES in the CONFIG_SITE.local file in the configure directory at the top level of areaDetector.  
 
-After libusb and the other dependencies have been installed, libuvc, the library for connecting to USB Video Class (UVC) devices must be installed. The easiest way to do this is to enter the adUVCSupport directory, and run the installlibuvc.sh script. The script must be run with sudo access:
+After libusb and the other dependencies have been installed, libuvc, the library for connecting to USB Video Class (UVC) devices must be installed. The easiest way to do this is to enter the adUVCSupport directory, and run the installlibuvc.sh script:
 ```
-bash installlibuvc.sh
+./installlibuvc.sh
 ```
 This script will start by cloning the github repository for the libuvc library, and then build it with cmake. The resulting library and include files are then placed in the appropriate locations in the epics build path, as well as in the /usr/local directory, so that libuvc can be accessed in the other support functions. Once libuvc is installed, and epics-base, epics-modules, ADCore, and ADSupport have all been built as well, enter the top ADUVC directory, and simply run:
 ```
@@ -40,7 +40,7 @@ Documentation for the library can be found at: https://int80k.com/libuvc/doc/
 Once the driver is installed, the UVC camera must be set up. There are some important things to keep in mind when using ADUVC:
 * Because libuvc uses /dev/video0 to connect to devices, it requires sole access to the device in addition to root privelages.
 * Every UVC camera has either a serial number or a product ID. Either can be used to connect to the camera
-* UVC cameras generally don't have many acquisition modes, Usually sticking to 8-bit RGB. This is the only mode the driver supports in its current iteration, though other modes may be added in the future.
+* UVC cameras generally don't have many acquisition modes, Usually sticking to 8-bit RGB in the form of MJPEG streams. The ADUVC driver also has support for Uncompressed formats and also YUYV, Grayscale, and RGB color modes.
 
 To begin the ADUVC setup process, there are two included helper .cpp programs included in the adUVCSupport directory: cameraDetector, and imageCaptureTest. The first of these two, will use libuvc to detect all UVC cameras connected to the system, while the second will use OpenCV highgui with libuvc to test image acquisition. It is recommended to run both programs prior to using the ADUVC driver to make sure that the camera is detected correctly.  
 
@@ -50,7 +50,7 @@ The cameraDetector program lists device information for each of the UVC cameras 
 
 #### Capture Test
 
-Once a serial number or a product number has been discovered using the Camera Detector program, you may want to test image acquisition. Installation and run instructions are found in the appropriate README file. Make sure to compile and run as root as required. You should see 200 frames captured by the camera displayed in an OpenCV highgui window. The current default window size is 640x480 at 30 frames per second, though this program may be updated to support user definable parameters.
+Once a serial number or a product number has been discovered using the Camera Detector program, you may want to test image acquisition. Installation and run instructions are found in the appropriate README file. Make sure to compile and run as root as required. You should see 200 frames captured by the camera displayed in an OpenCV highgui window.
 
 #### Configuring IOC Startup
 
