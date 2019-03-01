@@ -85,4 +85,4 @@ There are also several more traditional industrial cameras that use the UVC stan
 * Not all cameras support RGB raw images, and so YUYV may be the only supported raw image format
 * In cheaper cameras framerate drops when there is lots of motion. This is due to image processing on the camera itself, not due to the driver.
 * First frame in mjpeg stream can be corrupted, causing a UVC Error, however, the driver continues and each subsequent frame is uncorrupted.
-
+* Install webcam virtualBox passthrough https://scribles.net/using-webcam-in-virtualbox-guest-os-on-windows-host/
