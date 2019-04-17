@@ -25,10 +25,8 @@ After libusb and the other dependencies have been installed, libuvc, the library
 ```
 This script will start by cloning the github repository for the libuvc library, and then build it with cmake. The resulting library and include files are then placed in the appropriate locations in the epics build path, as well as in the /usr/local directory, so that libuvc can be accessed in the other support functions. Once libuvc is installed, and epics-base, epics-modules, ADCore, and ADSupport have all been built as well, enter the top ADUVC directory, and simply run:
 ```
-sudo make
+make
 ```
-**NOTE:** It is important to make the driver and run its IOC with sudo access, because libuvc uses the linux /dev/video0 directory to access the device. If access is attempted without sudo the driver will give a Permission denied error on driver initialization.  
-
 The driver is now installed.  
 
 Libuvc can also be built from source at: https://github.com/ktossell/libuvc.git  
@@ -38,9 +36,11 @@ Documentation for the library can be found at: https://int80k.com/libuvc/doc/
 ### Initial Driver Setup
 
 Once the driver is installed, the UVC camera must be set up. There are some important things to keep in mind when using ADUVC:
-* Because libuvc uses /dev/video0 to connect to devices, it requires sole access to the device in addition to root privelages.
 * Every UVC camera has either a serial number or a product ID. Either can be used to connect to the camera
-* UVC cameras generally don't have many acquisition modes, Usually sticking to 8-bit RGB in the form of MJPEG streams. The ADUVC driver also has support for Uncompressed formats and also YUYV, Grayscale, and RGB color modes.
+    * The UVC serial number is locked behind root privelages. Connecting with it will require running the IOC as root or with sudo access
+    * The product ID will allow ioc connection without root privelages. (Note not all cameras have a product ID)
+* ADUVC requires sole access to the camera. I.E. each camera can only run one IOC and cannot be connected to any external software
+* UVC cameras generally don't have many acquisition modes, Usually sticking to 8-bit RGB in the form of MJPEG streams. The ADUVC driver also has support for Uncompressed formats and also YUYV, Grayscale, and RGB color modes in 8 or 16 bit. If an illegal combination of color mode, data type, and/or image size is selected that is not supported by the camera, acquisition will fail to start.
 
 To begin the ADUVC setup process, there are two included helper .cpp programs included in the adUVCSupport directory: cameraDetector, and imageCaptureTest. The first of these two, will use libuvc to detect all UVC cameras connected to the system, while the second will use OpenCV highgui with libuvc to test image acquisition. It is recommended to run both programs prior to using the ADUVC driver to make sure that the camera is detected correctly.  
 
@@ -58,6 +58,8 @@ To set up the ADUVC ioc, you will need either the device product ID or the seria
 ```
 sudo ./startEPICS.sh
 ```
+
+Note that running as sudo is not required if connecting via product ID.
 
 Further documentation is available at https://jwlodek.github.io/ADUVC  
 
@@ -80,9 +82,9 @@ There are also several more traditional industrial cameras that use the UVC stan
 
 ### Some Known Issues
 
-* When building libuvc, the system level jpeg library is used in cmake, but once ADSupport is compiled, a different version is used. This causes an error when converting mjpeg to rgb. THe solution is to either compile libuvc with the jpeg lib in ADSupport, or to set JPEG_EXTERNAL = YES in the CONFIG_SITE.local file in the top level AD configuration directory
+* When building libuvc, the system level jpeg library is used in cmake, but once ADSupport is compiled, a different version is used. This causes an error when converting mjpeg to rgb. The solution is to either compile libuvc with the jpeg lib in ADSupport, or to set JPEG_EXTERNAL = YES in the CONFIG_SITE.local file in the top level AD configuration directory.
 * Certain cameras only support one framerate per frame size, so setting the framerate PV may not affect the actual image rate
-* Not all cameras support RGB raw images, and so YUYV may be the only supported raw image format
+* Most cameras have a limited selection of fixed acquisition modes (certain framerates with certain sizes). Use the cameraDetector helper program to identify these modes.
 * In cheaper cameras framerate drops when there is lots of motion. This is due to image processing on the camera itself, not due to the driver.
 * First frame in mjpeg stream can be corrupted, causing a UVC Error, however, the driver continues and each subsequent frame is uncorrupted.
-* Install webcam virtualBox passthrough https://scribles.net/using-webcam-in-virtualbox-guest-os-on-windows-host/
+* If using ADUVC with Virtualbox, you need to passthrough the hold of the camera to the guest OS. Instructions for doing so  can be found on this website: https://scribles.net/using-webcam-in-virtualbox-guest-os-on-windows-host/
