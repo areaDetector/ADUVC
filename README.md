@@ -115,5 +115,3 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="eb1a", OWNER="softioc", GROUP="softioc", MOD
 # maybe something like this to get the identical vendor/product/serial# cams working simultaneously
 #SUBSYSTEM=="usb", ATTRS{idVendor}=="eb1a", KERNELS=="1-8:1.0", OWNER="softioc", GROUP="softioc", MODE="0660", SYMLINK="cam5"
 ```
-
-simultaneously
