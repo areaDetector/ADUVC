@@ -540,7 +540,7 @@ void ADUVC::acquireStop(){
     setIntegerParam(ADStatus, ADStatusIdle);
     setIntegerParam(ADAcquire, 0);
     callParamCallbacks();
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Stopping aquisition\n",driverName, functionName);
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Stopping aquisition\n", driverName, functionName);
 }
 
 
@@ -625,13 +625,11 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
             if(status != asynError){
                 if(deviceStatus<0){
                     reportUVCError(deviceStatus, functionName);
-                    uvc_free_frame(rgb);
                     status = asynError;
                 }
                 else{
                     if(rgb->data_bytes != imBytes){
                         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Error invalid frame sizeFrame has %d bytes and array has %d bytes\n", driverName, functionName, (int) rgb->data_bytes, (int) imBytes);
-                        uvc_free_frame(rgb);
                         status = asynError;
                     }
                     else{
@@ -990,7 +988,11 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
             acquireStop();
         }
     }
-    else if(function == ADUVC_ApplyFormat && value == 1) applyCameraFormat();
+    else if(function == ADUVC_ApplyFormat && value == 1){
+        if(acquiring)
+            acquireStop();
+        applyCameraFormat();
+    }
     else if(function == ADUVC_CameraFormat) updateCameraFormatDesc();
     //switch image mode
     else if(function == ADImageMode){
@@ -1192,8 +1194,8 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
     else{
         asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Acquiring device information\n", driverName, functionName);
         readSupportedCameraFormats();
-        int i;
         /*
+        int i;
         for(i = 0; i< SUPPORTED_FORMAT_COUNT; i++){
             printf("%s\n", this->supportedFormats[i].formatDesc);
         }
