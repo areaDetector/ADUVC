@@ -29,8 +29,7 @@
 #include "ADDriver.h"
 
 
-// PV definitions
-
+// PV String definitions
 #define ADUVC_UVCComplianceLevelString          "UVC_COMPLIANCE"            //asynInt32
 #define ADUVC_ReferenceCountString              "UVC_REFCOUNT"              //asynInt32
 #define ADUVC_FramerateString                   "UVC_FRAMERATE"             //asynInt32
@@ -61,7 +60,7 @@ typedef enum {
 } ADUVC_FrameFormat_t;
 
 
-/* Struct for individual supported camera format */
+/* Struct for individual supported camera format - Used to auto read modes into dropdown for easier operation */
 typedef struct ADUVC_CamFormat{
     char* formatDesc;
     size_t xSize;
@@ -87,7 +86,6 @@ class ADUVC : ADDriver{
         // Constructor
         ADUVC(const char* portName, const char* serial, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize);
 
-        //TODO: add overrides of ADDriver functions
 
         // ADDriver overrides
         virtual asynStatus writeInt32(asynUser* pasynUser, epicsInt32 value);
@@ -118,7 +116,7 @@ class ADUVC : ADDriver{
         int ADUVC_Hue;
         int ADUVC_Saturation;
         int ADUVC_Sharpness;
-	#define ADUVC_LAST_PARAM ADUVC_Sharpness
+        #define ADUVC_LAST_PARAM ADUVC_Sharpness
 
     private:
 
@@ -170,21 +168,36 @@ class ADUVC : ADDriver{
         // reports device and driver info into a log file
         void report(FILE* fp, int details);
 
+        // writes to ADStatus PV
+        void updateStatus(const char* status);
+
         // ----------------------------------------
         // UVC Functions - Connecting to camera
         //-----------------------------------------
 
         //function used for connecting to a UVC device and reading supported camera modes.
         asynStatus connectToDeviceUVC(int connectionType, const char* serialNumber, int productID);
+
+        //function used to disconnect from UVC device
+        asynStatus disconnectFromDeviceUVC();
+
+        // ----------------------------------------
+        // UVC Functions - Camera Format Detection
+        //-----------------------------------------
+
+        // functions for reading camera formats, and linking them to the appropriate PVs
         asynStatus readSupportedCameraFormats();
         void populateCameraFormat(ADUVC_CamFormat_t* camFormat, uvc_format_desc_t* format_desc, uvc_frame_desc_t* frame_desc);
         int selectBestCameraFormats(ADUVC_CamFormat_t* formatBuffer, int numberInterfaces);
+        
+        // helper functions
         void initEmptyCamFormat(int arrayIndex);
         bool formatAlreadySaved(ADUVC_CamFormat_t camFormat);
         int compareFormats(ADUVC_CamFormat_t camFormat1, ADUVC_CamFormat_t camFormat2);
 
-        //function used to disconnect from UVC device
-        asynStatus disconnectFromDeviceUVC();
+        // Functions for applying saved camera mode to PVs
+        void updateCameraFormatDesc();
+        void applyCameraFormat();
 
         // ----------------------------------------
         // UVC Functions - Camera functions
@@ -201,10 +214,6 @@ class ADUVC : ADDriver{
         asynStatus setHue(int hue);
         asynStatus setSaturation(int saturation);
         asynStatus setSharpness(int sharpness);
-
-
-        void updateCameraFormatDesc();
-        void applyCameraFormat();
 
         //function that begins image aquisition
         uvc_error_t acquireStart(uvc_frame_format format);

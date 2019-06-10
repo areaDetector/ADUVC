@@ -58,6 +58,32 @@
     <h4>Release Notes:</h4>
     <div class="text-section-local">
     <!--RELEASE START-->
+
+<h1>Release Notes</h1>
+<h4>R1-2 (???-June-2019)</h4>
+<ul>
+<li>
+<p>Key detector features implemented:</p>
+<ul>
+<li>Camera modes now read into structs at startup</li>
+<li>Valid camera mode structs selectable from dropdown in CSS - improves usability</li>
+<li>Autosave functionality tested and working.</li>
+<li>More extensive status messages/detector feedback</li>
+</ul>
+</li>
+<li>
+<p>Key fixes and improvements</p>
+<ul>
+<li>Removed unused PVs (ADUVC_VendorID, ADUVC_ProductID)</li>
+<li>Fixed memory leak caused by early return from frame conversion function on error</li>
+<li>Added Makefiles to the support modules</li>
+<li>Documentation updates</li>
+<li>Added information on using camera with Virtual Box</li>
+<li>Removed newlines from status messages for better readability.</li>
+<li>CSS screen updated</li>
+</ul>
+</li>
+</ul>
 <h4>R1-1 (28-January-2019)</h4>
 <ul>
 <li>
@@ -133,9 +159,8 @@
 <li>No custom screens (uses ADBase screen)</li>
 </ul>
 </li>
-</ul></ul>    
-
-<!--RELEASE END-->
+</ul>
+    <!--RELEASE END-->
     </div>
     <hr />
     <h4>Issues and pull requests:</h4>

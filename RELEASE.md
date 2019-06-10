@@ -4,8 +4,27 @@ Author: Jakub Wlodek
 
 ADUVC requires libusb, libuvc, epics-base, epics-modules, ADCore, and ADSupport. Further installation information can be found in the README file.
 
+<!--RELEASE START-->
 Release Notes
 =============
+
+R1-2 (???-June-2019)
+-----
+* Key detector features implemented:
+    * Camera modes now read into structs at startup
+    * Valid camera mode structs selectable from dropdown in CSS - improves usability
+    * Autosave functionality tested and working.
+    * More extensive status messages/detector feedback
+
+* Key fixes and improvements
+    * Removed unused PVs (ADUVC_VendorID, ADUVC_ProductID)
+    * Fixed memory leak caused by early return from frame conversion function on error
+    * Added Makefiles to the support modules
+    * Documentation updates
+    * Added information on using camera with Virtual Box
+    * Removed newlines from status messages for better readability.
+    * CSS screen updated
+
 
 R1-1 (28-January-2019)
 -----

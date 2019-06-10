@@ -85,11 +85,21 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s UVC Error: %s\n", 
                 driverName, functionName, uvc_strerror(status));
     if(status != UVC_ERROR_OTHER){
-        char statusMessage[25];
-        epicsSnprintf(statusMessage, sizeof(statusMessage), "UVC Error: %s", uvc_strerror(status));
-        setStringParam(ADStatusMessage, statusMessage);
-        callParamCallbacks();
+        updateStatus(uvc_strerror(status));
     }
+}
+
+
+/**
+ * Function that writes to ADStatus PV
+ * 
+ * @params[in]: status -> message to write to ADStatus PV
+ */
+void ADUVC::updateStatus(const char* status){
+    char statusMessage[25];
+    epicsSnprintf(statusMessage, sizeof(statusMessage), "UVC Error: %s", status);
+    setStringParam(ADStatusMessage, statusMessage);
+    callParamCallbacks();
 }
 
 
@@ -127,6 +137,7 @@ void ADUVC::updateCameraFormatDesc(){
     char description[256];
     epicsSnprintf(description, sizeof(description), "%s", this->supportedFormats[selectedFormat].formatDesc);
     setStringParam(ADUVC_FormatDescription, description);
+    updateStatus("Updated format Desc.");
     callParamCallbacks();
 }
 
@@ -154,6 +165,7 @@ void ADUVC::applyCameraFormat(){
         setIntegerParam(ADUVC_ImageFormat, format.frameFormat);
     }
     setIntegerParam(ADUVC_ApplyFormat, 0);
+    updateStatus("Applied format");
     callParamCallbacks();
 }
 
@@ -573,6 +585,7 @@ uvc_error_t ADUVC::acquireStart(uvc_frame_format imageFormat){
             callParamCallbacks();
         }
     }
+    updateStatus("Started acquisition");
     return deviceStatus;
 }
 
@@ -594,6 +607,7 @@ void ADUVC::acquireStop(){
     setIntegerParam(ADStatus, ADStatusIdle);
     setIntegerParam(ADAcquire, 0);
     callParamCallbacks();
+    updateStatus("Stopped acquisition");
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Stopping aquisition\n", driverName, functionName);
 }
 
@@ -834,6 +848,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 asynStatus ADUVC::setExposure(int exposureTime){
     const char* functionName = "setExposure";
     asynStatus status = asynSuccess;
+    updateStatus("Set Exposure");
     deviceStatus = uvc_set_exposure_abs(pdeviceHandle, exposureTime);
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
@@ -852,7 +867,7 @@ asynStatus ADUVC::setExposure(int exposureTime){
 asynStatus ADUVC::setGamma(int gamma){
     const char* functionName = "setGamma";
     asynStatus status = asynSuccess;
-
+    updateStatus("Set Gamma");
     deviceStatus = uvc_set_gamma(pdeviceHandle, gamma);
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
@@ -871,6 +886,7 @@ asynStatus ADUVC::setGamma(int gamma){
 asynStatus ADUVC::setBacklightCompensation(int backlightCompensation){
     const char* functionName = "setBacklightCompensation";
     asynStatus status = asynSuccess;
+    updateStatus("Set Backlight Comp.");
     deviceStatus = uvc_set_backlight_compensation(pdeviceHandle, backlightCompensation);
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
@@ -889,6 +905,7 @@ asynStatus ADUVC::setBacklightCompensation(int backlightCompensation){
 asynStatus ADUVC::setBrightness(int brightness){
     const char* functionName = "setBrightness";
     asynStatus status = asynSuccess;
+    updateStatus("Set Brightness");
     deviceStatus = uvc_set_brightness(pdeviceHandle, brightness);
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
@@ -907,6 +924,7 @@ asynStatus ADUVC::setBrightness(int brightness){
 asynStatus ADUVC::setContrast(int contrast){
     const char* functionName = "setContrast";
     asynStatus status = asynSuccess;
+    updateStatus("Set Contrast");
     deviceStatus = uvc_set_contrast(pdeviceHandle, contrast);
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
@@ -925,6 +943,7 @@ asynStatus ADUVC::setContrast(int contrast){
 asynStatus ADUVC::setGain(int gain){
     const char* functionName = "setGain";
     asynStatus status = asynSuccess;
+    updateStatus("Set Gain");
     deviceStatus = uvc_set_gain(pdeviceHandle, gain);
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
@@ -943,6 +962,7 @@ asynStatus ADUVC::setGain(int gain){
 asynStatus ADUVC::setPowerLineFrequency(int powerLineFrequency){
     const char* functionName = "setPowerLineFrequency";
     asynStatus status = asynSuccess;
+    updateStatus("Set Power Line Freq.");
     deviceStatus = uvc_set_power_line_frequency(pdeviceHandle, powerLineFrequency);
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
@@ -962,6 +982,7 @@ asynStatus ADUVC::setPowerLineFrequency(int powerLineFrequency){
 asynStatus ADUVC::setHue(int hue){
     const char* functionName = "setHue";
     asynStatus status = asynSuccess;
+    updateStatus("Set Hue");
     deviceStatus = uvc_set_hue(pdeviceHandle, hue);
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
@@ -980,6 +1001,7 @@ asynStatus ADUVC::setHue(int hue){
 asynStatus ADUVC::setSaturation(int saturation){
     const char* functionName = "setSaturation";
     asynStatus status = asynSuccess;
+    updateStatus("Set Saturation");
     deviceStatus = uvc_set_saturation(pdeviceHandle, saturation);
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
@@ -998,6 +1020,7 @@ asynStatus ADUVC::setSaturation(int saturation){
 asynStatus ADUVC::setSharpness(int sharpness){
     const char* functionName = "setSharpness";
     asynStatus status = asynSuccess;
+    updateStatus("Set Sharpness");
     deviceStatus = uvc_set_sharpness(pdeviceHandle, sharpness);
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
@@ -1005,7 +1028,6 @@ asynStatus ADUVC::setSharpness(int sharpness){
     }
     return status;
 }
-
 
 
 //-------------------------------------------------------------------------
