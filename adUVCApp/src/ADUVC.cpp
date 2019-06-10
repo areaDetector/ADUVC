@@ -85,12 +85,47 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
                 driverName, functionName, uvc_strerror(status));
     if(status != UVC_ERROR_OTHER){
         char statusMessage[25];
-        epicsSnprintf(statusMessage, sizeof(statusMessage), "UVC Error: %s\n", uvc_strerror(status));
+        epicsSnprintf(statusMessage, sizeof(statusMessage), "UVC Error: %s", uvc_strerror(status));
         setStringParam(ADStatusMessage, statusMessage);
         callParamCallbacks();
     }
 }
 
+
+/**
+ * Function that updates the description for a selected camera format
+ */
+void ADUVC::updateCameraFormatDesc(){
+    const char* functionName = "updateCameraFormatDesc";
+    int selectedFormat;
+    getIntegerParam(ADUVC_CameraFormat, &selectedFormat);
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Updating Format Description\n", driverName, functionName);
+    char description[256];
+    epicsSnprintf(description, sizeof(description), "Selected Format: %s", this->supportedFormats[selectedFormat].formatDesc);
+    setStringParam(ADUVC_FormatDescription, description);
+    callParamCallbacks();
+}
+
+
+/**
+ * Function that handles applying a selected supported camera format to the approptiate PVs.
+ * Sets the data type, color mode, framerate, xsize, ysize, and frame format PVs.
+ */
+void ADUVC::applyCameraFormat(){
+    const char* functionName = "applyCameraFormat";
+    int selectedFormat;
+    getIntegerParam(ADUVC_CameraFormat, &selectedFormat);
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Applying Format\n", driverName, functionName);
+    ADUVC_CameraFormat_t format = this->supportedFormats[selectedFormat];
+    setIntegerParam(NDDataType, format.dataType);
+    setIntegerParam(NDColorMode, format.colorMode);
+    setIntegerParam(ADUVC_Framerate, format.framerate);
+    setIntegerParam(ADSizeX, format.xSize);
+    setIntegerParam(ADSizeY, format.ySize);
+    setIntegerParam(ADUVC_ImageFormat, format.frameFormat);
+    setIntegerParam(ADUVC_ApplyFormat, 0);
+    callParamCallbacks();
+}
 
 
 //-----------------------------------------------
@@ -793,6 +828,8 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
             acquireStop();
         }
     }
+    else if(function == ADUVC_ApplyFormat && value == 1) applyCameraFormat();
+    else if(function == ADUVC_CameraFormat) updateCameraFormatDesc();
     //switch image mode
     else if(function == ADImageMode){
         if(acquiring == 1) acquireStop();
@@ -943,6 +980,9 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
     createParam(ADUVC_VendorIDString,               asynParamInt32,     &ADUVC_VendorID);
     createParam(ADUVC_ProductIDString,              asynParamInt32,     &ADUVC_ProductID);
     createParam(ADUVC_ImageFormatString,            asynParamInt32,     &ADUVC_ImageFormat);
+    createParam(ADUVC_CameraFormatString,           asynParamInt32,     &ADUVC_CameraFormat);
+    createParam(ADUVC_FormatDescriptionString,      asynParamOctet,     &ADUVC_FormatDescription);
+    createParam(ADUVC_ApplyFormatString,            asynParamInt32,     &ADUVC_ApplyFormat);
     createParam(ADUVC_BrightnessString,             asynParamInt32,     &ADUVC_Brightness);
     createParam(ADUVC_ContrastString,               asynParamInt32,     &ADUVC_Contrast);
     createParam(ADUVC_PowerLineString,              asynParamInt32,     &ADUVC_PowerLine);
@@ -988,8 +1028,9 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Connection failed, abort\n", driverName, functionName);
     }
     else{
-	    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Acquiring device information\n", driverName, functionName);
-		getDeviceInformation();
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Acquiring device information\n", driverName, functionName);
+        readSupportedCameraFormats();
+        getDeviceInformation();
     }
 
     // when epics is exited, delete the instance of this class

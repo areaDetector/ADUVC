@@ -63,7 +63,7 @@ typedef enum {
 
 /* Struct for individual supported camera format */
 typedef struct {
-    char* formatName;
+    char* formatDesc;
     size_t xSize;
     size_t ySize;
     int framerate;
@@ -201,7 +201,8 @@ class ADUVC : ADDriver{
         asynStatus setSharpness(int sharpness);
 
 
-        asynStatus applyCameraFormat(int selectedFormat)
+        void updateCameraFormatDesc();
+        void applyCameraFormat();
 
         //function that begins image aquisition
         uvc_error_t acquireStart(uvc_frame_format format);

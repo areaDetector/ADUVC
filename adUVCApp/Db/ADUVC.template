@@ -152,6 +152,7 @@ record(mbbo, "$(P)$(R)UVCCameraFormat"){
     field(VAL, "0")
     info(autosaveFields, "VAL")
 }
+
 record(mbbi, "$(P)$(R)UVCCameraFormat_RBV"){
     field(DTYP, "asynInt32")
     field(INP,  "@asyn($(PORT),$(ADDR=0),$(TIMEOUT=1))UVC_CAMERA_FORMAT")
