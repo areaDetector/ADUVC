@@ -191,6 +191,8 @@ record(ao, "$(P)$(R)UVCApplyFormat"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
     field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_APPLY_FORMAT")
+    field(VAL, "0")
+    field(autosaveFields, "VAL")
 }
 
 record(ai, "$(P)$(R)UVCApplyFormat_RBV"){

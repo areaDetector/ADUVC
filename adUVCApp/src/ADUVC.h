@@ -25,6 +25,7 @@
 
 // includes
 #include <libuvc/libuvc.h>
+#include <libuvc/libuvc_internal.h>
 #include "ADDriver.h"
 
 
@@ -51,6 +52,7 @@
 
 /* enum for getting format from PV */
 typedef enum {
+    ADUVC_FrameUnsupported      = -1,
     ADUVC_FrameMJPEG            = 0,
     ADUVC_FrameRGB              = 1,
     ADUVC_FrameYUYV             = 2,
@@ -62,7 +64,7 @@ typedef enum {
 
 
 /* Struct for individual supported camera format */
-typedef struct {
+typedef struct ADUVC_CamFormat{
     char* formatDesc;
     size_t xSize;
     size_t ySize;
@@ -70,7 +72,7 @@ typedef struct {
     ADUVC_FrameFormat_t frameFormat;
     NDColorMode_t colorMode;
     NDDataType_t dataType;
-} ADUVC_CameraFormat_t;
+} ADUVC_CamFormat_t;
 
 
 
@@ -152,7 +154,7 @@ class ADUVC : ADDriver{
         uvc_device_descriptor_t* pdeviceInfo;
 
         //array of supported formats that will allow for easy switching of operating modes.
-        ADUVC_CameraFormat_t supportedFormats[SUPPORTED_FORMAT_COUNT];
+        ADUVC_CamFormat_t supportedFormats[SUPPORTED_FORMAT_COUNT];
 
         //flag that stores if driver is connected to device
         int connected = 0;
@@ -179,7 +181,11 @@ class ADUVC : ADDriver{
         //function used for connecting to a UVC device and reading supported camera modes.
         asynStatus connectToDeviceUVC(int connectionType, const char* serialNumber, int productID);
         asynStatus readSupportedCameraFormats();
-        asynStatus populateCameraFormat(int arrayIndex, uvc_streaming_interface_t* stream_if, uvc_frame_desc_t* frame_desc);
+        void populateCameraFormat(ADUVC_CamFormat_t* camFormat, uvc_format_desc_t* format_desc, uvc_frame_desc_t* frame_desc);
+        int selectBestCameraFormats(ADUVC_CamFormat_t* formatBuffer, int numberInterfaces);
+        void initEmptyCamFormat(int arrayIndex);
+        bool formatAlreadySaved(ADUVC_CamFormat_t camFormat);
+        int compareFormats(ADUVC_CamFormat_t camFormat1, ADUVC_CamFormat_t camFormat2);
 
         //function used to disconnect from UVC device
         asynStatus disconnectFromDeviceUVC();

@@ -91,6 +91,17 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
     }
 }
 
+extern "C" const char* get_string_for_subtype(uint8_t subtype) {
+  switch (subtype) {
+  case UVC_VS_FORMAT_UNCOMPRESSED:
+    return "UncompressedFormat";
+  case UVC_VS_FORMAT_MJPEG:
+    return "MJPEGFormat";
+  default:
+    return "Unknown";
+  }
+}
+
 
 /**
  * Function that updates the description for a selected camera format
@@ -101,7 +112,7 @@ void ADUVC::updateCameraFormatDesc(){
     getIntegerParam(ADUVC_CameraFormat, &selectedFormat);
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Updating Format Description\n", driverName, functionName);
     char description[256];
-    epicsSnprintf(description, sizeof(description), "Selected Format: %s", this->supportedFormats[selectedFormat].formatDesc);
+    epicsSnprintf(description, sizeof(description), "%s", this->supportedFormats[selectedFormat].formatDesc);
     setStringParam(ADUVC_FormatDescription, description);
     callParamCallbacks();
 }
@@ -116,13 +127,19 @@ void ADUVC::applyCameraFormat(){
     int selectedFormat;
     getIntegerParam(ADUVC_CameraFormat, &selectedFormat);
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Applying Format\n", driverName, functionName);
-    ADUVC_CameraFormat_t format = this->supportedFormats[selectedFormat];
-    setIntegerParam(NDDataType, format.dataType);
-    setIntegerParam(NDColorMode, format.colorMode);
-    setIntegerParam(ADUVC_Framerate, format.framerate);
-    setIntegerParam(ADSizeX, format.xSize);
-    setIntegerParam(ADSizeY, format.ySize);
-    setIntegerParam(ADUVC_ImageFormat, format.frameFormat);
+    ADUVC_CamFormat_t format = this->supportedFormats[selectedFormat];
+    if( (int) format.frameFormat < 0){
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+            "%s::%s Cannot apply format - is not used\n", driverName, functionName);
+    }
+    else {
+        setIntegerParam(NDDataType, format.dataType);
+        setIntegerParam(NDColorMode, format.colorMode);
+        setIntegerParam(ADUVC_Framerate, format.framerate);
+        setIntegerParam(ADSizeX, format.xSize);
+        setIntegerParam(ADSizeY, format.ySize);
+        setIntegerParam(ADUVC_ImageFormat, format.frameFormat);
+    }
     setIntegerParam(ADUVC_ApplyFormat, 0);
     callParamCallbacks();
 }
@@ -152,14 +169,17 @@ asynStatus ADUVC::connectToDeviceUVC(int connectionType, const char* serialNumbe
         return asynError;
     }
     else{
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Initialized UVC context\n", driverName, functionName);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+            "%s::%s Initialized UVC context\n", driverName, functionName);
     }
     if(connectionType == 0){
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Searching for UVC device with serial number: %s\n", driverName, functionName, serialNumber);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+            "%s::%s Searching for UVC device with serial number: %s\n", driverName, functionName, serialNumber);
         deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, 0, serialNumber);
     }
     else{
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Searching for UVC device with Product ID: %d\n", driverName, functionName, productID);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+            "%s::%s Searching for UVC device with Product ID: %d\n", driverName, functionName, productID);
         deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, productID, NULL);
     }
     if(deviceStatus<0){
@@ -167,7 +187,8 @@ asynStatus ADUVC::connectToDeviceUVC(int connectionType, const char* serialNumbe
         return asynError;
     }
     else{
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Found UVC device\n", driverName, functionName);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+            "%s::%s Found UVC device\n", driverName, functionName);
     }
     deviceStatus = uvc_open(pdevice, &pdeviceHandle);
     if(deviceStatus<0){
@@ -176,7 +197,8 @@ asynStatus ADUVC::connectToDeviceUVC(int connectionType, const char* serialNumbe
     }
     else{
         connected = 1;
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Opened UVC device\n", driverName, functionName);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+            "%s::%s Opened UVC device\n", driverName, functionName);
     }
     return status;
 }
@@ -190,7 +212,13 @@ asynStatus ADUVC::connectToDeviceUVC(int connectionType, const char* serialNumbe
  */
 asynStatus ADUVC::disconnectFromDeviceUVC(){
     const char* functionName = "disconnectFromDeviceUVC";
-    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Calling all free functions for ADUVC\n", driverName, functionName);
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
+        "%s::%s Calling all free functions for ADUVC\n", driverName, functionName);
+    int i;
+    for(i = 0; i< SUPPORTED_FORMAT_COUNT; i++){
+        // free mem in supported
+        free(this->supportedFormats[i].formatDesc);
+    }
     if(connected == 1){
         uvc_close(pdeviceHandle);
         uvc_unref_device(pdevice);
@@ -200,6 +228,140 @@ asynStatus ADUVC::disconnectFromDeviceUVC(){
     return asynError;
 }
 
+
+/**
+ * Function that reads all supported camera formats into a ADUVC_CamFormat_t struct, and then
+ * selects the ones that are most likely to be useful for easy selection.
+ * 
+ * @return: asynSuccess if successful, asynError if error
+ */
+asynStatus ADUVC::readSupportedCameraFormats(){
+    const char* functionName = "readSupportedCameraFormats";
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+        "%s::%s Reading in supported camera formats\n", driverName, functionName);
+    asynStatus status = asynSuccess;
+    ADUVC_CamFormat_t* formatBuffer = (ADUVC_CamFormat_t*) calloc(1, 256 * sizeof(ADUVC_CamFormat_t));
+    int bufferIndex = 0;
+    if(this->pdeviceHandle != NULL){
+        uvc_streaming_interface_t* interfaces = this->pdeviceHandle->info->stream_ifs;
+        while(interfaces != NULL){
+            uvc_format_desc_t* interfaceFormats = interfaces->format_descs;
+            while(interfaceFormats != NULL) {
+                uvc_frame_desc_t* frameFormats = interfaceFormats->frame_descs;
+                while(frameFormats != NULL) {
+                    populateCameraFormat(&formatBuffer[bufferIndex], interfaceFormats, frameFormats);
+                    bufferIndex++;
+                    frameFormats = frameFormats->next;
+                }
+                interfaceFormats = interfaceFormats->next;
+            }
+            interfaces = interfaces->next;
+        }
+    }
+    else{
+        status = asynError;
+    }
+    int formatIndex = selectBestCameraFormats(formatBuffer, bufferIndex);
+    free(formatBuffer);
+    int i;
+    for(i = formatIndex; i < SUPPORTED_FORMAT_COUNT; i++){
+        initEmptyCamFormat(i);
+    }
+    return status;
+}
+
+
+void ADUVC:: populateCameraFormat(ADUVC_CamFormat_t* camFormat, uvc_format_desc_t* format_desc, uvc_frame_desc_t* frame_desc){
+    const char* functionName = "populateCameraFormat";
+    switch(format_desc->bDescriptorSubtype){
+        case UVC_VS_FORMAT_MJPEG:
+            camFormat->frameFormat = ADUVC_FrameMJPEG;
+            camFormat->dataType = NDUInt8;
+            camFormat->colorMode = NDColorModeRGB1;
+            break;
+        case UVC_VS_FORMAT_UNCOMPRESSED:
+            camFormat->frameFormat = ADUVC_FrameUncompressed;
+            camFormat->dataType = NDUInt16;
+            camFormat->colorMode = NDColorModeMono;
+            break;
+        default:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+                "%s::%s Unsupported format desc.\n", driverName, functionName);
+            break;
+    }
+    camFormat->xSize = frame_desc->wWidth;
+    camFormat->ySize = frame_desc->wHeight;
+    camFormat->framerate = 10000000 / frame_desc->dwDefaultFrameInterval;
+    camFormat->formatDesc = (char*) malloc(256);
+    epicsSnprintf(camFormat->formatDesc, 256, "%s, X: %d, Y: %d, Rate: %d/s", 
+        get_string_for_subtype(format_desc->bDescriptorSubtype), (int) camFormat->xSize, (int) camFormat->ySize, camFormat->framerate);
+}
+
+
+void ADUVC::initEmptyCamFormat(int arrayIndex){
+    this->supportedFormats[arrayIndex].formatDesc = (char*) malloc(256);
+    epicsSnprintf(this->supportedFormats[arrayIndex].formatDesc, 256, "Unused Camera Format");
+    this->supportedFormats[arrayIndex].frameFormat = ADUVC_FrameUnsupported;
+}
+
+int ADUVC::compareFormats(ADUVC_CamFormat_t camFormat1, ADUVC_CamFormat_t camFormat2){
+    if (camFormat1.xSize != camFormat2.xSize) return -1;
+    if (camFormat1.ySize != camFormat2.ySize) return -1;
+    if (camFormat1.colorMode != camFormat2.colorMode) return -1;
+    if (camFormat1.dataType != camFormat2.dataType) return -1;
+    if (camFormat1.framerate != camFormat2.framerate) return -1;
+    if (camFormat1.frameFormat != camFormat2.frameFormat) return -1;
+    return 0;
+}
+
+
+bool ADUVC::formatAlreadySaved(ADUVC_CamFormat_t camFormat){
+    int i;
+    for(i = 0; i< SUPPORTED_FORMAT_COUNT; i++){
+        if(compareFormats(camFormat, this->supportedFormats[i]) == 0){
+            return true;
+        }
+    }
+    return false;
+}
+
+int ADUVC::selectBestCameraFormats(ADUVC_CamFormat_t* formatBuffer, int numFormats){
+    const char* functionName = "selectBestCameraFormats";
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+        "%s::%s Selecting best camera formats\n", driverName, functionName);
+
+    int readFormats = 0;
+    while(readFormats < SUPPORTED_FORMAT_COUNT && readFormats != numFormats){
+        int bestFormatIndex = 0;
+        int i;
+        for(i = 0; i< numFormats; i++){
+            if(!formatAlreadySaved(formatBuffer[i])){
+                if(formatBuffer[i].frameFormat == ADUVC_FrameMJPEG && formatBuffer[bestFormatIndex].frameFormat != ADUVC_FrameMJPEG){
+                    bestFormatIndex = i;
+                }
+                else if(formatBuffer[i].xSize > formatBuffer[bestFormatIndex].xSize){
+                    bestFormatIndex = i;
+                }
+                else if(formatBuffer[i].framerate > formatBuffer[bestFormatIndex].framerate){
+                    bestFormatIndex = i;
+                }
+            }
+        }
+        this->supportedFormats[readFormats].colorMode = formatBuffer[bestFormatIndex].colorMode;
+        this->supportedFormats[readFormats].dataType = formatBuffer[bestFormatIndex].dataType;
+        this->supportedFormats[readFormats].frameFormat = formatBuffer[bestFormatIndex].frameFormat;
+        this->supportedFormats[readFormats].framerate = formatBuffer[bestFormatIndex].framerate;
+        this->supportedFormats[readFormats].xSize = formatBuffer[bestFormatIndex].xSize;
+        this->supportedFormats[readFormats].ySize = formatBuffer[bestFormatIndex].ySize;
+        this->supportedFormats[readFormats].formatDesc = (char*) malloc(256);
+        memcpy(this->supportedFormats[readFormats].formatDesc, formatBuffer[bestFormatIndex].formatDesc, 256);
+        readFormats++;
+    }
+    for(int j = 0; j < numFormats; j++){
+        free(formatBuffer[j].formatDesc);
+    }
+    return readFormats;
+}
 
 /**
  * Function responsible for getting image acquisition information
@@ -1030,6 +1192,12 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
     else{
         asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Acquiring device information\n", driverName, functionName);
         readSupportedCameraFormats();
+        int i;
+        /*
+        for(i = 0; i< SUPPORTED_FORMAT_COUNT; i++){
+            printf("%s\n", this->supportedFormats[i].formatDesc);
+        }
+        */
         getDeviceInformation();
     }
 
