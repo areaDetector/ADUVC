@@ -1141,8 +1141,6 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
     createParam(ADUVC_UVCComplianceLevelString,     asynParamInt32,     &ADUVC_UVCComplianceLevel);
     createParam(ADUVC_ReferenceCountString,         asynParamInt32,     &ADUVC_ReferenceCount);
     createParam(ADUVC_FramerateString,              asynParamInt32,     &ADUVC_Framerate);
-    createParam(ADUVC_VendorIDString,               asynParamInt32,     &ADUVC_VendorID);
-    createParam(ADUVC_ProductIDString,              asynParamInt32,     &ADUVC_ProductID);
     createParam(ADUVC_ImageFormatString,            asynParamInt32,     &ADUVC_ImageFormat);
     createParam(ADUVC_CameraFormatString,           asynParamInt32,     &ADUVC_CameraFormat);
     createParam(ADUVC_FormatDescriptionString,      asynParamOctet,     &ADUVC_FormatDescription);
@@ -1165,7 +1163,9 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
     if(strcmp(serial, "") == 0) setStringParam(ADSerialNumber, "No Serial Detected");
     else setStringParam(ADSerialNumber, serial);
 
-    setIntegerParam(ADUVC_ProductID, productID);
+    char pIDBuff[32];
+    epicsSnprintf(pIDBuff, 32, "%d", productID);
+    setStringParam(ADSerialNumber, pIDBuff);
 
     //sets libuvc version
     char uvcVersionString[25];

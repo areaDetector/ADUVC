@@ -34,8 +34,6 @@
 #define ADUVC_UVCComplianceLevelString          "UVC_COMPLIANCE"            //asynInt32
 #define ADUVC_ReferenceCountString              "UVC_REFCOUNT"              //asynInt32
 #define ADUVC_FramerateString                   "UVC_FRAMERATE"             //asynInt32
-#define ADUVC_VendorIDString                    "UVC_VENDOR"                //asynInt32
-#define ADUVC_ProductIDString                   "UVC_PRODUCT"               //asynInt32
 #define ADUVC_ImageFormatString                 "UVC_FORMAT"                //asynInt32
 #define ADUVC_CameraFormatString                "UVC_CAMERA_FORMAT"         //asynInt32
 #define ADUVC_FormatDescriptionString           "UVC_FORMAT_DESCRIPTION"    //asynOctet
@@ -108,8 +106,6 @@ class ADUVC : ADDriver{
         #define ADUVC_FIRST_PARAM ADUVC_UVCComplianceLevel
         int ADUVC_ReferenceCount;
         int ADUVC_Framerate;
-        int ADUVC_VendorID;
-        int ADUVC_ProductID;
         int ADUVC_ImageFormat;
         int ADUVC_CameraFormat;
         int ADUVC_FormatDescription;
