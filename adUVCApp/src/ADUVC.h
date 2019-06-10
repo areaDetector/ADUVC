@@ -16,8 +16,12 @@
 
 // version numbers
 #define ADUVC_VERSION      1
-#define ADUVC_REVISION     1
+#define ADUVC_REVISION     2
 #define ADUVC_MODIFICATION 0
+
+
+#define SUPPORTED_FORMAT_COUNT 10
+
 
 // includes
 #include <libuvc/libuvc.h>
@@ -52,6 +56,18 @@ typedef enum {
     ADUVC_FrameUYVY             = 5,
     ADUVC_FrameUncompressed     = 6,
 } ADUVC_FrameFormat_t;
+
+
+/* Struct for individual supported camera format */
+typedef struct {
+    char* formatName;
+    size_t xSize;
+    size_t ySize;
+    int framerate;
+    ADUVC_FrameFormat_t frameFormat;
+    NDColorMode_t colorMode;
+    NDDataType_t dataType;
+} ADUVC_CameraFormat_t;
 
 
 
@@ -111,23 +127,26 @@ class ADUVC : ADDriver{
         // UVC Variables
         //-----------------------------------------
 
-	// checks uvc device operations status
+        // checks uvc device operations status
         uvc_error_t deviceStatus;
 
-	//pointer to device
+        //pointer to device
         uvc_device_t* pdevice;
 
-	//pointer to device context. generated when connecting
+        //pointer to device context. generated when connecting
         uvc_context_t* pdeviceContext;
 
-	//pointer to device handle. used for controlling device. Each UVC device can allow for one handle at a time
+        //pointer to device handle. used for controlling device. Each UVC device can allow for one handle at a time
         uvc_device_handle_t* pdeviceHandle;
 
-	//pointer to device stream controller. used to controll streaming from device
+        //pointer to device stream controller. used to controll streaming from device
         uvc_stream_ctrl_t deviceStreamCtrl;
 
-	//pointer containing device info, such as vendor, product id
+        //pointer containing device info, such as vendor, product id
         uvc_device_descriptor_t* pdeviceInfo;
+
+        //array of supported formats that will allow for easy switching of operating modes.
+        ADUVC_CameraFormat_t supportedFormats[SUPPORTED_FORMAT_COUNT];
 
         //flag that stores if driver is connected to device
         int connected = 0;
@@ -141,7 +160,7 @@ class ADUVC : ADDriver{
         // UVC Functions - Logging/Reporting
         //-----------------------------------------
 
-	//function used to report errors in uvc operations
+        //function used to report errors in uvc operations
         void reportUVCError(uvc_error_t status, const char* functionName);
 
         // reports device and driver info into a log file
@@ -151,8 +170,9 @@ class ADUVC : ADDriver{
         // UVC Functions - Connecting to camera
         //-----------------------------------------
 
-	//function used for connecting to a UVC device
+        //function used for connecting to a UVC device and reading supported camera modes.
         asynStatus connectToDeviceUVC(int connectionType, const char* serialNumber, int productID);
+        asynStatus readSupportedCameraFormats();
 
         //function used to disconnect from UVC device
         asynStatus disconnectFromDeviceUVC();
@@ -173,22 +193,22 @@ class ADUVC : ADDriver{
         asynStatus setSaturation(int saturation);
         asynStatus setSharpness(int sharpness);
 
-	//function that begins image aquisition
+        //function that begins image aquisition
         uvc_error_t acquireStart(uvc_frame_format format);
 
-	//function that stops aquisition
+        //function that stops aquisition
         void acquireStop();
 
-	//function that converts a UVC frame into an NDArray
+        //function that converts a UVC frame into an NDArray
         asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, size_t imBytes);
 
-	//function that gets information from a UVC device
+        //function that gets information from a UVC device
         void getDeviceImageInformation();
         void getDeviceInformation();
 
         uvc_frame_format getFormatFromPV();
 
-	// static wrapper function for callback. Necessary becuase callback in UVC must be static but we want the driver running the callback
+        //static wrapper function for callback. Necessary becuase callback in UVC must be static but we want the driver running the callback
         static void newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr);
 };
 

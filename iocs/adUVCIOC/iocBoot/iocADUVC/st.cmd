@@ -44,8 +44,8 @@ epicsEnvSet("EPICS_CA_MAX_ARRAY_BYTES", 20000000)
 # */
 
 # If searching for device by serial number, put 0 and 0 for vendor/productID
-# ADUVCConfig(const char* portName, const char* serial, int vendorID, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize)
-#ADUVCConfig("$(PORT)", "10e536e9e4c4ee70", 0, "$(FRAMERATE)", "$(XSIZE)", "$(YSIZE)", 0, 0, 0, 0)
+# ADUVCConfig(const char* portName, const char* serial, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize)
+#ADUVCConfig("$(PORT)", "10e536e9e4c4ee70", 0, $(FRAMERATE), $(XSIZE), $(YSIZE), 0, 0, 0, 0)
 #epicsThreadSleep(2)
 
 # If searching for device by product ID put "" or empty string for serial number
@@ -53,14 +53,14 @@ ADUVCConfig("$(PORT)", "", 25344, $(FRAMERATE), $(XSIZE), $(YSIZE), 0, 0, 0, 0)
 epicsThreadSleep(2)
 
 asynSetTraceIOMask($(PORT), 0, 2)
-#asynSetTraceMask($(PORT),0,0xff)
+#asynSetTraceMask($(PORT), 0, 0xff)
 
 dbLoadRecords("$(ADCORE)/db/ADBase.template", "P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 dbLoadRecords("$(ADUVC)/db/ADUVC.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
 #
 # Create a standard arrays plugin, set it to get data from Driver.
-#int NDStdArraysConfigure(const char *portName, int queueSize, int blockingCallbacks, const char *NDArrayPort, int NDArrayAddr, int maxBuffers, size_t maxMemory,
+# int NDStdArraysConfigure(const char *portName, int queueSize, int blockingCallbacks, const char *NDArrayPort, int NDArrayAddr, int maxBuffers, size_t maxMemory,
 #                          int priority, int stackSize, int maxThreads)
 NDStdArraysConfigure("Image1", 3, 0, "$(PORT)", 0)
 dbLoadRecords("$(ADCORE)/db/NDStdArrays.template", "P=$(PREFIX),R=image1:,PORT=Image1,ADDR=0,NDARRAY_PORT=$(PORT),TIMEOUT=1,TYPE=Int16,FTVL=SHORT,NELEMENTS=6000000")
@@ -68,7 +68,6 @@ dbLoadRecords("$(ADCORE)/db/NDStdArrays.template", "P=$(PREFIX),R=image1:,PORT=I
 #
 # Load all other plugins using commonPlugins.cmd
 < $(ADCORE)/iocBoot/commonPlugins.cmd
-#
 
 set_requestfile_path("$(ADUVC)/adUVCApp/Db")
 
