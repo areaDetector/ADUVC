@@ -172,6 +172,9 @@ record(mbbi, "$(P)$(R)UVCCameraFormat_RBV"){
     field(SCAN, "I/O Intr")
 }
 
+##############################################
+# Shows information regarding the currently selected supported format
+################################################
 record(waveform, "$(P)$(R)UVCFormatDescription_RBV"){
     field(DTYP, "asynOctetRead")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_FORMAT_DESCRIPTION")
@@ -180,8 +183,23 @@ record(waveform, "$(P)$(R)UVCFormatDescription_RBV"){
     field(SCAN, "I/O Intr")
 }
 
+##############################################
+# Applies the supported format to the IOC
+################################################
+record(ao, "$(P)$(R)UVCApplyFormat"){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_APPLY_FORMAT")
+}
+
+record(ai, "$(P)$(R)UVCApplyFormat_RBV"){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_APPLY_FORMAT")
+    field(SCAN, "I/O Intr")
+}
+
 ################################################################################################
-# Additional Camera Functions (UNDER DEVELOPMENT -> Currently not in use)
+# Additional Camera Functions -> used by getter and setter functions in the driver
 ################################################################################################
 
 ##################################################

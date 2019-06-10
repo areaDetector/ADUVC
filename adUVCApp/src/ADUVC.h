@@ -37,7 +37,8 @@
 #define ADUVC_ProductIDString                   "UVC_PRODUCT"               //asynInt32
 #define ADUVC_ImageFormatString                 "UVC_FORMAT"                //asynInt32
 #define ADUVC_CameraFormatString                "UVC_CAMERA_FORMAT"         //asynInt32
-#define ADUVC_FormatDescriptionString           "UVC_FORMAT_DESCRIPTION"    //asynParamOctet
+#define ADUVC_FormatDescriptionString           "UVC_FORMAT_DESCRIPTION"    //asynOctet
+#define ADUVC_ApplyFormatString                 "UVC_APPLY_FORMAT"          //asynInt32
 #define ADUVC_GammaString                       "UVC_GAMMA"                 //asynInt32
 #define ADUVC_BacklightCompensationString       "UVC_BACKLIGHT"             //asynInt32
 #define ADUVC_BrightnessString                  "UVC_BRIGHTNESS"            //asynInt32
@@ -108,6 +109,9 @@ class ADUVC : ADDriver{
         int ADUVC_VendorID;
         int ADUVC_ProductID;
         int ADUVC_ImageFormat;
+        int ADUVC_CameraFormat;
+        int ADUVC_FormatDescription;
+        int ADUVC_ApplyFormat;
         int ADUVC_Gamma;
         int ADUVC_BacklightCompensation;
         int ADUVC_Brightness;
@@ -175,6 +179,7 @@ class ADUVC : ADDriver{
         //function used for connecting to a UVC device and reading supported camera modes.
         asynStatus connectToDeviceUVC(int connectionType, const char* serialNumber, int productID);
         asynStatus readSupportedCameraFormats();
+        asynStatus populateCameraFormat(int arrayIndex, uvc_streaming_interface_t* stream_if, uvc_frame_desc_t* frame_desc);
 
         //function used to disconnect from UVC device
         asynStatus disconnectFromDeviceUVC();
@@ -194,6 +199,9 @@ class ADUVC : ADDriver{
         asynStatus setHue(int hue);
         asynStatus setSaturation(int saturation);
         asynStatus setSharpness(int sharpness);
+
+
+        asynStatus applyCameraFormat(int selectedFormat)
 
         //function that begins image aquisition
         uvc_error_t acquireStart(uvc_frame_format format);
