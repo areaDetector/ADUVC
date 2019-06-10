@@ -33,9 +33,10 @@
 #include <libuvc/libuvc.h>
 #include <libuvc/libuvc_config.h>
 
-
+// standard namespace
 using namespace std;
 
+// define driver name for logging
 static const char* driverName = "ADUVC";
 
 // Constants
@@ -91,15 +92,27 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
     }
 }
 
+
+//-----------------------------------------------
+// ADUVC Camera Format selector functions
+//-----------------------------------------------
+
+
+/**
+ * External C function pulled from libuvc_internal diagnostics.
+ * Simply returns a string for a given subtype
+ * 
+ * @return: string representing certain subtype identifier
+ */
 extern "C" const char* get_string_for_subtype(uint8_t subtype) {
-  switch (subtype) {
-  case UVC_VS_FORMAT_UNCOMPRESSED:
-    return "UncompressedFormat";
-  case UVC_VS_FORMAT_MJPEG:
-    return "MJPEGFormat";
-  default:
-    return "Unknown";
-  }
+    switch (subtype) {
+        case UVC_VS_FORMAT_UNCOMPRESSED:
+            return "UncompressedFormat";
+        case UVC_VS_FORMAT_MJPEG:
+            return "MJPEGFormat";
+        default:
+            return "Unknown";
+    }
 }
 
 
@@ -142,6 +155,181 @@ void ADUVC::applyCameraFormat(){
     }
     setIntegerParam(ADUVC_ApplyFormat, 0);
     callParamCallbacks();
+}
+
+
+/**
+ * Function that reads all supported camera formats into a ADUVC_CamFormat_t struct, and then
+ * selects the ones that are most likely to be useful for easy selection.
+ * 
+ * @return: asynSuccess if successful, asynError if error
+ */
+asynStatus ADUVC::readSupportedCameraFormats(){
+    const char* functionName = "readSupportedCameraFormats";
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+        "%s::%s Reading in supported camera formats\n", driverName, functionName);
+    asynStatus status = asynSuccess;
+    ADUVC_CamFormat_t* formatBuffer = (ADUVC_CamFormat_t*) calloc(1, 256 * sizeof(ADUVC_CamFormat_t));
+    int bufferIndex = 0;
+    if(this->pdeviceHandle != NULL){
+        uvc_streaming_interface_t* interfaces = this->pdeviceHandle->info->stream_ifs;
+        while(interfaces != NULL){
+            uvc_format_desc_t* interfaceFormats = interfaces->format_descs;
+            while(interfaceFormats != NULL) {
+                uvc_frame_desc_t* frameFormats = interfaceFormats->frame_descs;
+                while(frameFormats != NULL) {
+                    populateCameraFormat(&formatBuffer[bufferIndex], interfaceFormats, frameFormats);
+                    bufferIndex++;
+                    frameFormats = frameFormats->next;
+                }
+                interfaceFormats = interfaceFormats->next;
+            }
+            interfaces = interfaces->next;
+        }
+    }
+    else{
+        status = asynError;
+    }
+    int formatIndex = selectBestCameraFormats(formatBuffer, bufferIndex);
+    free(formatBuffer);
+    int i;
+    for(i = formatIndex; i < SUPPORTED_FORMAT_COUNT; i++){
+        initEmptyCamFormat(i);
+    }
+    return status;
+}
+
+
+/**
+ * Function that takes a format descriptor and a frame descriptor, and populates a camera format
+ * structure with the appropriate values.
+ * 
+ * @params[out]: camFormat      -> Output camFormat struct
+ * @params[in]:  format_desc    -> Format descriptor struct
+ * @params[in]:  frame_desc     -> Frame descriptor struct
+ * @return: void
+ */
+void ADUVC:: populateCameraFormat(ADUVC_CamFormat_t* camFormat, uvc_format_desc_t* format_desc, uvc_frame_desc_t* frame_desc){
+    const char* functionName = "populateCameraFormat";
+    switch(format_desc->bDescriptorSubtype){
+        case UVC_VS_FORMAT_MJPEG:
+            camFormat->frameFormat = ADUVC_FrameMJPEG;
+            camFormat->dataType = NDUInt8;
+            camFormat->colorMode = NDColorModeRGB1;
+            break;
+        case UVC_VS_FORMAT_UNCOMPRESSED:
+            camFormat->frameFormat = ADUVC_FrameUncompressed;
+            camFormat->dataType = NDUInt16;
+            camFormat->colorMode = NDColorModeMono;
+            break;
+        default:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+                "%s::%s Unsupported format desc.\n", driverName, functionName);
+            break;
+    }
+    camFormat->xSize = frame_desc->wWidth;
+    camFormat->ySize = frame_desc->wHeight;
+    camFormat->framerate = 10000000 / frame_desc->dwDefaultFrameInterval;
+    camFormat->formatDesc = (char*) malloc(256);
+    epicsSnprintf(camFormat->formatDesc, 256, "%s, X: %d, Y: %d, Rate: %d/s", 
+        get_string_for_subtype(format_desc->bDescriptorSubtype), (int) camFormat->xSize, (int) camFormat->ySize, camFormat->framerate);
+}
+
+
+/**
+ * Function that initializes a Camera Format struct with empty placeholder
+ * 
+ * @params[in]: arrayIndex -> index in array of supported formats 
+ * @return: void
+ */
+void ADUVC::initEmptyCamFormat(int arrayIndex){
+    this->supportedFormats[arrayIndex].formatDesc = (char*) malloc(256);
+    epicsSnprintf(this->supportedFormats[arrayIndex].formatDesc, 256, "Unused Camera Format");
+    this->supportedFormats[arrayIndex].frameFormat = ADUVC_FrameUnsupported;
+}
+
+
+/**
+ * Function that compares two camera format structs against one another
+ * 
+ * @params[in]: cameraFormat1   -> first camera format struct
+ * @params[in]: cameraFormat2   -> second camera format struct
+ * @return: 0 if the two structs are identical, -1 if they are not
+ */
+int ADUVC::compareFormats(ADUVC_CamFormat_t camFormat1, ADUVC_CamFormat_t camFormat2){
+    if (camFormat1.xSize != camFormat2.xSize) return -1;
+    if (camFormat1.ySize != camFormat2.ySize) return -1;
+    if (camFormat1.colorMode != camFormat2.colorMode) return -1;
+    if (camFormat1.dataType != camFormat2.dataType) return -1;
+    if (camFormat1.framerate != camFormat2.framerate) return -1;
+    if (camFormat1.frameFormat != camFormat2.frameFormat) return -1;
+    return 0;
+}
+
+
+/**
+ * Function that checks if a Cam format struct is already in the camera's format array
+ * 
+ * @params[in]: camFormat -> format to test
+ * @return: true if it is in the supportedFormats array, false otherwise
+ */
+bool ADUVC::formatAlreadySaved(ADUVC_CamFormat_t camFormat){
+    int i;
+    for(i = 0; i< SUPPORTED_FORMAT_COUNT; i++){
+        if(compareFormats(camFormat, this->supportedFormats[i]) == 0){
+            return true;
+        }
+    }
+    return false;
+}
+
+
+/**
+ * Function that selects the best discovered formats from the set of all discovered formats.
+ * The current order of importance is MJPEG > Uncompressed (Higher end devices only have uncompressed,
+ * and lower end devices exhibit poor performance when using Uncompressed), then image resolution,
+ * then framerate.
+ * 
+ * @params[in]: formatBuffer    -> Buffer containing all detected camera formats
+ * @params[in]: numFormats      -> counter for how many formats were detected
+ * @return: readFormats         -> The number of formats read from the formatBuffer
+ */
+int ADUVC::selectBestCameraFormats(ADUVC_CamFormat_t* formatBuffer, int numFormats){
+    const char* functionName = "selectBestCameraFormats";
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+        "%s::%s Selecting best camera formats\n", driverName, functionName);
+
+    int readFormats = 0;
+    while(readFormats < SUPPORTED_FORMAT_COUNT && readFormats != numFormats){
+        int bestFormatIndex = 0;
+        int i;
+        for(i = 0; i< numFormats; i++){
+            if(!formatAlreadySaved(formatBuffer[i])){
+                if(formatBuffer[i].frameFormat == ADUVC_FrameMJPEG && formatBuffer[bestFormatIndex].frameFormat != ADUVC_FrameMJPEG){
+                    bestFormatIndex = i;
+                }
+                else if(formatBuffer[i].xSize > formatBuffer[bestFormatIndex].xSize){
+                    bestFormatIndex = i;
+                }
+                else if(formatBuffer[i].framerate > formatBuffer[bestFormatIndex].framerate){
+                    bestFormatIndex = i;
+                }
+            }
+        }
+        this->supportedFormats[readFormats].colorMode = formatBuffer[bestFormatIndex].colorMode;
+        this->supportedFormats[readFormats].dataType = formatBuffer[bestFormatIndex].dataType;
+        this->supportedFormats[readFormats].frameFormat = formatBuffer[bestFormatIndex].frameFormat;
+        this->supportedFormats[readFormats].framerate = formatBuffer[bestFormatIndex].framerate;
+        this->supportedFormats[readFormats].xSize = formatBuffer[bestFormatIndex].xSize;
+        this->supportedFormats[readFormats].ySize = formatBuffer[bestFormatIndex].ySize;
+        this->supportedFormats[readFormats].formatDesc = (char*) malloc(256);
+        memcpy(this->supportedFormats[readFormats].formatDesc, formatBuffer[bestFormatIndex].formatDesc, 256);
+        readFormats++;
+    }
+    for(int j = 0; j < numFormats; j++){
+        free(formatBuffer[j].formatDesc);
+    }
+    return readFormats;
 }
 
 
@@ -228,140 +416,6 @@ asynStatus ADUVC::disconnectFromDeviceUVC(){
     return asynError;
 }
 
-
-/**
- * Function that reads all supported camera formats into a ADUVC_CamFormat_t struct, and then
- * selects the ones that are most likely to be useful for easy selection.
- * 
- * @return: asynSuccess if successful, asynError if error
- */
-asynStatus ADUVC::readSupportedCameraFormats(){
-    const char* functionName = "readSupportedCameraFormats";
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
-        "%s::%s Reading in supported camera formats\n", driverName, functionName);
-    asynStatus status = asynSuccess;
-    ADUVC_CamFormat_t* formatBuffer = (ADUVC_CamFormat_t*) calloc(1, 256 * sizeof(ADUVC_CamFormat_t));
-    int bufferIndex = 0;
-    if(this->pdeviceHandle != NULL){
-        uvc_streaming_interface_t* interfaces = this->pdeviceHandle->info->stream_ifs;
-        while(interfaces != NULL){
-            uvc_format_desc_t* interfaceFormats = interfaces->format_descs;
-            while(interfaceFormats != NULL) {
-                uvc_frame_desc_t* frameFormats = interfaceFormats->frame_descs;
-                while(frameFormats != NULL) {
-                    populateCameraFormat(&formatBuffer[bufferIndex], interfaceFormats, frameFormats);
-                    bufferIndex++;
-                    frameFormats = frameFormats->next;
-                }
-                interfaceFormats = interfaceFormats->next;
-            }
-            interfaces = interfaces->next;
-        }
-    }
-    else{
-        status = asynError;
-    }
-    int formatIndex = selectBestCameraFormats(formatBuffer, bufferIndex);
-    free(formatBuffer);
-    int i;
-    for(i = formatIndex; i < SUPPORTED_FORMAT_COUNT; i++){
-        initEmptyCamFormat(i);
-    }
-    return status;
-}
-
-
-void ADUVC:: populateCameraFormat(ADUVC_CamFormat_t* camFormat, uvc_format_desc_t* format_desc, uvc_frame_desc_t* frame_desc){
-    const char* functionName = "populateCameraFormat";
-    switch(format_desc->bDescriptorSubtype){
-        case UVC_VS_FORMAT_MJPEG:
-            camFormat->frameFormat = ADUVC_FrameMJPEG;
-            camFormat->dataType = NDUInt8;
-            camFormat->colorMode = NDColorModeRGB1;
-            break;
-        case UVC_VS_FORMAT_UNCOMPRESSED:
-            camFormat->frameFormat = ADUVC_FrameUncompressed;
-            camFormat->dataType = NDUInt16;
-            camFormat->colorMode = NDColorModeMono;
-            break;
-        default:
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                "%s::%s Unsupported format desc.\n", driverName, functionName);
-            break;
-    }
-    camFormat->xSize = frame_desc->wWidth;
-    camFormat->ySize = frame_desc->wHeight;
-    camFormat->framerate = 10000000 / frame_desc->dwDefaultFrameInterval;
-    camFormat->formatDesc = (char*) malloc(256);
-    epicsSnprintf(camFormat->formatDesc, 256, "%s, X: %d, Y: %d, Rate: %d/s", 
-        get_string_for_subtype(format_desc->bDescriptorSubtype), (int) camFormat->xSize, (int) camFormat->ySize, camFormat->framerate);
-}
-
-
-void ADUVC::initEmptyCamFormat(int arrayIndex){
-    this->supportedFormats[arrayIndex].formatDesc = (char*) malloc(256);
-    epicsSnprintf(this->supportedFormats[arrayIndex].formatDesc, 256, "Unused Camera Format");
-    this->supportedFormats[arrayIndex].frameFormat = ADUVC_FrameUnsupported;
-}
-
-int ADUVC::compareFormats(ADUVC_CamFormat_t camFormat1, ADUVC_CamFormat_t camFormat2){
-    if (camFormat1.xSize != camFormat2.xSize) return -1;
-    if (camFormat1.ySize != camFormat2.ySize) return -1;
-    if (camFormat1.colorMode != camFormat2.colorMode) return -1;
-    if (camFormat1.dataType != camFormat2.dataType) return -1;
-    if (camFormat1.framerate != camFormat2.framerate) return -1;
-    if (camFormat1.frameFormat != camFormat2.frameFormat) return -1;
-    return 0;
-}
-
-
-bool ADUVC::formatAlreadySaved(ADUVC_CamFormat_t camFormat){
-    int i;
-    for(i = 0; i< SUPPORTED_FORMAT_COUNT; i++){
-        if(compareFormats(camFormat, this->supportedFormats[i]) == 0){
-            return true;
-        }
-    }
-    return false;
-}
-
-int ADUVC::selectBestCameraFormats(ADUVC_CamFormat_t* formatBuffer, int numFormats){
-    const char* functionName = "selectBestCameraFormats";
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
-        "%s::%s Selecting best camera formats\n", driverName, functionName);
-
-    int readFormats = 0;
-    while(readFormats < SUPPORTED_FORMAT_COUNT && readFormats != numFormats){
-        int bestFormatIndex = 0;
-        int i;
-        for(i = 0; i< numFormats; i++){
-            if(!formatAlreadySaved(formatBuffer[i])){
-                if(formatBuffer[i].frameFormat == ADUVC_FrameMJPEG && formatBuffer[bestFormatIndex].frameFormat != ADUVC_FrameMJPEG){
-                    bestFormatIndex = i;
-                }
-                else if(formatBuffer[i].xSize > formatBuffer[bestFormatIndex].xSize){
-                    bestFormatIndex = i;
-                }
-                else if(formatBuffer[i].framerate > formatBuffer[bestFormatIndex].framerate){
-                    bestFormatIndex = i;
-                }
-            }
-        }
-        this->supportedFormats[readFormats].colorMode = formatBuffer[bestFormatIndex].colorMode;
-        this->supportedFormats[readFormats].dataType = formatBuffer[bestFormatIndex].dataType;
-        this->supportedFormats[readFormats].frameFormat = formatBuffer[bestFormatIndex].frameFormat;
-        this->supportedFormats[readFormats].framerate = formatBuffer[bestFormatIndex].framerate;
-        this->supportedFormats[readFormats].xSize = formatBuffer[bestFormatIndex].xSize;
-        this->supportedFormats[readFormats].ySize = formatBuffer[bestFormatIndex].ySize;
-        this->supportedFormats[readFormats].formatDesc = (char*) malloc(256);
-        memcpy(this->supportedFormats[readFormats].formatDesc, formatBuffer[bestFormatIndex].formatDesc, 256);
-        readFormats++;
-    }
-    for(int j = 0; j < numFormats; j++){
-        free(formatBuffer[j].formatDesc);
-    }
-    return readFormats;
-}
 
 /**
  * Function responsible for getting image acquisition information
