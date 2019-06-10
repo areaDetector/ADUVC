@@ -20,7 +20,7 @@
 #define ADUVC_MODIFICATION 0
 
 
-#define SUPPORTED_FORMAT_COUNT 10
+#define SUPPORTED_FORMAT_COUNT 7
 
 
 // includes
@@ -30,20 +30,22 @@
 
 // PV definitions
 
-#define ADUVC_UVCComplianceLevelString          "UVC_COMPLIANCE"        //asynInt32
-#define ADUVC_ReferenceCountString              "UVC_REFCOUNT"          //asynInt32
-#define ADUVC_FramerateString                   "UVC_FRAMERATE"         //asynInt32
-#define ADUVC_VendorIDString                    "UVC_VENDOR"            //asynInt32
-#define ADUVC_ProductIDString                   "UVC_PRODUCT"           //asynInt32
-#define ADUVC_ImageFormatString                 "UVC_FORMAT"            //asynInt32
-#define ADUVC_GammaString                       "UVC_GAMMA"             //asynInt32
-#define ADUVC_BacklightCompensationString       "UVC_BACKLIGHT"         //asynInt32
-#define ADUVC_BrightnessString                  "UVC_BRIGHTNESS"        //asynInt32
-#define ADUVC_ContrastString                    "UVC_CONTRAST"          //asynInt32
-#define ADUVC_PowerLineString                   "UVC_POWER"             //asynInt32
-#define ADUVC_HueString                         "UVC_HUE"               //asynInt32
-#define ADUVC_SaturationString                  "UVC_SATURATION"        //asynInt32
-#define ADUVC_SharpnessString                   "UVC_SHARPNESS"         //asynInt32    
+#define ADUVC_UVCComplianceLevelString          "UVC_COMPLIANCE"            //asynInt32
+#define ADUVC_ReferenceCountString              "UVC_REFCOUNT"              //asynInt32
+#define ADUVC_FramerateString                   "UVC_FRAMERATE"             //asynInt32
+#define ADUVC_VendorIDString                    "UVC_VENDOR"                //asynInt32
+#define ADUVC_ProductIDString                   "UVC_PRODUCT"               //asynInt32
+#define ADUVC_ImageFormatString                 "UVC_FORMAT"                //asynInt32
+#define ADUVC_CameraFormatString                "UVC_CAMERA_FORMAT"         //asynInt32
+#define ADUVC_FormatDescriptionString           "UVC_FORMAT_DESCRIPTION"    //asynParamOctet
+#define ADUVC_GammaString                       "UVC_GAMMA"                 //asynInt32
+#define ADUVC_BacklightCompensationString       "UVC_BACKLIGHT"             //asynInt32
+#define ADUVC_BrightnessString                  "UVC_BRIGHTNESS"            //asynInt32
+#define ADUVC_ContrastString                    "UVC_CONTRAST"              //asynInt32
+#define ADUVC_PowerLineString                   "UVC_POWER"                 //asynInt32
+#define ADUVC_HueString                         "UVC_HUE"                   //asynInt32
+#define ADUVC_SaturationString                  "UVC_SATURATION"            //asynInt32
+#define ADUVC_SharpnessString                   "UVC_SHARPNESS"             //asynInt32    
 
 
 /* enum for getting format from PV */
