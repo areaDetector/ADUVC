@@ -1,6 +1,15 @@
-$(P)$(R)UVCBrightness
-$(P)$(R)UVCBacklightCompensation
-$(P)$(R)UVCContrast
-$(P)$(R)UVCPowerLine
-$(P)$(R)UVCHue
-$(P)$(R)UVCSaturation
+file "ADBase_settings.req", P=$(P), R=$(R)
+$(P)$(R)UVC_COMPLIANCE
+$(P)$(R)UVC_REFCOUNT
+$(P)$(R)UVC_FRAMERATE
+$(P)$(R)UVC_VENDOR
+$(P)$(R)UVC_PRODUCT
+$(P)$(R)UVC_FORMAT
+$(P)$(R)UVC_GAMMA
+$(P)$(R)UVC_BACKLIGHT
+$(P)$(R)UVC_BRIGHTNESS
+$(P)$(R)UVC_CONTRAST 
+$(P)$(R)UVC_POWER
+$(P)$(R)UVC_HUE
+$(P)$(R)UVC_SATURATION
+$(P)$(R)UVC_SHARPNESS
