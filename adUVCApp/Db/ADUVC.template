@@ -128,8 +128,81 @@ record(mbbi, "$(P)$(R)UVCImageFormat_RBV"){
     field(SCAN, "I/O Intr")
 }
 
+##############################################
+# Stores supported camera modes for easier switching
+################################################
+record(mbbo, "$(P)$(R)UVCCameraFormat"){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_CAMERA_FORMAT")
+    field(ZRST, "Supported Mode 1")
+    field(ZRVL, "0")
+    field(ONST, "Supported Mode 2")
+    field(ONVL, "1")
+    field(TWST, "Supported Mode 3")
+    field(TWVL, "2")
+    field(THST, "Supported Mode 4")
+    field(THVL, "3")
+    field(FRST, "Supported Mode 5")
+    field(FRVL, "4")
+    field(FVST, "Supported Mode 6")
+    field(FVVL, "5")
+    field(SXST, "Supported Mode 7")
+    field(SXVL, "6")
+    field(VAL, "0")
+    info(autosaveFields, "VAL")
+}
+
+record(mbbi, "$(P)$(R)UVCCameraFormat_RBV"){
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR=0),$(TIMEOUT=1))UVC_CAMERA_FORMAT")
+    field(ZRST, "Supported Mode 1")
+    field(ZRVL, "0")
+    field(ONST, "Supported Mode 2")
+    field(ONVL, "1")
+    field(TWST, "Supported Mode 3")
+    field(TWVL, "2")
+    field(THST, "Supported Mode 4")
+    field(THVL, "3")
+    field(FRST, "Supported Mode 5")
+    field(FRVL, "4")
+    field(FVST, "Supported Mode 6")
+    field(FVVL, "5")
+    field(SXST, "Supported Mode 7")
+    field(SXVL, "6")
+    field(SCAN, "I/O Intr")
+}
+
+##############################################
+# Shows information regarding the currently selected supported format
+################################################
+record(waveform, "$(P)$(R)UVCFormatDescription_RBV"){
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_FORMAT_DESCRIPTION")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
+##############################################
+# Applies the supported format to the IOC
+################################################
+record(ao, "$(P)$(R)UVCApplyFormat"){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_APPLY_FORMAT")
+    field(VAL, "0")
+    field(autosaveFields, "VAL")
+}
+
+record(ai, "$(P)$(R)UVCApplyFormat_RBV"){
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_APPLY_FORMAT")
+    field(SCAN, "I/O Intr")
+}
+
 ################################################################################################
-# Additional Camera Functions (UNDER DEVELOPMENT -> Currently not in use)
+# Additional Camera Functions -> used by getter and setter functions in the driver
 ################################################################################################
 
 ##################################################

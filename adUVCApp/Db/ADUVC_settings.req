@@ -1,6 +1,15 @@
-$(P)$(R)UVCBrightness
+file "ADBase_settings.req", P=$(P), R=$(R)
+$(P)$(R)UVCComplianceLevel
+$(P)$(R)UVCFramerate
+$(P)$(R)UVCImageFormat
+$(P)$(R)UVCGamma
 $(P)$(R)UVCBacklightCompensation
+$(P)$(R)UVCBrightness
 $(P)$(R)UVCContrast
 $(P)$(R)UVCPowerLine
 $(P)$(R)UVCHue
 $(P)$(R)UVCSaturation
+$(P)$(R)UVCSharpness
+$(P)$(R)UVCCameraFormat
+$(P)$(R)UVCFormatDescription_RBV
+$(P)$(R)UVCApplyFormat
