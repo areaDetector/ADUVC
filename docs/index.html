@@ -49,8 +49,10 @@
         Once the driver is installed, you may start the ioc by entering the IOC folder and running 'sudo ./startEPICS.sh'. Sudo access is important
         because access to UVC devices is limited to users with root permissions. You may then integrate ADUVC into your area detector screen setup.
         Below is an image of the ADUVC base control screen. It extends the standard ADBase screen with UVC controls for various camera functionality,
-        such as brightness, exposure, backlight compenstation, saturation, etc. Currently the driver only supports 8-bit RGB images (most UVC cameras
-        only allow for this anyway), but support for more formats is planned in R1-1.
+        such as brightness, exposure, backlight compenstation, saturation, etc. The driver supports a variety of UVC formats, though the two that are used
+        the most often are MJPEG and Uncompressed. Because acquisition modes are locked down in most UVC cameras, as of R1-2 there has been added a section
+        to the screen that allows for selecting from up to the 7 most useful acquisition modes supported by the camera. If the camera has fewer than 7 modes,
+        the remaining ones will show as Unused.
     </p>
     <img src="assets/ADUVCBase.png" alt="ADUVC base screen" />
     <p class="text-section-local">The ADUVC Base screen. Based on the ADBase screen with added controls specific to ADUVC.</p>
@@ -60,7 +62,7 @@
     <!--RELEASE START-->
 
 <h1>Release Notes</h1>
-<h4>R1-2 (???-June-2019)</h4>
+<h4>R1-2 (11-June-2019)</h4>
 <ul>
 <li>
 <p>Key detector features implemented:</p>
@@ -165,7 +167,7 @@
     <hr />
     <h4>Issues and pull requests:</h4>
     <p class="text-section-local">
-        To submit an issue or a pull request for ADUVC, please do so at the source fork on <a href = "https://github.com/jwlodek/ADUVC">Github</a>.
+        To submit an issue or a pull request for ADUVC, please do so at the source fork on <a href = "https://github.com/epicsNSLS2-areaDetector/ADUVC">Github</a>.
     </p>
     <h4>Important links:</h4>
     <ul>

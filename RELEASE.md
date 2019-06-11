@@ -8,7 +8,7 @@ ADUVC requires libusb, libuvc, epics-base, epics-modules, ADCore, and ADSupport.
 Release Notes
 =============
 
-R1-2 (???-June-2019)
+R1-2 (11-June-2019)
 -----
 * Key detector features implemented:
     * Camera modes now read into structs at startup

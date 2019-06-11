@@ -61,7 +61,7 @@ sudo ./startEPICS.sh
 
 Note that running as sudo is not required if connecting via product ID.
 
-Further documentation is available at https://jwlodek.github.io/ADUVC  
+Further documentation, including CSS screenshots and usage information, is available at the driver's [website](https://jwlodek.github.io/ADUVC).
 
 ### Possible use cases
 
