@@ -85,7 +85,9 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s UVC Error: %s\n", 
                 driverName, functionName, uvc_strerror(status));
     if(status != UVC_ERROR_OTHER){
-        updateStatus(uvc_strerror(status));
+        char errorMessage[25];
+        epicsSnprintf(errorMessage, sizeof(errorMessage), "UVC Error: %s", uvc_strerror(status));
+        updateStatus(errorMessage);
     }
 }
 
@@ -97,7 +99,7 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
  */
 void ADUVC::updateStatus(const char* status){
     char statusMessage[25];
-    epicsSnprintf(statusMessage, sizeof(statusMessage), "UVC Error: %s", status);
+    epicsSnprintf(statusMessage, sizeof(statusMessage), "%s", status);
     setStringParam(ADStatusMessage, statusMessage);
     callParamCallbacks();
 }
