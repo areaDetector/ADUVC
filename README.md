@@ -3,19 +3,19 @@
 Author: Jakub Wlodek  
 Corresponding Author: Kazimierz Gofron  
 Created: July 19, 2018  
-Last Updated: January 18, 2018  
+Last Updated: January 18, 2019   
 Copyright (c): 2018-2019 Brookhaven National Laboratory  
 
 ### An EPICS Driver for USB Video Class (UVC) devices
 
-Release versions of this driver are available on Github. Release notes are available on https://jwlodek.github.io/ADUVC. Please report any problems or feature requests on the issues page on https://github.com/jwlodek/ADUVC.
+Release versions of this driver are available on Github. Release notes are available on https://jwlodek.github.io/ADUVC. Please report any problems or feature requests on the issues page on https://github.com/epicsNSLS2-areaDetector/ADUVC.
 
 ### Installation
 
 Prior to installing the ADUVC area detector driver, there are several dependencies that must be met. First, libusb, libjpeg, and cmake and their development packages must be installed. On a debian based linux machine, this can be done with the following command:
 
 ```
-sudo apt install libusb-dev libjpeg-dev cmake
+sudo apt install libusb-dev libusub-1.0-0-dev libjpeg-dev cmake
 ```
 If you wish to use the libjpeg version included with ADSupport, it is important to specifiy that during the build of libuvc, because otherwise there will be a conflict when building ADUVC. The simplest solution is to set JPEG_EXTERNAL=YES in the CONFIG_SITE.local file in the configure directory at the top level of areaDetector.  
 
@@ -61,7 +61,7 @@ sudo ./startEPICS.sh
 
 Note that running as sudo is not required if connecting via product ID.
 
-Further documentation is available at https://jwlodek.github.io/ADUVC  
+Further documentation, including CSS screenshots and usage information, is available at the driver's [website](https://jwlodek.github.io/ADUVC).
 
 ### Possible use cases
 
@@ -90,7 +90,7 @@ There are also several more traditional industrial cameras that use the UVC stan
 * If using ADUVC with Virtualbox, you need to passthrough the hold of the camera to the guest OS. Instructions for doing so  can be found on this website: https://scribles.net/using-webcam-in-virtualbox-guest-os-on-windows-host/
 
 
-### USB Camera IOC Issues
+### Fixing issues with root ownership of UVC devices
 
 * The  USB camera device is typically owned by root, which prevents EPICS IOC from running as softioc user, and automatic startup using procServer. To grant access to USB camera device by  other users, such as softioc, we wrote udev rules.
 

@@ -49,8 +49,10 @@
         Once the driver is installed, you may start the ioc by entering the IOC folder and running 'sudo ./startEPICS.sh'. Sudo access is important
         because access to UVC devices is limited to users with root permissions. You may then integrate ADUVC into your area detector screen setup.
         Below is an image of the ADUVC base control screen. It extends the standard ADBase screen with UVC controls for various camera functionality,
-        such as brightness, exposure, backlight compenstation, saturation, etc. Currently the driver only supports 8-bit RGB images (most UVC cameras
-        only allow for this anyway), but support for more formats is planned in R1-1.
+        such as brightness, exposure, backlight compenstation, saturation, etc. The driver supports a variety of UVC formats, though the two that are used
+        the most often are MJPEG and Uncompressed. Because acquisition modes are locked down in most UVC cameras, as of R1-2 there has been added a section
+        to the screen that allows for selecting from up to the 7 most useful acquisition modes supported by the camera. If the camera has fewer than 7 modes,
+        the remaining ones will show as Unused.
     </p>
     <img src="assets/ADUVCBase.png" alt="ADUVC base screen" />
     <p class="text-section-local">The ADUVC Base screen. Based on the ADBase screen with added controls specific to ADUVC.</p>
@@ -58,6 +60,32 @@
     <h4>Release Notes:</h4>
     <div class="text-section-local">
     <!--RELEASE START-->
+
+<h1>Release Notes</h1>
+<h4>R1-2 (11-June-2019)</h4>
+<ul>
+<li>
+<p>Key detector features implemented:</p>
+<ul>
+<li>Camera modes now read into structs at startup</li>
+<li>Valid camera mode structs selectable from dropdown in CSS - improves usability</li>
+<li>Autosave functionality tested and working.</li>
+<li>More extensive status messages/detector feedback</li>
+</ul>
+</li>
+<li>
+<p>Key fixes and improvements</p>
+<ul>
+<li>Removed unused PVs (ADUVC_VendorID, ADUVC_ProductID)</li>
+<li>Fixed memory leak caused by early return from frame conversion function on error</li>
+<li>Added Makefiles to the support modules</li>
+<li>Documentation updates</li>
+<li>Added information on using camera with Virtual Box</li>
+<li>Removed newlines from status messages for better readability.</li>
+<li>CSS screen updated</li>
+</ul>
+</li>
+</ul>
 <h4>R1-1 (28-January-2019)</h4>
 <ul>
 <li>
@@ -133,14 +161,13 @@
 <li>No custom screens (uses ADBase screen)</li>
 </ul>
 </li>
-</ul></ul>    
-
-<!--RELEASE END-->
+</ul>
+    <!--RELEASE END-->
     </div>
     <hr />
     <h4>Issues and pull requests:</h4>
     <p class="text-section-local">
-        To submit an issue or a pull request for ADUVC, please do so at the source fork on <a href = "https://github.com/jwlodek/ADUVC">Github</a>.
+        To submit an issue or a pull request for ADUVC, please do so at the source fork on <a href = "https://github.com/epicsNSLS2-areaDetector/ADUVC">Github</a>.
     </p>
     <h4>Important links:</h4>
     <ul>

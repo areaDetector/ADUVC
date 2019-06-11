@@ -1,9 +1,3 @@
-file "ADUVC_settings.req",  P=$(P),  R=cam1:
-file "ADBase_settings.req",       P=$(P),  R=cam1:
-file "NDPluginBase_settings.req", P=$(P),  R=image1:
-file "NDStdArrays_settings.req",  P=$(P),  R=image1:
-file "commonPlugin_settings.req", P=$(P)
-file "NDPluginFile_settings.req", P=$(P), R=PW1:
-file "NDPluginPipeWriter_settings.req", P=$(P), R=PW1:
-file "NDPluginFile_settings.req", P=$(P), R=IMM1:
-file "NDFileIMM_settings.req", P=$(P), R=IMM1:
+file "ADUVC_settings.req",          P=$(P),  R=cam1:
+file "NDStdArrays_settings.req",    P=$(P),  R=image1:
+file "commonPlugin_settings.req",   P=$(P)
