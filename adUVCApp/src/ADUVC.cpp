@@ -712,7 +712,7 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
     }
     // only push image if the data transfer was successful
     if(status == asynSuccess){
-        pArray->pAttributeList->add("DataType", "Data Type", NDAttrInt32, &dataType);
+        //pArray->pAttributeList->add("DataType", "Data Type", NDAttrInt32, &dataType);
         pArray->pAttributeList->add("ColorMode", "Color Mode", NDAttrInt32, &colorMode);
         //increment the array counter
         int arrayCounter;
@@ -798,6 +798,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
+        pArray->uniqueId = numImages;
         uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, arrayInfo.totalBytes);
         acquireStop();
     }
@@ -809,6 +810,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
+        pArray->uniqueId = numImages;
         uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, arrayInfo.totalBytes);
         getIntegerParam(ADNumImages, &desiredImages);
         
@@ -824,6 +826,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         getIntegerParam(ADNumImagesCounter, &numImages);
         numImages++;
         setIntegerParam(ADNumImagesCounter, numImages);
+        pArray->uniqueId = numImages;
         uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, arrayInfo.totalBytes);
     }
 
