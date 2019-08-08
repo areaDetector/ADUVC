@@ -86,7 +86,7 @@ void newFrameCallback(uvc_frame_t* frame, void* ptr){
         cvImg = Mat(rgb->height, rgb->width, CV_8UC3, (uchar*)rgb->data);
         cvtColor(cvImg, cvImg, COLOR_RGB2BGR);
     }
-    else if(frame->frame_format == UVC_FRAME_FORMAT_YUYV){
+    else if(frame->frame_format == UVC_FRAME_FORMAT_UNCOMPRESSED){
         printf("Copying uncompressed frame\n");
         cvImg = Mat(frame->height, frame->width, CV_16SC1, (uchar*) frame->data);
     }
@@ -181,7 +181,7 @@ int main(int argc, char** argv){
     }
 
     //connect to the device and start streaming for 200 frames. Change frame format here to use different formats
-    status = uvc_get_stream_ctrl_format_size(deviceHandle, &ctrl, UVC_FRAME_FORMAT_MJPEG, width, height, 30);
+    status = uvc_get_stream_ctrl_format_size(deviceHandle, &ctrl, UVC_FRAME_FORMAT_UNCOMPRESSED, width, height, 30);
     void* frame_data;
     if(status<0){
         uvc_perror(status, "get_mode");
