@@ -626,6 +626,13 @@ void ADUVC::acquireStop(){
  * @params[in]: frame   -> pointer to frame recieved from the camera
  */
 void ADUVC::checkValidFrameSize(uvc_frame_t* frame){
+    // if user has auto adjust toggled off, skip this.
+    int adjust;
+    getIntegerParam(ADUVC_AutoAdjust, &adjust);
+    if(adjust == 0){
+        this->validatedFrameSize = true;
+        return;
+    }
     const char* functionName = "checkValidFrameSize";
     int reg_sizex, reg_sizey, colorMode, dataType;
     getIntegerParam(NDColorMode, &colorMode);
@@ -1286,6 +1293,7 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
     createParam(ADUVC_CameraFormatString,           asynParamInt32,     &ADUVC_CameraFormat);
     createParam(ADUVC_FormatDescriptionString,      asynParamOctet,     &ADUVC_FormatDescription);
     createParam(ADUVC_ApplyFormatString,            asynParamInt32,     &ADUVC_ApplyFormat);
+    createParam(ADUVC_AutoAdjustString,             asynParamInt32,     &ADUVC_AutoAdjust);
     createParam(ADUVC_BrightnessString,             asynParamInt32,     &ADUVC_Brightness);
     createParam(ADUVC_ContrastString,               asynParamInt32,     &ADUVC_Contrast);
     createParam(ADUVC_PowerLineString,              asynParamInt32,     &ADUVC_PowerLine);

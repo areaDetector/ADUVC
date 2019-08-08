@@ -38,6 +38,7 @@
 #define ADUVC_CameraFormatString                "UVC_CAMERA_FORMAT"         //asynInt32
 #define ADUVC_FormatDescriptionString           "UVC_FORMAT_DESCRIPTION"    //asynOctet
 #define ADUVC_ApplyFormatString                 "UVC_APPLY_FORMAT"          //asynInt32
+#define ADUVC_AutoAdjustString                  "UVC_AUTO_ADJUST"           //asynInt32
 #define ADUVC_GammaString                       "UVC_GAMMA"                 //asynInt32
 #define ADUVC_BacklightCompensationString       "UVC_BACKLIGHT"             //asynInt32
 #define ADUVC_BrightnessString                  "UVC_BRIGHTNESS"            //asynInt32
@@ -109,6 +110,7 @@ class ADUVC : ADDriver{
         int ADUVC_CameraFormat;
         int ADUVC_FormatDescription;
         int ADUVC_ApplyFormat;
+        int ADUVC_AutoAdjust;
         int ADUVC_Gamma;
         int ADUVC_BacklightCompensation;
         int ADUVC_Brightness;

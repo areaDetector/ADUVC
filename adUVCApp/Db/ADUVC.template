@@ -15,12 +15,12 @@
 record(ao, "$(P)$(R)UVCFramerate"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_FRAMERATE")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_FRAMERATE")
 }
 
 record(ai, "$(P)$(R)UVCFramerate_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_FRAMERATE")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_FRAMERATE")
     field(SCAN, "I/O Intr")
 }
 
@@ -30,12 +30,12 @@ record(ai, "$(P)$(R)UVCFramerate_RBV"){
 record(ao, "$(P)$(R)UVCComplianceLevel"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_COMPLIANCE")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_COMPLIANCE")
 }
 
 record(ai, "$(P)$(R)UVCComplianceLevel_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_COMPLIANCE")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_COMPLIANCE")
     field(SCAN, "I/O Intr")
 }
 
@@ -45,12 +45,12 @@ record(ai, "$(P)$(R)UVCComplianceLevel_RBV"){
 record(ao, "$(P)$(R)UVCReferenceCount"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_REFCOUNT")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_REFCOUNT")
 }
 
 record(ai, "$(P)$(R)UVCReferenceCount_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_REFCOUNT")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_REFCOUNT")
     field(SCAN, "I/O Intr")
 }
 
@@ -60,27 +60,28 @@ record(ai, "$(P)$(R)UVCReferenceCount_RBV"){
 record(ao, "$(P)$(R)UVCVendorID"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_VENDOR")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_VENDOR")
 }
 
 record(ai, "$(P)$(R)UVCVendorID_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_VENDOR")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_VENDOR")
     field(SCAN, "I/O Intr")
 }
 
 ##############################################
 # stores the product id for the UVC camera. Used for connecting to it if serial is unavailable
 ################################################
+
 record(ao, "$(P)$(R)UVCProductID"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_PRODUCT")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_PRODUCT")
 }
 
 record(ai, "$(P)$(R)UVCProductID_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_PRODUCT")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_PRODUCT")
     field(SCAN, "I/O Intr")
 }
 
@@ -90,7 +91,7 @@ record(ai, "$(P)$(R)UVCProductID_RBV"){
 record(mbbo, "$(P)$(R)UVCImageFormat"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_FORMAT")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_FORMAT")
     field(ZRST, "MJPEG")
     field(ZRVL, "0")
     field(ONST, "RGB")
@@ -105,7 +106,7 @@ record(mbbo, "$(P)$(R)UVCImageFormat"){
     field(FVVL, "5")
     field(SXST, "Uncompressed")
     field(SXVL, "6")
-    field(VAL, "0")
+    field(VAL,  "0")
     info(autosaveFields, "VAL")
 }
 record(mbbi, "$(P)$(R)UVCImageFormat_RBV"){
@@ -134,7 +135,7 @@ record(mbbi, "$(P)$(R)UVCImageFormat_RBV"){
 record(mbbo, "$(P)$(R)UVCCameraFormat"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_CAMERA_FORMAT")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_CAMERA_FORMAT")
     field(ZRST, "Supported Mode 1")
     field(ZRVL, "0")
     field(ONST, "Supported Mode 2")
@@ -149,7 +150,7 @@ record(mbbo, "$(P)$(R)UVCCameraFormat"){
     field(FVVL, "5")
     field(SXST, "Supported Mode 7")
     field(SXVL, "6")
-    field(VAL, "0")
+    field(VAL,  "0")
     info(autosaveFields, "VAL")
 }
 
@@ -186,18 +187,40 @@ record(waveform, "$(P)$(R)UVCFormatDescription_RBV"){
 
 ##############################################
 # Applies the supported format to the IOC
-################################################
+##############################################
 record(ao, "$(P)$(R)UVCApplyFormat"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_APPLY_FORMAT")
-    field(VAL, "0")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_APPLY_FORMAT")
+    field(VAL,  "0")
     field(autosaveFields, "VAL")
 }
 
 record(ai, "$(P)$(R)UVCApplyFormat_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_APPLY_FORMAT")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_APPLY_FORMAT")
+    field(SCAN, "I/O Intr")
+}
+
+##############################################
+# Toggles auto adjusting Color Mode, Data Type
+##############################################
+record(bo, "$(P)$(R)UVCAutoAdjust"){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR=0),$(TIMEOUT=1))UVC_AUTO_ADJUST")
+    field(ZNAM, "Disable")
+    field(ONAM, "Enable")
+    field(VAL,  "1")
+    field(OSV,  "MINOR")
+    info(autosaveFields, "VAL")
+}
+
+record(bi, "$(P)$(R)UVCAutoAdjust_RBV"){
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR=0),$(TIMEOUT=1))UVC_AUTO_ADJUST")
+    field(ZNAM, "Disable")
+    field(ONAM, "Enable")
     field(SCAN, "I/O Intr")
 }
 
@@ -211,12 +234,12 @@ record(ai, "$(P)$(R)UVCApplyFormat_RBV"){
 record(ao, "$(P)$(R)UVCGamma"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAMMA")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAMMA")
 }
 
 record(ai, "$(P)$(R)UVCGamma_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAMMA")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAMMA")
     field(SCAN, "I/O Intr")
 }
 
@@ -226,12 +249,12 @@ record(ai, "$(P)$(R)UVCGamma_RBV"){
 record(ao, "$(P)$(R)UVCBacklightCompensation"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_BACKLIGHT")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_BACKLIGHT")
 }
 
 record(ai, "$(P)$(R)UVCBacklightCompensation_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_BACKLIGHT")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_BACKLIGHT")
     field(SCAN, "I/O Intr")
 }
 
@@ -241,12 +264,12 @@ record(ai, "$(P)$(R)UVCBacklightCompensation_RBV"){
 record(ao, "$(P)$(R)UVCBrightness"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_BRIGHTNESS")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_BRIGHTNESS")
 }
 
 record(ai, "$(P)$(R)UVCBrightness_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_BRIGHTNESS")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_BRIGHTNESS")
     field(SCAN, "I/O Intr")
 }
 
@@ -256,29 +279,14 @@ record(ai, "$(P)$(R)UVCBrightness_RBV"){
 record(ao, "$(P)$(R)UVCContrast"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_CONTRAST")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_CONTRAST")
 }
 
 record(ai, "$(P)$(R)UVCContrast_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_CONTRAST")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_CONTRAST")
     field(SCAN, "I/O Intr")
 }
-
-######################################
-# Stores the Gain value -> deprecated because there is the ADGain PV already
-######################################
-#record(ao, "$(P)$(R)UVCGain"){
-#    field(PINI, "YES")
-#    field(DTYP, "asynInt32")
-#    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAIN")
-#}
-#
-#record(ai, "$(P)$(R)UVCGain_RBV"){
-#    field(DTYP, "asynInt32")
-#    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_GAIN")
-#    field(SCAN, "I/O Intr")
-#}
 
 ######################################
 # Stores the Power line frequency value
@@ -286,12 +294,12 @@ record(ai, "$(P)$(R)UVCContrast_RBV"){
 record(ao, "$(P)$(R)UVCPowerLine"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_POWER")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_POWER")
 }
 
 record(ai, "$(P)$(R)UVCPowerLine_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_POWER")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_POWER")
     field(SCAN, "I/O Intr")
 }
 
@@ -301,12 +309,12 @@ record(ai, "$(P)$(R)UVCPowerLine_RBV"){
 record(ao, "$(P)$(R)UVCHue"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_HUE")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_HUE")
 }
 
 record(ai, "$(P)$(R)UVCHue_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_HUE")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_HUE")
     field(SCAN, "I/O Intr")
 }
 
@@ -316,12 +324,12 @@ record(ai, "$(P)$(R)UVCHue_RBV"){
 record(ao, "$(P)$(R)UVCSaturation"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SATURATION")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SATURATION")
 }
 
 record(ai, "$(P)$(R)UVCSaturation_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SATURATION")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SATURATION")
     field(SCAN, "I/O Intr")
 }
 
@@ -331,11 +339,11 @@ record(ai, "$(P)$(R)UVCSaturation_RBV"){
 record(ao, "$(P)$(R)UVCSharpness"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SHARPNESS")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SHARPNESS")
 }
 
 record(ai, "$(P)$(R)UVCSharpness_RBV"){
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SHARPNESS")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SHARPNESS")
     field(SCAN, "I/O Intr")
 }
