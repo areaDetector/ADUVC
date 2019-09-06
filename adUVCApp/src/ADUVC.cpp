@@ -183,7 +183,7 @@ asynStatus ADUVC::readSupportedCameraFormats(){
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
         "%s::%s Reading in supported camera formats\n", driverName, functionName);
     asynStatus status = asynSuccess;
-    ADUVC_CamFormat_t* formatBuffer = (ADUVC_CamFormat_t*) calloc(1, 256 * sizeof(ADUVC_CamFormat_t));
+    ADUVC_CamFormat_t* formatBuffer = (ADUVC_CamFormat_t*) calloc(1, 64 * sizeof(ADUVC_CamFormat_t));
     int bufferIndex = 0;
     if(this->pdeviceHandle != NULL){
         uvc_streaming_interface_t* interfaces = this->pdeviceHandle->info->stream_ifs;
@@ -227,14 +227,14 @@ void ADUVC:: populateCameraFormat(ADUVC_CamFormat_t* camFormat, uvc_format_desc_
     const char* functionName = "populateCameraFormat";
     switch(format_desc->bDescriptorSubtype){
         case UVC_VS_FORMAT_MJPEG:
-            camFormat->frameFormat = ADUVC_FrameMJPEG;
-            camFormat->dataType = NDUInt8;
-            camFormat->colorMode = NDColorModeRGB1;
+            camFormat->frameFormat  = ADUVC_FrameMJPEG;
+            camFormat->dataType     = NDUInt8;
+            camFormat->colorMode    = NDColorModeRGB1;
             break;
         case UVC_VS_FORMAT_UNCOMPRESSED:
-            camFormat->frameFormat = ADUVC_FrameUncompressed;
-            camFormat->dataType = NDUInt16;
-            camFormat->colorMode = NDColorModeMono;
+            camFormat->frameFormat  = ADUVC_FrameUncompressed;
+            camFormat->dataType     = NDUInt16;
+            camFormat->colorMode    = NDColorModeMono;
             break;
         default:
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
@@ -244,9 +244,10 @@ void ADUVC:: populateCameraFormat(ADUVC_CamFormat_t* camFormat, uvc_format_desc_
     camFormat->xSize = frame_desc->wWidth;
     camFormat->ySize = frame_desc->wHeight;
     camFormat->framerate = 10000000 / frame_desc->dwDefaultFrameInterval;
-    camFormat->formatDesc = (char*) malloc(256);
-    epicsSnprintf(camFormat->formatDesc, 256, "%s, X: %d, Y: %d, Rate: %d/s", 
-        get_string_for_subtype(format_desc->bDescriptorSubtype), (int) camFormat->xSize, (int) camFormat->ySize, camFormat->framerate);
+
+    epicsSnprintf(camFormat->formatDesc, SUPPORTED_FORMAT_DESC_BUFF, "%s, X: %d, Y: %d, Rate: %d/s", 
+        get_string_for_subtype(format_desc->bDescriptorSubtype), (int) camFormat->xSize, 
+        (int) camFormat->ySize, camFormat->framerate);
 }
 
 
@@ -257,8 +258,7 @@ void ADUVC:: populateCameraFormat(ADUVC_CamFormat_t* camFormat, uvc_format_desc_
  * @return: void
  */
 void ADUVC::initEmptyCamFormat(int arrayIndex){
-    this->supportedFormats[arrayIndex].formatDesc = (char*) malloc(256);
-    epicsSnprintf(this->supportedFormats[arrayIndex].formatDesc, 256, "Unused Camera Format");
+    epicsSnprintf(this->supportedFormats[arrayIndex].formatDesc, SUPPORTED_FORMAT_DESC_BUFF, "Unused Camera Format");
     this->supportedFormats[arrayIndex].frameFormat = ADUVC_FrameUnsupported;
 }
 
@@ -271,12 +271,12 @@ void ADUVC::initEmptyCamFormat(int arrayIndex){
  * @return: 0 if the two structs are identical, -1 if they are not
  */
 int ADUVC::compareFormats(ADUVC_CamFormat_t camFormat1, ADUVC_CamFormat_t camFormat2){
-    if (camFormat1.xSize != camFormat2.xSize) return -1;
-    if (camFormat1.ySize != camFormat2.ySize) return -1;
-    if (camFormat1.colorMode != camFormat2.colorMode) return -1;
-    if (camFormat1.dataType != camFormat2.dataType) return -1;
-    if (camFormat1.framerate != camFormat2.framerate) return -1;
-    if (camFormat1.frameFormat != camFormat2.frameFormat) return -1;
+    if (camFormat1.xSize        != camFormat2.xSize)        return -1;
+    if (camFormat1.ySize        != camFormat2.ySize)        return -1;
+    if (camFormat1.colorMode    != camFormat2.colorMode)    return -1;
+    if (camFormat1.dataType     != camFormat2.dataType)     return -1;
+    if (camFormat1.framerate    != camFormat2.framerate)    return -1;
+    if (camFormat1.frameFormat  != camFormat2.frameFormat)  return -1;
     return 0;
 }
 
@@ -296,6 +296,7 @@ bool ADUVC::formatAlreadySaved(ADUVC_CamFormat_t camFormat){
     }
     return false;
 }
+
 
 
 /**
@@ -330,18 +331,15 @@ int ADUVC::selectBestCameraFormats(ADUVC_CamFormat_t* formatBuffer, int numForma
                 }
             }
         }
-        this->supportedFormats[readFormats].colorMode = formatBuffer[bestFormatIndex].colorMode;
-        this->supportedFormats[readFormats].dataType = formatBuffer[bestFormatIndex].dataType;
-        this->supportedFormats[readFormats].frameFormat = formatBuffer[bestFormatIndex].frameFormat;
-        this->supportedFormats[readFormats].framerate = formatBuffer[bestFormatIndex].framerate;
-        this->supportedFormats[readFormats].xSize = formatBuffer[bestFormatIndex].xSize;
-        this->supportedFormats[readFormats].ySize = formatBuffer[bestFormatIndex].ySize;
-        this->supportedFormats[readFormats].formatDesc = (char*) malloc(256);
-        memcpy(this->supportedFormats[readFormats].formatDesc, formatBuffer[bestFormatIndex].formatDesc, 256);
+        this->supportedFormats[readFormats].colorMode       = formatBuffer[bestFormatIndex].colorMode;
+        this->supportedFormats[readFormats].dataType        = formatBuffer[bestFormatIndex].dataType;
+        this->supportedFormats[readFormats].frameFormat     = formatBuffer[bestFormatIndex].frameFormat;
+        this->supportedFormats[readFormats].framerate       = formatBuffer[bestFormatIndex].framerate;
+        this->supportedFormats[readFormats].xSize           = formatBuffer[bestFormatIndex].xSize;
+        this->supportedFormats[readFormats].ySize           = formatBuffer[bestFormatIndex].ySize;
+
+        memcpy(this->supportedFormats[readFormats].formatDesc, formatBuffer[bestFormatIndex].formatDesc, SUPPORTED_FORMAT_DESC_BUFF);
         readFormats++;
-    }
-    for(int j = 0; j < numFormats; j++){
-        free(formatBuffer[j].formatDesc);
     }
     return readFormats;
 }
@@ -416,11 +414,7 @@ asynStatus ADUVC::disconnectFromDeviceUVC(){
     const char* functionName = "disconnectFromDeviceUVC";
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
         "%s::%s Calling all free functions for ADUVC\n", driverName, functionName);
-    int i;
-    for(i = 0; i< SUPPORTED_FORMAT_COUNT; i++){
-        // free mem in supported
-        free(this->supportedFormats[i].formatDesc);
-    }
+
     if(connected == 1){
         uvc_close(pdeviceHandle);
         uvc_unref_device(pdevice);
@@ -605,6 +599,9 @@ void ADUVC::acquireStop(){
     //stop_streaming will block until last callback is processed.
     uvc_stop_streaming(pdeviceHandle);
 
+    // reset the validatedFrameSize flag
+    this->validatedFrameSize = false;
+
     //update PV values
     setIntegerParam(ADStatus, ADStatusIdle);
     setIntegerParam(ADAcquire, 0);
@@ -618,6 +615,71 @@ void ADUVC::acquireStop(){
 //-------------------------------------------------------
 // UVC Image Processing and callback functions
 //-------------------------------------------------------
+
+
+/**
+ * Function that is meant to adjust the NDDataType and NDColorMode. First check if current settings
+ * are already valid. If not then attempt to adjust them to fit the frame recieved from the camera.
+ * If able to adjust properly to fit the frame size, then set a validated tag to true - only compute
+ * on the first frame on acquisition start.
+ * 
+ * @params[in]: frame   -> pointer to frame recieved from the camera
+ */
+void ADUVC::checkValidFrameSize(uvc_frame_t* frame){
+    // if user has auto adjust toggled off, skip this.
+    int adjust;
+    getIntegerParam(ADUVC_AutoAdjust, &adjust);
+    if(adjust == 0){
+        this->validatedFrameSize = true;
+        return;
+    }
+    const char* functionName = "checkValidFrameSize";
+    int reg_sizex, reg_sizey, colorMode, dataType;
+    getIntegerParam(NDColorMode, &colorMode);
+    getIntegerParam(NDDataType, &dataType);
+    getIntegerParam(ADSizeX, &reg_sizex);
+    getIntegerParam(ADSizeY, &reg_sizey);
+    int computedBytes = reg_sizex * reg_sizey;
+    if((NDDataType_t) dataType == NDUInt16 || (NDDataType_t) dataType == NDInt16)
+        computedBytes = computedBytes * 2;
+    if((NDColorMode_t) colorMode == NDColorModeRGB1)
+        computedBytes = computedBytes * 3;
+
+    int num_bytes = frame->data_bytes;
+    if(computedBytes == num_bytes){
+        this->validatedFrameSize = true;
+        return;
+    }
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+        "%s::%s Selected dtype and color mode incompatible, attempting to auto-adjust.\n", driverName, functionName);
+
+    int xsize       = frame->width;
+    int ysize       = frame->height;
+    int res         = num_bytes / xsize;
+    res             = res / ysize;
+    switch(res) {
+        case 2:
+            // num bytes / (xsize * ysize) = 2 means a 16 bit mono image. 2 bytes per pixel
+            setIntegerParam(NDColorMode,    NDColorModeMono);
+            setIntegerParam(NDDataType,     NDUInt16);
+            break;
+        case 3:
+            // num bytes / (xsize * ysize) = 3 means 8 bit rgb image. 1 byte per pixel per 3 colors.
+            setIntegerParam(NDColorMode,    NDColorModeRGB1);
+            setIntegerParam(NDDataType,     NDUInt8);
+            break;
+        case 6:
+            // num bytes / (xsize * ysize) = 6 means 16 bit rgb image. 2 bytes per pixel per 3 colors
+            setIntegerParam(NDColorMode,    NDColorModeRGB1);
+            setIntegerParam(NDDataType,     NDUInt16);
+            break;
+        default:
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Couldn't validate frame size.\n", driverName, functionName);
+            return;
+    }
+    this->validatedFrameSize = true;
+}
+
 
 /*
  * Function used as a wrapper function for the callback.
@@ -754,6 +816,11 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     //TODO: Timestamps for images
     //epicsTimeStamp currentTime;
     static const char* functionName = "newFrameCallback";
+
+    // check to see if frame size matches, if not, adjust color mode and data type to try and fit frame.
+    // **ONLY FOR UNCOMPRESSED FRAMES - otherwise byte sizes will not match **
+    if(!this->validatedFrameSize && getFormatFromPV() == UVC_FRAME_FORMAT_UNCOMPRESSED)
+        checkValidFrameSize(frame);
 
     getIntegerParam(NDColorMode, &colorMode);
     getIntegerParam(NDDataType, &dataType);
@@ -1226,6 +1293,7 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
     createParam(ADUVC_CameraFormatString,           asynParamInt32,     &ADUVC_CameraFormat);
     createParam(ADUVC_FormatDescriptionString,      asynParamOctet,     &ADUVC_FormatDescription);
     createParam(ADUVC_ApplyFormatString,            asynParamInt32,     &ADUVC_ApplyFormat);
+    createParam(ADUVC_AutoAdjustString,             asynParamInt32,     &ADUVC_AutoAdjust);
     createParam(ADUVC_BrightnessString,             asynParamInt32,     &ADUVC_Brightness);
     createParam(ADUVC_ContrastString,               asynParamInt32,     &ADUVC_Contrast);
     createParam(ADUVC_PowerLineString,              asynParamInt32,     &ADUVC_PowerLine);

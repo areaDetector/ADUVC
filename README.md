@@ -31,7 +31,7 @@ make
 ```
 The driver is now installed.  
 
-Libuvc can also be built from source at: https://github.com/ktossell/libuvc.git  
+Libuvc can also be built from source at: https://github.com/libuvc/libuvc.git  
 Documentation for the library can be found at: https://int80k.com/libuvc/doc/
 
 

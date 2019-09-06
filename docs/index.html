@@ -62,6 +62,30 @@
     <!--RELEASE START-->
 
 <h1>Release Notes</h1>
+<h4>R1-3 (06-September-2019)</h4>
+<ul>
+<li>
+<p>Key detector features implemented:</p>
+<ul>
+<li>Added IOC feature to auto-adjust camera settings based on operating mode.</li>
+</ul>
+</li>
+<li>
+<p>Key fixes and improvements</p>
+<ul>
+<li>Minor screen updates</li>
+<li>Repoint libuvc upstream repo. New repo has issues with CMake file</li>
+<li>Add documentation for fixing root ownership issues of UVC devices</li>
+</ul>
+</li>
+<li>
+<p>Known Issues</p>
+<ul>
+<li>Auto adjust feature can break with certain odd configurations of the camera</li>
+<li>Uses array size to determine 8/16 bit and Mono/RGB, but certain compressed formats break the adjuster.</li>
+</ul>
+</li>
+</ul>
 <h4>R1-2 (11-June-2019)</h4>
 <ul>
 <li>

@@ -20,7 +20,8 @@
 #define ADUVC_MODIFICATION 0
 
 
-#define SUPPORTED_FORMAT_COUNT 7
+#define SUPPORTED_FORMAT_COUNT      7
+#define SUPPORTED_FORMAT_DESC_BUFF  256
 
 
 // includes
@@ -37,6 +38,7 @@
 #define ADUVC_CameraFormatString                "UVC_CAMERA_FORMAT"         //asynInt32
 #define ADUVC_FormatDescriptionString           "UVC_FORMAT_DESCRIPTION"    //asynOctet
 #define ADUVC_ApplyFormatString                 "UVC_APPLY_FORMAT"          //asynInt32
+#define ADUVC_AutoAdjustString                  "UVC_AUTO_ADJUST"           //asynInt32
 #define ADUVC_GammaString                       "UVC_GAMMA"                 //asynInt32
 #define ADUVC_BacklightCompensationString       "UVC_BACKLIGHT"             //asynInt32
 #define ADUVC_BrightnessString                  "UVC_BRIGHTNESS"            //asynInt32
@@ -62,7 +64,7 @@ typedef enum {
 
 /* Struct for individual supported camera format - Used to auto read modes into dropdown for easier operation */
 typedef struct ADUVC_CamFormat{
-    char* formatDesc;
+    char formatDesc[SUPPORTED_FORMAT_DESC_BUFF];
     size_t xSize;
     size_t ySize;
     int framerate;
@@ -108,6 +110,7 @@ class ADUVC : ADDriver{
         int ADUVC_CameraFormat;
         int ADUVC_FormatDescription;
         int ADUVC_ApplyFormat;
+        int ADUVC_AutoAdjust;
         int ADUVC_Gamma;
         int ADUVC_BacklightCompensation;
         int ADUVC_Brightness;
@@ -157,6 +160,9 @@ class ADUVC : ADDriver{
         int withShutter = 0;
 
         int firstFrame = 0;
+
+        // bool check to see if frame size was validated with selected dtype and color mode
+        bool validatedFrameSize = false;
 
         // ----------------------------------------
         // UVC Functions - Logging/Reporting
@@ -223,6 +229,9 @@ class ADUVC : ADDriver{
 
         //function that converts a UVC frame into an NDArray
         asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, size_t imBytes);
+
+        // function that attempts to fit data type + color mode to frame if size doesn't match
+        void checkValidFrameSize(uvc_frame_t* frame);
 
         //function that gets information from a UVC device
         void getDeviceImageInformation();

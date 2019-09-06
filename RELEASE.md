@@ -8,6 +8,20 @@ ADUVC requires libusb, libuvc, epics-base, epics-modules, ADCore, and ADSupport.
 Release Notes
 =============
 
+R1-3 (06-September-2019)
+-----
+* Key detector features implemented:
+    * Added IOC feature to auto-adjust camera settings based on operating mode.
+
+* Key fixes and improvements
+    * Minor screen updates
+    * Repoint libuvc upstream repo. New repo has issues with CMake file
+    * Add documentation for fixing root ownership issues of UVC devices
+
+* Known Issues
+    * Auto adjust feature can break with certain odd configurations of the camera
+    * Uses array size to determine 8/16 bit and Mono/RGB, but certain compressed formats break the adjuster.
+
 R1-2 (11-June-2019)
 -----
 * Key detector features implemented:
