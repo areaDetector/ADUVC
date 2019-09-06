@@ -12,6 +12,8 @@ Release versions of this driver are available on Github. Release notes are avail
 
 ### Installation
 
+**Note - ADUVC has only been tested on linux-x86_64**
+
 Prior to installing the ADUVC area detector driver, there are several dependencies that must be met. First, libusb, libjpeg, and cmake and their development packages must be installed. On a debian based linux machine, this can be done with the following command:
 
 ```
