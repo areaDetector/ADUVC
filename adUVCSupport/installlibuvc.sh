@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install libuvc by cloning from github and running cmake
-git clone https://github.com/ktossell/libuvc.git
+git clone https://github.com/jwlodek/libuvc.git
 cd libuvc
 mkdir build
 cd build
