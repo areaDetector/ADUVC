@@ -339,6 +339,11 @@ int ADUVC::selectBestCameraFormats(ADUVC_CamFormat_t* formatBuffer, int numForma
         this->supportedFormats[readFormats].ySize           = formatBuffer[bestFormatIndex].ySize;
 
         memcpy(this->supportedFormats[readFormats].formatDesc, formatBuffer[bestFormatIndex].formatDesc, SUPPORTED_FORMAT_DESC_BUFF);
+        if(readFormats == 0){
+            setIntegerParam(ADMaxSizeX, formatBuffer[bestFormatIndex].xSize);
+            setIntegerParam(ADMaxSizeY, formatBuffer[bestFormatIndex].ySize);
+        }
+        
         readFormats++;
     }
     return readFormats;
