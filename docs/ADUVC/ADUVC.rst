@@ -220,7 +220,7 @@ Release Notes
 
 MEDM screens
 ------------
-The following is the MEME screen for ADUVC.ald when controlling a USB camera by Shenzhen Reyun Industrial Co., Ltd. This screen is basic and can be used for any USB camera.
+The following is the MEDM screen for ADUVC.ald when controlling a USB camera by Shenzhen Reyun Industrial Co., Ltd. This screen is basic and can be used for any USB camera.
 
 .. figure:: ADUVCBase.png
 
@@ -231,6 +231,7 @@ Known Issues and pull requests
 
 - To submit an issue or a pull request for ADUVC, please do so at the source fork on `Github <https://github.com/epicsNSLS2-areaDetector/ADUVC>`__.
 - Many low end vendors do not assign distinct Serial Numbers (S/N) , and such cameras can not be started usign S/N.
+- Some vendors assign same S/N for the same model, and such multiples of such cameras do not work well when connected to same computer USB hub.
 
 Important links
 ---------------
