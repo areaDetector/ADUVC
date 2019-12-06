@@ -1,0 +1,3592 @@
+
+file {
+	name="/epics/src/support/areaDetector/ADUVC/adUVCApp/op/adl/UVC.adl"
+	version=030114
+}
+display {
+	object {
+		x=2496
+		y=125
+		width=1150
+		height=1000
+	}
+	clr=14
+	bclr=4
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=0
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+rectangle {
+	object {
+		x=0
+		y=4
+		width=1150
+		height=25
+	}
+	"basic attribute" {
+		clr=2
+	}
+}
+rectangle {
+	object {
+		x=127
+		y=37
+		width=107
+		height=21
+	}
+	"basic attribute" {
+		clr=2
+	}
+}
+rectangle {
+	object {
+		x=6
+		y=35
+		width=350
+		height=340
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+}
+text {
+	object {
+		x=155
+		y=38
+		width=50
+		height=20
+	}
+	"basic attribute" {
+		clr=54
+	}
+	textix="Setup"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=74
+		y=350
+		width=90
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Debugging"
+	align="horiz. right"
+}
+"related display" {
+	object {
+		x=173
+		y=350
+		width=70
+		height=20
+	}
+	display[0] {
+		label="asyn record"
+		name="asynRecord.adl"
+		args="P=$(P),R=$(R)AsynIO"
+	}
+	display[1] {
+		label="Save restore status"
+		name="save_restoreStatus_more.adl"
+		args="P=$(P)"
+	}
+	clr=14
+	bclr=51
+}
+text {
+	object {
+		x=64
+		y=321
+		width=100
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Connection"
+	align="horiz. right"
+}
+"message button" {
+	object {
+		x=172
+		y=321
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)AsynIO.CNCT"
+		clr=14
+		bclr=51
+	}
+	label="Connect"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=257
+		y=321
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)AsynIO.CNCT"
+		clr=14
+		bclr=51
+	}
+	label="Disconnect"
+	press_msg="0"
+}
+text {
+	object {
+		x=203
+		y=294
+		width=90
+		height=20
+	}
+	"basic attribute" {
+		clr=63
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		calc="0"
+		chan="$(P)$(R)AsynIO.CNCT"
+	}
+	textix="Connected"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=188
+		y=294
+		width=120
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(R)AsynIO.CNCT"
+	}
+	textix="Disconnected"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=76
+		y=94
+		width=100
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="EPICS name"
+	align="horiz. right"
+}
+text {
+	object {
+		x=56
+		y=119
+		width=120
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Manufacturer"
+	align="horiz. right"
+}
+text {
+	object {
+		x=86
+		y=69
+		width=90
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="asyn port"
+	align="horiz. right"
+}
+text {
+	object {
+		x=126
+		y=144
+		width=50
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Model"
+	align="horiz. right"
+}
+text {
+	object {
+		x=46
+		y=169
+		width=130
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Serial number"
+	align="horiz. right"
+}
+text {
+	object {
+		x=16
+		y=194
+		width=160
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Firmware version"
+	align="horiz. right"
+}
+text {
+	object {
+		x=66
+		y=219
+		width=110
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="SDK version"
+	align="horiz. right"
+}
+text {
+	object {
+		x=36
+		y=244
+		width=140
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Driver version"
+	align="horiz. right"
+}
+text {
+	object {
+		x=36
+		y=269
+		width=140
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="ADCore version"
+	align="horiz. right"
+}
+text {
+	object {
+		x=181
+		y=95
+		width=165
+		height=18
+	}
+	"basic attribute" {
+		clr=54
+	}
+	textix="$(P)$(R)"
+}
+"text update" {
+	object {
+		x=181
+		y=120
+		width=165
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)Manufacturer_RBV"
+		clr=54
+		bclr=4
+	}
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=181
+		y=70
+		width=165
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)PortName_RBV"
+		clr=54
+		bclr=4
+	}
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=181
+		y=145
+		width=165
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)Model_RBV"
+		clr=54
+		bclr=4
+	}
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=181
+		y=170
+		width=165
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)SerialNumber_RBV"
+		clr=54
+		bclr=4
+	}
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=181
+		y=195
+		width=165
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)FirmwareVersion_RBV"
+		clr=54
+		bclr=4
+	}
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=181
+		y=220
+		width=165
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)SDKVersion_RBV"
+		clr=54
+		bclr=4
+	}
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=181
+		y=245
+		width=165
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)DriverVersion_RBV"
+		clr=54
+		bclr=4
+	}
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=181
+		y=270
+		width=165
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)ADCoreVersion_RBV"
+		clr=54
+		bclr=4
+	}
+	format="string"
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=482
+		y=37
+		width=107
+		height=21
+	}
+	"basic attribute" {
+		clr=2
+	}
+}
+rectangle {
+	object {
+		x=360
+		y=35
+		width=350
+		height=165
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+}
+text {
+	object {
+		x=500
+		y=38
+		width=70
+		height=20
+	}
+	"basic attribute" {
+		clr=54
+	}
+	textix="Shutter"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=406
+		y=69
+		width=120
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Shutter mode"
+	align="horiz. right"
+}
+menu {
+	object {
+		x=533
+		y=69
+		width=120
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ShutterMode"
+		clr=14
+		bclr=51
+	}
+}
+text {
+	object {
+		x=426
+		y=118
+		width=100
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Open/Close"
+	align="horiz. right"
+}
+"message button" {
+	object {
+		x=533
+		y=118
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ShutterControl"
+		clr=14
+		bclr=51
+	}
+	label="Open"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=600
+		y=118
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ShutterControl"
+		clr=14
+		bclr=51
+	}
+	label="Close"
+	press_msg="0"
+}
+text {
+	object {
+		x=366
+		y=93
+		width=120
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Status: Det."
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=492
+		y=94
+		width=60
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)ShutterStatus_RBV"
+		clr=54
+		bclr=2
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+	format="string"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=492
+		y=143
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ShutterOpenDelay"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=375
+		y=143
+		width=110
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Delay: Open"
+	align="horiz. right"
+}
+text {
+	object {
+		x=575
+		y=143
+		width=50
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Close"
+	align="horiz. right"
+}
+"text entry" {
+	object {
+		x=632
+		y=143
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ShutterCloseDelay"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"related display" {
+	object {
+		x=565
+		y=171
+		width=70
+		height=20
+	}
+	display[0] {
+		label="EPICS shutter setup"
+		name="ADEpicsShutter.adl"
+		args="P=$(P),R=$(R)"
+	}
+	clr=14
+	bclr=51
+}
+text {
+	object {
+		x=366
+		y=171
+		width=190
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="EPICS shutter setup"
+	align="horiz. right"
+}
+text {
+	object {
+		x=575
+		y=93
+		width=50
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="EPICS"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=632
+		y=94
+		width=60
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)ShutterStatusEPICS_RBV"
+		clr=54
+		bclr=2
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+	format="string"
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=877
+		y=227
+		width=107
+		height=21
+	}
+	"basic attribute" {
+		clr=2
+	}
+}
+text {
+	object {
+		x=880
+		y=227
+		width=100
+		height=20
+	}
+	"basic attribute" {
+		clr=54
+	}
+	textix="Attributes"
+	align="horiz. centered"
+}
+rectangle {
+	object {
+		x=750
+		y=225
+		width=350
+		height=110
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+}
+text {
+	object {
+		x=775
+		y=255
+		width=40
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="File"
+	align="horiz. right"
+}
+"text entry" {
+	object {
+		x=821
+		y=256
+		width=275
+		height=20
+	}
+	control {
+		chan="$(P)$(R)NDAttributesFile"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+text {
+	object {
+		x=755
+		y=280
+		width=60
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Macros"
+	align="horiz. right"
+}
+"text entry" {
+	object {
+		x=820
+		y=281
+		width=275
+		height=20
+	}
+	control {
+		chan="$(P)$(R)NDAttributesMacros"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+text {
+	object {
+		x=755
+		y=305
+		width=60
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Status"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=820
+		y=306
+		width=275
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)NDAttributesStatus"
+		clr=14
+		bclr=2
+	}
+	clrmod="alarm"
+	format="string"
+	limits {
+	}
+}
+composite {
+	object {
+		x=132
+		y=852
+		width=107
+		height=21
+	}
+	"composite name"=""
+	children {
+		composite {
+			object {
+				x=132
+				y=852
+				width=107
+				height=21
+			}
+			"composite name"=""
+			children {
+				rectangle {
+					object {
+						x=132
+						y=852
+						width=107
+						height=21
+					}
+					"basic attribute" {
+						clr=2
+					}
+				}
+			}
+		}
+		text {
+			object {
+				x=165
+				y=852
+				width=40
+				height=20
+			}
+			"basic attribute" {
+				clr=54
+			}
+			textix="File"
+			align="horiz. centered"
+		}
+	}
+}
+rectangle {
+	object {
+		x=5
+		y=850
+		width=350
+		height=60
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+}
+text {
+	object {
+		x=18
+		y=879
+		width=150
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Driver file I/O"
+	align="horiz. right"
+}
+"related display" {
+	object {
+		x=175
+		y=879
+		width=70
+		height=20
+	}
+	display[0] {
+		name="NDFile.adl"
+		args="P=$(P),R=$(R)"
+	}
+	clr=14
+	bclr=51
+}
+rectangle {
+	object {
+		x=122
+		y=467
+		width=117
+		height=21
+	}
+	"basic attribute" {
+		clr=2
+	}
+}
+rectangle {
+	object {
+		x=5
+		y=465
+		width=350
+		height=380
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+}
+text {
+	object {
+		x=145
+		y=468
+		width=70
+		height=20
+	}
+	"basic attribute" {
+		clr=54
+	}
+	textix="Readout"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=173
+		y=495
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="X"
+	align="horiz. right"
+}
+text {
+	object {
+		x=266
+		y=495
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Y"
+	align="horiz. right"
+}
+"text entry" {
+	object {
+		x=148
+		y=565
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)BinX"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=241
+		y=565
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)BinY"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=148
+		y=545
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)BinX_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=241
+		y=545
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)BinY_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+text {
+	object {
+		x=67
+		y=565
+		width=70
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Binning"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=148
+		y=590
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)MinX_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=148
+		y=610
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)MinX"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=241
+		y=610
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)MinY"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=241
+		y=590
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)MinY_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+text {
+	object {
+		x=17
+		y=610
+		width=120
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Region start"
+	align="horiz. right"
+}
+text {
+	object {
+		x=27
+		y=655
+		width=110
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Region size"
+	align="horiz. right"
+}
+"text entry" {
+	object {
+		x=148
+		y=655
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)SizeX"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=241
+		y=655
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)SizeY"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=148
+		y=635
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)SizeX_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=241
+		y=635
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)SizeY_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+text {
+	object {
+		x=27
+		y=520
+		width=110
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Sensor size"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=148
+		y=521
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)MaxSizeX_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=241
+		y=521
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)MaxSizeY_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+text {
+	object {
+		x=34
+		y=745
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Image size (bytes)"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=241
+		y=746
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)ArraySize_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=241
+		y=771
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)Gain_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=148
+		y=770
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Gain"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=97
+		y=770
+		width=40
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Gain"
+	align="horiz. right"
+}
+text {
+	object {
+		x=47
+		y=795
+		width=90
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Data type"
+	align="horiz. right"
+}
+menu {
+	object {
+		x=143
+		y=795
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)DataType"
+		clr=14
+		bclr=51
+	}
+}
+"text update" {
+	object {
+		x=241
+		y=796
+		width=79
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)DataType_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=148
+		y=680
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)ReverseX_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=241
+		y=680
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)ReverseY_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	format="string"
+	limits {
+	}
+}
+text {
+	object {
+		x=67
+		y=700
+		width=70
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Reverse"
+	align="horiz. right"
+}
+menu {
+	object {
+		x=148
+		y=700
+		width=60
+		height=18
+	}
+	control {
+		chan="$(P)$(R)ReverseX"
+		clr=14
+		bclr=51
+	}
+}
+menu {
+	object {
+		x=241
+		y=700
+		width=60
+		height=18
+	}
+	control {
+		chan="$(P)$(R)ReverseY"
+		clr=14
+		bclr=51
+	}
+}
+text {
+	object {
+		x=37
+		y=820
+		width=100
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Color mode"
+	align="horiz. right"
+}
+menu {
+	object {
+		x=143
+		y=820
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ColorMode"
+		clr=14
+		bclr=51
+	}
+}
+"text update" {
+	object {
+		x=241
+		y=821
+		width=79
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)ColorMode_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	format="string"
+	limits {
+	}
+}
+text {
+	object {
+		x=37
+		y=720
+		width=100
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Image size"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=148
+		y=721
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)ArraySizeX_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=241
+		y=721
+		width=61
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)ArraySizeY_RBV"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+text {
+	object {
+		x=127
+		y=390
+		width=1
+		height=40
+	}
+	"basic attribute" {
+		clr=14
+	}
+}
+rectangle {
+	object {
+		x=5
+		y=380
+		width=350
+		height=80
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+}
+rectangle {
+	object {
+		x=127
+		y=382
+		width=107
+		height=21
+	}
+	"basic attribute" {
+		clr=2
+	}
+}
+text {
+	object {
+		x=145
+		y=383
+		width=70
+		height=20
+	}
+	"basic attribute" {
+		clr=54
+	}
+	textix="Plugins"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=95
+		y=409
+		width=40
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="File"
+}
+text {
+	object {
+		x=235
+		y=409
+		width=30
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="ROI"
+}
+"related display" {
+	object {
+		x=140
+		y=409
+		width=64
+		height=20
+	}
+	display[0] {
+		label="netCDF file #1"
+		name="NDFileNetCDF.adl"
+		args="P=$(P), R=netCDF1:, EXT=nc"
+	}
+	display[1] {
+		label="TIFF file #1"
+		name="NDFileTIFF.adl"
+		args="P=$(P), R=TIFF1:, EXT=tif"
+	}
+	display[2] {
+		label="JPEG file #1"
+		name="NDFileJPEG.adl"
+		args="P=$(P), R=JPEG1:, EXT=jpg"
+	}
+	display[3] {
+		label="NeXus file #1"
+		name="NDFileNexus.adl"
+		args="P=$(P), R=Nexus1:, EXT=h5"
+	}
+	display[4] {
+		label="Magick file #1"
+		name="NDFileMagick.adl"
+		args="P=$(P), R=Magick1:, EXT=tif"
+	}
+	display[5] {
+		label="HDF5 file #1"
+		name="NDFileHDF5.adl"
+		args="P=$(P), R=HDF1:, EXT=h5"
+	}
+	display[6] {
+		label="Null file #1"
+		name="NDFileNull.adl"
+		args="P=$(P), R=Null1:, EXT=null"
+	}
+	clr=14
+	bclr=51
+}
+"related display" {
+	object {
+		x=270
+		y=409
+		width=64
+		height=20
+	}
+	display[0] {
+		label="ROI #1"
+		name="NDROI.adl"
+		args="P=$(P), R=ROI1:"
+	}
+	display[1] {
+		label="ROI #2"
+		name="NDROI.adl"
+		args="P=$(P), R=ROI2:"
+	}
+	display[2] {
+		label="ROI #3"
+		name="NDROI.adl"
+		args="P=$(P), R=ROI3:"
+	}
+	display[3] {
+		label="ROI #4"
+		name="NDROI.adl"
+		args="P=$(P), R=ROI4:"
+	}
+	display[4] {
+		label="ROI 1-4 combined"
+		name="NDROI4.adl"
+		args="P=$(P), R1=ROI1:,R2=ROI2:, R3=ROI3:,R4=ROI4:"
+	}
+	clr=14
+	bclr=51
+}
+"related display" {
+	object {
+		x=15
+		y=409
+		width=64
+		height=20
+	}
+	display[0] {
+		label="Common plugins"
+		name="commonPlugins.adl"
+		args="P=$(P)"
+	}
+	clr=14
+	bclr=51
+	label="-All"
+}
+text {
+	object {
+		x=15
+		y=435
+		width=50
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Stats"
+}
+"related display" {
+	object {
+		x=70
+		y=435
+		width=64
+		height=20
+	}
+	display[0] {
+		label="Statistics #1"
+		name="NDStats.adl"
+		args="P=$(P), R=Stats1:"
+	}
+	display[1] {
+		label="Statistics #2"
+		name="NDStats.adl"
+		args="P=$(P), R=Stats2:"
+	}
+	display[2] {
+		label="Statistics #3"
+		name="NDStats.adl"
+		args="P=$(P), R=Stats3:"
+	}
+	display[3] {
+		label="Statistics #4"
+		name="NDStats.adl"
+		args="P=$(P), R=Stats4:"
+	}
+	display[4] {
+		label="Statistics #5"
+		name="NDStats.adl"
+		args="P=$(P), R=Stats5:"
+	}
+	display[5] {
+		label="Statistics 1-5"
+		name="NDStats5.adl"
+		args="P=$(P), R1=Stats1:,R2=Stats2:,R3=Stats3:,R4=Stats4:,R5=Stats5:"
+	}
+	clr=14
+	bclr=51
+}
+"related display" {
+	object {
+		x=182
+		y=435
+		width=80
+		height=20
+	}
+	display[0] {
+		label="Image #1"
+		name="NDStdArrays.adl"
+		args="P=$(P), R=image1:"
+	}
+	display[1] {
+		label="Pva #1"
+		name="NDPva.adl"
+		args="P=$(P), R=Pva1:"
+	}
+	display[2] {
+		label="Process #1"
+		name="NDProcess.adl"
+		args="P=$(P), R=Proc1:"
+	}
+	display[3] {
+		label="Transform #1"
+		name="NDTransform.adl"
+		args="P=$(P), R=Trans1:"
+	}
+	display[4] {
+		label="Color convert #1"
+		name="NDColorConvert.adl"
+		args="P=$(P), R=CC1:"
+	}
+	display[5] {
+		label="Color convert #2"
+		name="NDColorConvert.adl"
+		args="P=$(P), R=CC2:"
+	}
+	display[6] {
+		label="Overlay #1"
+		name="NDOverlay.adl"
+		args="P=$(P), R=Over1:"
+	}
+	display[7] {
+		label="Overlays 1-8"
+		name="NDOverlay8.adl"
+		args="P=$(P), R=Over1:,O1=Over1:1:,O2=Over1:2:,O3=Over1:3:,O4=Over1:4:,O5=Over1:5:,O6=Over1:6:,O7=Over1:7:,O8=Over1:8:"
+	}
+	display[8] {
+		label="Circular buffer #1"
+		name="NDCircularBuff.adl"
+		args="P=$(P), R=CB1:"
+	}
+	display[9] {
+		label="ROI Statistics #1"
+		name="NDROIStat.adl"
+		args="P=$(P), R=ROIStat1:"
+	}
+	display[10] {
+		label="Attribute #1"
+		name="NDPluginAttribute.adl"
+		args="P=$(P), R=Attr1:"
+	}
+	display[11] {
+		label="FFT #1"
+		name="NDFFT.adl"
+		args="P=$(P), R=FFT1:"
+	}
+	display[12] {
+		label="Scatter #1"
+		name="NDScatter.adl"
+		args="P=$(P), R=Scatter1:"
+	}
+	display[13] {
+		label="Gather #1"
+		name="NDGather8.adl"
+		args="P=$(P), R=Gather1:"
+	}
+	display[14] {
+		label="Codec #1"
+		name="NDCodec.adl"
+		args="P=$(P), R=Codec1:"
+	}
+	display[15] {
+		label="Codec #2"
+		name="NDCodec.adl"
+		args="P=$(P), R=Codec2:"
+	}
+	clr=14
+	bclr=51
+	label="Other #1"
+}
+"related display" {
+	object {
+		x=269
+		y=435
+		width=80
+		height=20
+	}
+	display[0] {
+		label="Image #2"
+		name="NDStdArrays.adl"
+		args="P=$(P), R=image2:"
+	}
+	display[1] {
+		label="Scan #1"
+		name="scan_more.adl"
+		args="P=$(P), S=scan1, N=1"
+	}
+	display[2] {
+		label="Acquire Sequence"
+		name="yySseq.adl"
+		args="P=$(P), S=AcquireSequence"
+	}
+	display[3] {
+		label="devIocStats"
+		name="ioc_stats_soft.adl"
+		args="ioc=$(P)"
+	}
+	display[4] {
+		label="Open CV #1"
+		name="ADCompVision.adl"
+		args="P=$(P), R=CV1:"
+	}
+	display[5] {
+		label="Edge #1"
+		name="NDPluginEdge.adl"
+		args="P=$(P), R=Edge1:"
+	}
+	clr=14
+	bclr=51
+	label="Other #2"
+}
+composite {
+	object {
+		x=873
+		y=42
+		width=105
+		height=21
+	}
+	"composite name"=""
+	children {
+		rectangle {
+			object {
+				x=873
+				y=42
+				width=105
+				height=21
+			}
+			"basic attribute" {
+				clr=2
+			}
+		}
+	}
+}
+text {
+	object {
+		x=847
+		y=43
+		width=157
+		height=20
+	}
+	"basic attribute" {
+		clr=54
+	}
+	textix="Buffers"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=800
+		y=70
+		width=160
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Buffers used"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=965
+		y=71
+		width=50
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)PoolUsedBuffers"
+		clr=54
+		bclr=4
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+text {
+	object {
+		x=780
+		y=95
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Buffers alloc/free"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=965
+		y=96
+		width=50
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)PoolAllocBuffers"
+		clr=54
+		bclr=4
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=1020
+		y=96
+		width=50
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)PoolFreeBuffers"
+		clr=54
+		bclr=4
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=750
+		y=40
+		width=350
+		height=160
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+}
+menu {
+	object {
+		x=995
+		y=145
+		width=90
+		height=20
+	}
+	control {
+		chan="$(P)$(R)PoolUsedMem.SCAN"
+		clr=14
+		bclr=51
+	}
+}
+text {
+	object {
+		x=760
+		y=145
+		width=230
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Buffer & memory polling"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=965
+		y=121
+		width=60
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)PoolMaxMem"
+		clr=54
+		bclr=4
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=1030
+		y=121
+		width=60
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)PoolUsedMem"
+		clr=54
+		bclr=4
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+text {
+	object {
+		x=760
+		y=120
+		width=200
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Memory max/used (MB)"
+	align="horiz. right"
+}
+text {
+	object {
+		x=810
+		y=170
+		width=150
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Empty free list"
+	align="horiz. right"
+}
+"message button" {
+	object {
+		x=965
+		y=170
+		width=83
+		height=20
+	}
+	control {
+		chan="$(P)$(R)EmptyFreeList"
+		clr=14
+		bclr=51
+	}
+	label="Empty"
+	press_msg="1"
+}
+text {
+	object {
+		x=0
+		y=5
+		width=1150
+		height=25
+	}
+	"basic attribute" {
+		clr=54
+	}
+	textix="ADUVC Camera Control - $(P)$(R)"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=410
+		y=236
+		width=130
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Exposure time"
+	align="horiz. right"
+}
+"text entry" {
+	object {
+		x=545
+		y=236
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)AcquireTime"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=610
+		y=237
+		width=80
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)AcquireTime_RBV"
+		clr=54
+		bclr=4
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=400
+		y=261
+		width=140
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Acquire period"
+	align="horiz. right"
+}
+"text entry" {
+	object {
+		x=545
+		y=261
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)AcquirePeriod"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=610
+		y=262
+		width=80
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)AcquirePeriod_RBV"
+		clr=54
+		bclr=4
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=460
+		y=286
+		width=80
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="# Images"
+	align="horiz. right"
+}
+"text entry" {
+	object {
+		x=545
+		y=286
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)NumImages"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=610
+		y=287
+		width=80
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)NumImages_RBV"
+		clr=54
+		bclr=4
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=610
+		y=312
+		width=80
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)NumImagesCounter_RBV"
+		clr=54
+		bclr=4
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=370
+		y=311
+		width=170
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="# Images complete"
+	align="horiz. right"
+}
+text {
+	object {
+		x=420
+		y=336
+		width=120
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="# Exp./image"
+	align="horiz. right"
+}
+"text entry" {
+	object {
+		x=545
+		y=336
+		width=60
+		height=20
+	}
+	control {
+		chan="$(P)$(R)NumExposures"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=610
+		y=337
+		width=80
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)NumExposures_RBV"
+		clr=54
+		bclr=4
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=488
+		y=208
+		width=105
+		height=21
+	}
+	"basic attribute" {
+		clr=2
+	}
+}
+text {
+	object {
+		x=505
+		y=209
+		width=70
+		height=20
+	}
+	"basic attribute" {
+		clr=54
+	}
+	textix="Collect"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=390
+		y=361
+		width=100
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Image mode"
+	align="horiz. right"
+}
+menu {
+	object {
+		x=495
+		y=361
+		width=120
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ImageMode"
+		clr=14
+		bclr=51
+	}
+}
+"text update" {
+	object {
+		x=620
+		y=363
+		width=80
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)ImageMode_RBV"
+		clr=54
+		bclr=4
+	}
+	format="string"
+	limits {
+	}
+}
+text {
+	object {
+		x=370
+		y=386
+		width=120
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Trigger mode"
+	align="horiz. right"
+}
+menu {
+	object {
+		x=495
+		y=386
+		width=120
+		height=20
+	}
+	control {
+		chan="$(P)$(R)TriggerMode"
+		clr=14
+		bclr=51
+	}
+}
+"text update" {
+	object {
+		x=620
+		y=387
+		width=80
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)TriggerMode_RBV"
+		clr=54
+		bclr=4
+	}
+	format="string"
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=362
+		y=207
+		width=351
+		height=780
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+}
+rectangle {
+	object {
+		x=717
+		y=356
+		width=425
+		height=260
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+}
+menu {
+	object {
+		x=860
+		y=382
+		width=130
+		height=20
+	}
+	control {
+		chan="$(P)$(R)UVCCameraFormat"
+		clr=14
+		bclr=51
+	}
+}
+polyline {
+	object {
+		x=724
+		y=505
+		width=405
+		height=0
+	}
+	"basic attribute" {
+		clr=14
+	}
+	points {
+		(724,505)
+		(1129,505)
+	}
+}
+menu {
+	object {
+		x=879
+		y=519
+		width=120
+		height=20
+	}
+	control {
+		chan="$(P)$(R)UVCAutoAdjust"
+		clr=14
+		bclr=51
+	}
+}
+"text update" {
+	object {
+		x=1017
+		y=520
+		width=80
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)UVCAutoAdjust_RBV"
+		clr=54
+		bclr=4
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=1000
+		y=385
+		width=135
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)UVCCameraFormat_RBV"
+		clr=54
+		bclr=4
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=729
+		y=440
+		width=400
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)UVCFormatDescription_RBV"
+		clr=54
+		bclr=2
+	}
+	format="string"
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=850
+		y=467
+		width=59
+		height=20
+	}
+	control {
+		chan="$(P)$(R)UVCApplyFormat"
+		clr=14
+		bclr=51
+	}
+	label="Apply"
+	press_msg="1"
+}
+composite {
+	object {
+		x=370
+		y=715
+		width=340
+		height=265
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=588
+				y=715
+				width=40
+				height=20
+			}
+			"basic attribute" {
+				clr=63
+			}
+			"dynamic attribute" {
+				vis="if zero"
+				calc="A"
+				chan="$(P)$(R)Acquire"
+			}
+			textix="Done"
+			align="horiz. centered"
+		}
+		text {
+			object {
+				x=559
+				y=715
+				width=100
+				height=20
+			}
+			"basic attribute" {
+				clr=30
+			}
+			"dynamic attribute" {
+				vis="if not zero"
+				calc="A"
+				chan="$(P)$(R)Acquire"
+			}
+			textix="Collecting"
+			align="horiz. centered"
+		}
+		"message button" {
+			object {
+				x=545
+				y=735
+				width=59
+				height=20
+			}
+			control {
+				chan="$(P)$(R)Acquire"
+				clr=14
+				bclr=51
+			}
+			label="Start"
+			press_msg="1"
+		}
+		"message button" {
+			object {
+				x=612
+				y=735
+				width=59
+				height=20
+			}
+			control {
+				chan="$(P)$(R)Acquire"
+				clr=14
+				bclr=51
+			}
+			label="Stop"
+			press_msg="0"
+		}
+		text {
+			object {
+				x=470
+				y=735
+				width=70
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Acquire"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=400
+				y=835
+				width=140
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Detector state"
+			align="horiz. right"
+		}
+		"text update" {
+			object {
+				x=545
+				y=835
+				width=160
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)DetectorState_RBV"
+				clr=54
+				bclr=2
+			}
+			clrmod="alarm"
+			limits {
+			}
+		}
+		text {
+			object {
+				x=400
+				y=885
+				width=140
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Time remaining"
+			align="horiz. right"
+		}
+		"text update" {
+			object {
+				x=545
+				y=886
+				width=67
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)TimeRemaining_RBV"
+				clr=54
+				bclr=4
+			}
+			limits {
+			}
+		}
+		"text entry" {
+			object {
+				x=545
+				y=910
+				width=60
+				height=20
+			}
+			control {
+				chan="$(P)$(R)ArrayCounter"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		text {
+			object {
+				x=410
+				y=910
+				width=130
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Image counter"
+			align="horiz. right"
+		}
+		"text update" {
+			object {
+				x=610
+				y=911
+				width=80
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)ArrayCounter_RBV"
+				clr=54
+				bclr=4
+			}
+			limits {
+			}
+		}
+		text {
+			object {
+				x=440
+				y=935
+				width=100
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Image rate"
+			align="horiz. right"
+		}
+		"text update" {
+			object {
+				x=545
+				y=936
+				width=100
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)ArrayRate_RBV"
+				clr=54
+				bclr=4
+			}
+			limits {
+			}
+		}
+		menu {
+			object {
+				x=525
+				y=960
+				width=90
+				height=20
+			}
+			control {
+				chan="$(P)$(R)ArrayCallbacks"
+				clr=14
+				bclr=51
+			}
+		}
+		"text update" {
+			object {
+				x=620
+				y=962
+				width=80
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)ArrayCallbacks_RBV"
+				clr=54
+				bclr=4
+			}
+			align="horiz. centered"
+			format="string"
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=435
+				y=860
+				width=275
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)StatusMessage_RBV"
+				clr=54
+				bclr=2
+			}
+			format="string"
+			limits {
+			}
+		}
+		text {
+			object {
+				x=390
+				y=760
+				width=150
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="# Queued arrays"
+			align="horiz. right"
+		}
+		"text update" {
+			object {
+				x=545
+				y=761
+				width=60
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)NumQueuedArrays"
+				clr=54
+				bclr=4
+			}
+			align="horiz. right"
+			limits {
+			}
+		}
+		text {
+			object {
+				x=380
+				y=785
+				width=160
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Wait for plugins"
+			align="horiz. right"
+		}
+		menu {
+			object {
+				x=545
+				y=785
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)WaitForPlugins"
+				clr=14
+				bclr=51
+			}
+		}
+		text {
+			object {
+				x=420
+				y=810
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Acquire busy"
+			align="horiz. right"
+		}
+		"text update" {
+			object {
+				x=545
+				y=811
+				width=160
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)AcquireBusy"
+				clr=54
+				bclr=2
+			}
+			clrmod="alarm"
+			format="string"
+			limits {
+			}
+		}
+		text {
+			object {
+				x=370
+				y=960
+				width=150
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Array callbacks"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=370
+				y=860
+				width=60
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Status"
+			align="horiz. right"
+		}
+	}
+}
+composite {
+	object {
+		x=415
+		y=683
+		width=270
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=415
+				y=683
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Frame Rate"
+			align="horiz. right"
+		}
+		"text entry" {
+			object {
+				x=540
+				y=683
+				width=60
+				height=20
+			}
+			control {
+				chan="$(P)$(R)UVCFramerate"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=605
+				y=684
+				width=80
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)UVCFramerate_RBV"
+				clr=54
+				bclr=4
+			}
+			limits {
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=373
+		y=654
+		width=330
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=373
+				y=654
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Frame Format"
+			align="horiz. right"
+		}
+		menu {
+			object {
+				x=498
+				y=654
+				width=120
+				height=20
+			}
+			control {
+				chan="$(P)$(R)UVCImageFormat"
+				clr=14
+				bclr=51
+			}
+		}
+		"text update" {
+			object {
+				x=623
+				y=655
+				width=80
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)UVCImageFormat_RBV"
+				clr=54
+				bclr=4
+			}
+			format="string"
+			limits {
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=415
+		y=627
+		width=270
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=415
+				y=627
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Saturation"
+			align="horiz. right"
+		}
+		"text entry" {
+			object {
+				x=540
+				y=627
+				width=60
+				height=20
+			}
+			control {
+				chan="$(P)$(R)UVCSaturation"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=605
+				y=628
+				width=80
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)UVCSaturation_RBV"
+				clr=54
+				bclr=4
+			}
+			limits {
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=415
+		y=598
+		width=270
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=415
+				y=598
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Sharpness"
+			align="horiz. right"
+		}
+		"text entry" {
+			object {
+				x=540
+				y=598
+				width=60
+				height=20
+			}
+			control {
+				chan="$(P)$(R)UVCSharpness"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=605
+				y=599
+				width=80
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)UVCSharpness_RBV"
+				clr=54
+				bclr=4
+			}
+			limits {
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=415
+		y=568
+		width=270
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=415
+				y=568
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Hue"
+			align="horiz. right"
+		}
+		"text entry" {
+			object {
+				x=540
+				y=568
+				width=60
+				height=20
+			}
+			control {
+				chan="$(P)$(R)UVCHue"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=605
+				y=569
+				width=80
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)UVCHue_RBV"
+				clr=54
+				bclr=4
+			}
+			limits {
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=415
+		y=542
+		width=270
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=415
+				y=542
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Power Line Freq."
+			align="horiz. right"
+		}
+		"text entry" {
+			object {
+				x=540
+				y=542
+				width=60
+				height=20
+			}
+			control {
+				chan="$(P)$(R)UVCPowerLine"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=605
+				y=543
+				width=80
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)UVCPowerLine_RBV"
+				clr=54
+				bclr=4
+			}
+			limits {
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=415
+		y=514
+		width=270
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=415
+				y=514
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Contrast"
+			align="horiz. right"
+		}
+		"text entry" {
+			object {
+				x=540
+				y=514
+				width=60
+				height=20
+			}
+			control {
+				chan="$(P)$(R)UVCContrast"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=605
+				y=515
+				width=80
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)UVCContrast_RBV"
+				clr=54
+				bclr=4
+			}
+			limits {
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=415
+		y=483
+		width=270
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=415
+				y=483
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Brightness"
+			align="horiz. right"
+		}
+		"text entry" {
+			object {
+				x=540
+				y=483
+				width=60
+				height=20
+			}
+			control {
+				chan="$(P)$(R)UVCBrightness"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=605
+				y=484
+				width=80
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)UVCBrightness_RBV"
+				clr=54
+				bclr=4
+			}
+			limits {
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=415
+		y=452
+		width=270
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=415
+				y=452
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Backlight Comp."
+			align="horiz. right"
+		}
+		"text entry" {
+			object {
+				x=540
+				y=452
+				width=60
+				height=20
+			}
+			control {
+				chan="$(P)$(R)UVCBacklightCompensation"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=605
+				y=453
+				width=80
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)UVCBacklightCompensation_RBV"
+				clr=54
+				bclr=4
+			}
+			limits {
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=415
+		y=422
+		width=270
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=415
+				y=422
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Gamma"
+			align="horiz. right"
+		}
+		"text entry" {
+			object {
+				x=540
+				y=422
+				width=60
+				height=20
+			}
+			control {
+				chan="$(P)$(R)UVCGamma"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=605
+				y=423
+				width=80
+				height=18
+			}
+			monitor {
+				chan="$(P)$(R)UVCGamma_RBV"
+				clr=54
+				bclr=4
+			}
+			limits {
+			}
+		}
+	}
+}
+text {
+	object {
+		x=730
+		y=410
+		width=200
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Currently Loaded Mode"
+}
+text {
+	object {
+		x=725
+		y=382
+		width=125
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Supported Modes"
+	align="horiz. right"
+}
+text {
+	object {
+		x=720
+		y=469
+		width=120
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Apply Mode"
+	align="horiz. right"
+}
+text {
+	object {
+		x=738
+		y=520
+		width=120
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="UVC Auto Adjust"
+	align="horiz. right"
+}
+text {
+	object {
+		x=730
+		y=550
+		width=400
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="When Auto-Adjust is togged on, ADUVC will attempt to"
+}
+text {
+	object {
+		x=730
+		y=568
+		width=400
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="match Data Type and Color Mode to frame recieved"
+}
+text {
+	object {
+		x=730
+		y=586
+		width=400
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="from the camera when using Uncompressed mode."
+}

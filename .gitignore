@@ -20,3 +20,5 @@ capture_test
 auto_settings.sav*
 debug.*
 *.jpg
+OLD_FILES/
+*_BAK.adl
