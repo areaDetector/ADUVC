@@ -53,6 +53,28 @@ dir. for the driver), and compiling by switching to root and typing
 
 --------------
 
+Fixing issues with root ownership of UVC devices
+------------------------------------------------
+
+The USB camera device is typically owned by root, which prevents EPICS IOC from running as softioc user, and automatic startup using procServer. To grant access to USB camera device by other users, such as softioc, we wrote udev rules::
+  
+  kgofron@xf17bm-ioc2:/etc/udev/rules.d$ more usb-cams.rules
+  # cam1 f007
+  SUBSYSTEM=="usb", ATTRS{idVendor}=="f007", OWNER="softioc", GROUP="softioc", MODE="0666", SYMLINK="cam1"
+  # cam2 0c45
+  SUBSYSTEM=="usb", ATTRS{idVendor}=="0c45", OWNER="softioc", GROUP="softioc", MODE="0666", SYMLINK="cam2"
+  # cam3 2560
+  SUBSYSTEM=="usb", ATTRS{idVendor}=="2560", OWNER="softioc", GROUP="softioc", MODE="0666", SYMLINK="cam3"
+  # cam4 eb1a (not attached)
+  SUBSYSTEM=="usb", ATTRS{idVendor}=="eb1a", OWNER="softioc", GROUP="softioc", MODE="0666", SYMLINK="cam4"
+  # cam5 eb1a
+  SUBSYSTEM=="usb", ATTRS{idVendor}=="eb1a", OWNER="softioc", GROUP="softioc", MODE="0660", SYMLINK="cam5"
+
+To find vendorID and supported modes use lsusb (see lsbusb output file entitled lsusb.rst).
+
+--------------
+
+
 Driver Contents
 ---------------
 
@@ -87,10 +109,6 @@ section to the screen that allows for selecting from up to the 7 most
 useful acquisition modes supported by the camera. If the camera has
 fewer than 7 modes, the remaining ones will show as Unused.
 
-.. figure:: ADUVCBase.png
-
-The ADUVC Base screen. Based on the ADBase screen with added controls
-specific to ADUVC.
 
 --------------
 
@@ -220,18 +238,22 @@ Release Notes
 
 MEDM screens
 ------------
-The following is the MEDM screen for ADUVC.ald when controlling a USB camera by Shenzhen Reyun Industrial Co., Ltd. This screen is basic and can be used for any USB camera.
+The following is the OPI screen for ADUVC.opi when controlling a USB camera by Shenzhen Reyun Industrial Co., Ltd. This screen is basic and can be used for any USB camera.
 
 .. figure:: ADUVCBase.png
 
---------------
+
+The ADUVC Base screen. Based on the ADBase screen with added controls specific to ADUVC.
+
+------------------
 
 Known Issues and pull requests
 ------------------------------
 
 - To submit an issue or a pull request for ADUVC, please do so at the source fork on `Github <https://github.com/epicsNSLS2-areaDetector/ADUVC>`__.
-- Many low end vendors do not assign distinct Serial Numbers (S/N) , and such cameras can not be started usign S/N.
+- Many low end vendors do not assign Serial Numbers (S/N), and such cameras must be started using Product Number instead. 
 - Some vendors assign same S/N for the same model, and such multiples of such cameras do not work well when connected to same computer USB hub.
+- USB cameras have to be accessed by root, and access by other users is enabled by modifying /etc/udev/rules. 
 
 Important links
 ---------------
