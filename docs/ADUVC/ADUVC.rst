@@ -1,6 +1,6 @@
-=====
-ADUVC
-=====
+======
+ADUVC_
+======
 
 An EPICS driver for USB Video Class (UVC) devices
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -14,10 +14,9 @@ An EPICS driver for USB Video Class (UVC) devices
 .. contents:: Contents
 
 
-..  _Libuvc:       https://github.com/ktossell/libuvc
+..  _libuvc:       https://github.com/ktossell/libuvc
 ..  _ADUVC:        https://github.com/epicsNSLS2-areaDetector/ADUVC
-..  _areaDetector: https://github.com/areaDetector>`__
-
+..  _areaDetector: https://github.com/areaDetector
 	      
 Overview
 --------
@@ -26,7 +25,7 @@ UVC, or USB Video Class is an open Video connection standard used for
 USB based cameras and webcams. Almost all consumer webcams support UVC,
 along with a large number of other consumer USB cameras of different
 form factors, ranging from pencil cameras to micro cameras. Some
-industrial cameras support the format as well. ADUVC is an area detector
+industrial cameras support the format as well. ADUVC_ is an area detector
 driver that adds support for UVC based cameras. It also includes some
 useful test programs to check if your UVC device is being recognized
 correctly.
@@ -36,25 +35,25 @@ correctly.
 Installation
 ------------
 
-Detailed installation instructions for the ADUVC driver can be seen in
+Detailed installation instructions for the ADUVC_ driver can be seen in
 the
 `README <https://github.com/epicsNSLS2-areaDetector/ADUVC/blob/master/README.md>`__
-file. To install ADUVC, you must first install libuvc and its
+file. To install ADUVC_, you must first install libuvc_ and its
 dependancies. The simplest way to do this is to run the provided bash
 script in the adUVCSupport directory of the repository. This installs
-libusub, libjpeg, and cmake, clones the `libuvc repository on
-github <https://github.com/ktossell/libuvc>`__, and then builds it using
+libusub, libjpeg, and cmake, clones the libuvc_ repository on
+github, and then builds it using
 cmake. The dynamic library files resulting from the build are placed in
 the /usr/local directory (on Linux), and include files must be placed in
 adUVCSupport/include. From here you may compile the support programs or
-the driver itself by entering the appropriate directory (the top ADUVC
+the driver itself by entering the appropriate directory (the top ADUVC_
 dir. for the driver), and compiling by switching to root and typing
 'make'. The driver is now installed.
 
 --------------
 
-Fixing issues with root ownership of UVC devices
-------------------------------------------------
+Issues with root ownership of UVC devices
+-----------------------------------------
 
 The USB camera device is typically owned by root, which prevents EPICS IOC from running as softioc user, and automatic startup using procServer. To grant access to USB camera device by other users, such as softioc, we wrote udev rules::
   
@@ -78,16 +77,16 @@ To find vendorID and supported modes use lsusb (see lsbusb output file entitled 
 Driver Contents
 ---------------
 
--  installlibuvc.sh -> Installation script for libuvc and its
+-  installlibuvc.sh -> Installation script for libuvc_ and its
    dependancies.
 -  cameraDetector -> C++ program that detects all connected UVC devices.
    Useful for finding serial/product number for IOC
 -  imageCaptureTest -> C++ program that uses OpenCV to capture 200
-   frames from the camera to test if libuvc has been installed and the
+   frames from the camera to test if libuvc_ has been installed and the
    camera is connected.
--  ADUVC driver -> The source code for the area detector driver itself
+-  ADUVC_ driver -> The source code for the area detector driver itself
    in the adUVCApp/src directory.
--  iocADUVC -> Example ioc for use with the ADUVC driver. Shows how to
+-  iocADUVC -> Example ioc for use with the ADUVC_ driver. Shows how to
    connect to a camera in the EPICS IOC shell
 
 --------------
@@ -243,7 +242,7 @@ The following is the OPI screen for ADUVC.opi when controlling a USB camera by S
 .. figure:: ADUVCBase.png
 
 
-The ADUVC Base screen. Based on the ADBase screen with added controls specific to ADUVC.
+The ADUVC Base screen. Based on the ADBase screen with added controls specific to ADUVC_.
 
 ------------------
 
@@ -258,11 +257,8 @@ Known Issues and pull requests
 Important links
 ---------------
 
--  `Libuvc, a cross-platform library for USB video
-   devices <https://github.com/ktossell/libuvc>`__
--  `ADUVC on
-   Github <https://github.com/epicsNSLS2-areaDetector/ADUVC>`__
--  `areaDetector on Github <https://github.com/areaDetector>`__
+- libuvc_, is a cross-platform library for USB video devices.
+- ADUVC_ driver on Github.
+- areaDetector_ on Github.
 
-.. |ADUVC base screen| image:: assets/ADUVCBase.png
 
