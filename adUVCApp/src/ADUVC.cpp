@@ -354,17 +354,19 @@ int ADUVC::selectBestCameraFormats(ADUVC_CamFormat_t* formatBuffer, int numForma
 // ADUVC connection/disconnection functions
 //-----------------------------------------------
 
+
+asynStatus ADUVC::connect(asynUser* pasynUser) {
+    return connectToDeviceUVC();
+}
+
 /**
  * Function responsible for connecting to the UVC device. First, a device context is created,
  * then the device is identified, then opened.
  * NOTE: this driver must have exclusive access to the device as per UVC standards.
  *
- * @params[in]: connectionType  -> UVC can now connect with productID or serial ID. This flag switches
- * @params[in]: serialNumber    -> serial number of device to connect to
- * @params[in]: productID       -> product ID of camera to connect to
  * @return: asynStatus      -> true if connection is successful, false if failed
  */
-asynStatus ADUVC::connectToDeviceUVC(int connectionType, const char* serialNumber, int productID){
+asynStatus ADUVC::connectToDeviceUVC(){
     static const char* functionName = "connectToDeviceUVC";
     asynStatus status = asynSuccess;
     deviceStatus = uvc_init(&pdeviceContext, NULL);
@@ -377,15 +379,15 @@ asynStatus ADUVC::connectToDeviceUVC(int connectionType, const char* serialNumbe
         asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
             "%s::%s Initialized UVC context\n", driverName, functionName);
     }
-    if(connectionType == 0){
+    if(this->connectionType == 0){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
             "%s::%s Searching for UVC device with serial number: %s\n", driverName, functionName, serialNumber);
-        deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, 0, serialNumber);
+        deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, 0, this->serialNumber);
     }
     else{
         asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
-            "%s::%s Searching for UVC device with Product ID: %d\n", driverName, functionName, productID);
-        deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, productID, NULL);
+            "%s::%s Searching for UVC device with Product ID: %d\n", driverName, functionName, this->productID);
+        deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, this->productID, NULL);
     }
     if(deviceStatus<0){
         reportUVCError(deviceStatus, functionName);
@@ -406,6 +408,11 @@ asynStatus ADUVC::connectToDeviceUVC(int connectionType, const char* serialNumbe
             "%s::%s Opened UVC device\n", driverName, functionName);
     }
     return status;
+}
+
+
+asynStatus ADUVC::disconnect(asynUser* pasynUser) {
+    return disconnectFromDeviceUVC();
 }
 
 
@@ -923,6 +930,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
  * @return: status
  */
 asynStatus ADUVC::setExposure(int exposureTime){
+    if(this->pdevice == NULL) return asynError;
     const char* functionName = "setExposure";
     asynStatus status = asynSuccess;
     updateStatus("Set Exposure");
@@ -942,6 +950,7 @@ asynStatus ADUVC::setExposure(int exposureTime){
  * @return: status
  */
 asynStatus ADUVC::setGamma(int gamma){
+    if(this->pdevice == NULL) return asynError;
     const char* functionName = "setGamma";
     asynStatus status = asynSuccess;
     updateStatus("Set Gamma");
@@ -961,6 +970,7 @@ asynStatus ADUVC::setGamma(int gamma){
  * @return: status
  */
 asynStatus ADUVC::setBacklightCompensation(int backlightCompensation){
+    if(this->pdevice == NULL) return asynError;
     const char* functionName = "setBacklightCompensation";
     asynStatus status = asynSuccess;
     updateStatus("Set Backlight Comp.");
@@ -980,6 +990,7 @@ asynStatus ADUVC::setBacklightCompensation(int backlightCompensation){
  * @return: status
  */
 asynStatus ADUVC::setBrightness(int brightness){
+    if(this->pdevice == NULL) return asynError;
     const char* functionName = "setBrightness";
     asynStatus status = asynSuccess;
     updateStatus("Set Brightness");
@@ -999,6 +1010,7 @@ asynStatus ADUVC::setBrightness(int brightness){
  * @return: status
  */
 asynStatus ADUVC::setContrast(int contrast){
+    if(this->pdevice == NULL) return asynError;
     const char* functionName = "setContrast";
     asynStatus status = asynSuccess;
     updateStatus("Set Contrast");
@@ -1018,6 +1030,7 @@ asynStatus ADUVC::setContrast(int contrast){
  * @return: status
  */
 asynStatus ADUVC::setGain(int gain){
+    if(this->pdevice == NULL) return asynError;
     const char* functionName = "setGain";
     asynStatus status = asynSuccess;
     updateStatus("Set Gain");
@@ -1037,6 +1050,7 @@ asynStatus ADUVC::setGain(int gain){
  * @return status
  */
 asynStatus ADUVC::setPowerLineFrequency(int powerLineFrequency){
+    if(this->pdevice == NULL) return asynError;
     const char* functionName = "setPowerLineFrequency";
     asynStatus status = asynSuccess;
     updateStatus("Set Power Line Freq.");
@@ -1057,6 +1071,7 @@ asynStatus ADUVC::setPowerLineFrequency(int powerLineFrequency){
  * @return: status
  */
 asynStatus ADUVC::setHue(int hue){
+    if(this->pdevice == NULL) return asynError;
     const char* functionName = "setHue";
     asynStatus status = asynSuccess;
     updateStatus("Set Hue");
@@ -1076,6 +1091,7 @@ asynStatus ADUVC::setHue(int hue){
  * @return status
  */
 asynStatus ADUVC::setSaturation(int saturation){
+    if(this->pdevice == NULL) return asynError;
     const char* functionName = "setSaturation";
     asynStatus status = asynSuccess;
     updateStatus("Set Saturation");
@@ -1095,6 +1111,7 @@ asynStatus ADUVC::setSaturation(int saturation){
  * @return: status
  */
 asynStatus ADUVC::setSharpness(int sharpness){
+    if(this->pdevice == NULL) return asynError;
     const char* functionName = "setSharpness";
     asynStatus status = asynSuccess;
     updateStatus("Set Sharpness");
@@ -1333,13 +1350,17 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
     
     asynStatus connected;
 
+    this->serialNumber = serial;
+    this->productID = productID;
+
     // decide if connecting with serial number or productID
     if(strlen(serial)!=0){
-        connected = connectToDeviceUVC(0, serial, productID);
+        this->connectionType = 0;
     }
     else{
-        connected = connectToDeviceUVC(1, NULL, productID);
+        this->connectionType = 1;
     }
+    connected = connect(this->pasynUserSelf);
 
     // check if connected successfully, and if so, get the device information
     if(connected == asynError){
@@ -1368,7 +1389,6 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
  */
 ADUVC::~ADUVC(){
     static const char* functionName = "~ADUVC";
-    disconnectFromDeviceUVC();
     asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,"%s::%s ADUVC driver exiting\n", driverName, functionName);
     disconnect(this->pasynUserSelf);
 }

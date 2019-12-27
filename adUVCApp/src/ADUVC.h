@@ -92,6 +92,8 @@ class ADUVC : ADDriver{
         // ADDriver overrides
         virtual asynStatus writeInt32(asynUser* pasynUser, epicsInt32 value);
         virtual asynStatus writeFloat64(asynUser* pasynUser, epicsFloat64 value);
+        virtual asynStatus connect(asynUser* pasynUser);
+        virtual asynStatus disconnect(asynUser* pasynUser);
 
         // Callback function envoked by the driver object through the wrapper
         void newFrameCallback(uvc_frame_t* frame, void* ptr);
@@ -131,6 +133,10 @@ class ADUVC : ADDriver{
         // ----------------------------------------
         // UVC Variables
         //-----------------------------------------
+
+        int connectionType;
+        int productID;
+        const char* serialNumber;
 
         // checks uvc device operations status
         uvc_error_t deviceStatus;
@@ -182,7 +188,7 @@ class ADUVC : ADDriver{
         //-----------------------------------------
 
         //function used for connecting to a UVC device and reading supported camera modes.
-        asynStatus connectToDeviceUVC(int connectionType, const char* serialNumber, int productID);
+        asynStatus connectToDeviceUVC();
 
         //function used to disconnect from UVC device
         asynStatus disconnectFromDeviceUVC();
