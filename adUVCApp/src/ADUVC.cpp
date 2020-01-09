@@ -871,26 +871,22 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     setIntegerParam(NDArraySizeX, arrayInfo.xSize);
     setIntegerParam(NDArraySizeY, arrayInfo.ySize);
 
+    int numImages;
+    getIntegerParam(ADNumImagesCounter, &numImages);
+    numImages++;
+    setIntegerParam(ADNumImagesCounter, numImages);
+    pArray->uniqueId = numImages;
+    uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, arrayInfo.totalBytes);
+
     //single shot mode stops after one images
     if(operatingMode == ADImageSingle){
-        int numImages;
-        getIntegerParam(ADNumImagesCounter, &numImages);
-        numImages++;
-        setIntegerParam(ADNumImagesCounter, numImages);
-        pArray->uniqueId = numImages;
-        uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, arrayInfo.totalBytes);
         acquireStop();
+        return;
     }
 
     // block shot mode stops once numImages reaches the number of desired images
     else if(operatingMode == ADImageMultiple){
-        int numImages;
         int desiredImages;
-        getIntegerParam(ADNumImagesCounter, &numImages);
-        numImages++;
-        setIntegerParam(ADNumImagesCounter, numImages);
-        pArray->uniqueId = numImages;
-        uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, arrayInfo.totalBytes);
         getIntegerParam(ADNumImages, &desiredImages);
         
         if(numImages>=desiredImages){
@@ -899,17 +895,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         }
     }
 
-    //continuous mode runs until user stops acquisition
-    else if(operatingMode == ADImageContinuous){
-        int numImages;
-        getIntegerParam(ADNumImagesCounter, &numImages);
-        numImages++;
-        setIntegerParam(ADNumImagesCounter, numImages);
-        pArray->uniqueId = numImages;
-        uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, arrayInfo.totalBytes);
-    }
-
-    else{
+    else if(operatingMode != ADImageContinuous){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported operating mode\n", driverName, functionName);
         acquireStop();
         return;
