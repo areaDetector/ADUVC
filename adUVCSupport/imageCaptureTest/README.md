@@ -16,7 +16,7 @@ sudo apt install libopencv-dev
 Once openCV and libuvc have been installed, compile the program as root using
 ```
 sudo su
-g++ capture_test.cpp -o capture_test -luvc $(pkg-config --cflags --libs opencv)
+make
 ```
 
 ### Usage

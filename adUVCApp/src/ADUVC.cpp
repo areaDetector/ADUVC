@@ -431,6 +431,7 @@ asynStatus ADUVC::disconnectFromDeviceUVC(){
         uvc_close(pdeviceHandle);
         uvc_unref_device(pdevice);
         uvc_exit(pdeviceContext);
+        printf("Disconnected from device.\n");
         return asynSuccess;
     }
     return asynError;
@@ -881,7 +882,6 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     //single shot mode stops after one images
     if(operatingMode == ADImageSingle){
         acquireStop();
-        return;
     }
 
     // block shot mode stops once numImages reaches the number of desired images
@@ -891,14 +891,13 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         
         if(numImages>=desiredImages){
             acquireStop();
-            return;
         }
     }
 
+    // Otherwise, if continuous mode, just keep looping, if not then we have an unsupported mode
     else if(operatingMode != ADImageContinuous){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported operating mode\n", driverName, functionName);
         acquireStop();
-        return;
     }
     
 }
@@ -1185,7 +1184,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR status=%d, function=%d, value=%d\n", driverName, functionName, status, function, value);
         return asynError;
     }
-    else asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s function=%d value=%d\n", driverName, functionName, function, value);
+    else asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s function=%d value=%d\n", driverName, functionName, function, value);
     return asynSuccess;
 }
 
@@ -1224,7 +1223,7 @@ asynStatus ADUVC::writeFloat64(asynUser* pasynUser, epicsFloat64 value){
         asynPrint(this-> pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR status = %d, function =%d, value = %f\n", driverName, functionName, status, function, value);
         return asynError;
     }
-    else asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s function=%d value=%f\n", driverName, functionName, function, value);
+    else asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s function=%d value=%f\n", driverName, functionName, function, value);
     return asynSuccess;
 }
 

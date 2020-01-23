@@ -11,7 +11,7 @@ To compile the helper program, switch to a root account, and compile using:
 
 ```
 sudo su
-g++ uvc_locater.cpp -o uvc_locater -luvc
+make
 ```
 
 **NOTE:** make sure that libuvc is in your library path. if you used the script in
@@ -58,6 +58,8 @@ OR
 This will print the same information as the search by serial, but will search by product ID.
 
 #### Finding supported data types:
+
+**UPDATE - As of R1-3, the driver automatically reads supported formats (up to 7). The detailed description may still be useful for setting up non-root camera access**
 
 Some pointers for finding supported data types:
 

@@ -55,37 +55,6 @@ record(ai, "$(P)$(R)UVCReferenceCount_RBV"){
 }
 
 ##############################################
-# stores the vendor id for the UVC camera
-################################################
-record(ao, "$(P)$(R)UVCVendorID"){
-    field(PINI, "YES")
-    field(DTYP, "asynInt32")
-    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_VENDOR")
-}
-
-record(ai, "$(P)$(R)UVCVendorID_RBV"){
-    field(DTYP, "asynInt32")
-    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_VENDOR")
-    field(SCAN, "I/O Intr")
-}
-
-##############################################
-# stores the product id for the UVC camera. Used for connecting to it if serial is unavailable
-################################################
-
-record(ao, "$(P)$(R)UVCProductID"){
-    field(PINI, "YES")
-    field(DTYP, "asynInt32")
-    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_PRODUCT")
-}
-
-record(ai, "$(P)$(R)UVCProductID_RBV"){
-    field(DTYP, "asynInt32")
-    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_PRODUCT")
-    field(SCAN, "I/O Intr")
-}
-
-##############################################
 # stores the image data type collected from the UVC Camera
 ################################################
 record(mbbo, "$(P)$(R)UVCImageFormat"){
@@ -193,7 +162,6 @@ record(ao, "$(P)$(R)UVCApplyFormat"){
     field(DTYP, "asynInt32")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_APPLY_FORMAT")
     field(VAL,  "0")
-    field(autosaveFields, "VAL")
 }
 
 record(ai, "$(P)$(R)UVCApplyFormat_RBV"){
