@@ -355,9 +355,15 @@ int ADUVC::selectBestCameraFormats(ADUVC_CamFormat_t* formatBuffer, int numForma
 //-----------------------------------------------
 
 
+/**
+ * Ovderride of NDDriver base function, calls connect to camera
+ * 
+ * @params[in]: pasynUser -> asyn User instance for the driver
+ */
 asynStatus ADUVC::connect(asynUser* pasynUser) {
     return connectToDeviceUVC();
 }
+
 
 /**
  * Function responsible for connecting to the UVC device. First, a device context is created,
