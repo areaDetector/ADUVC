@@ -2,13 +2,13 @@
 TOP = .
 include $(TOP)/configure/CONFIG
 DIRS := $(DIRS) configure
-DIRS := $(DIRS) adUVCApp
-DIRS := $(DIRS) adUVCSupport
+DIRS := $(DIRS) uvcApp
+DIRS := $(DIRS) uvcSupport
 
-adUVCApp_DEPEND_DIRS += adUVCSupport
+uvcApp_DEPEND_DIRS += uvcSupport
 ifeq ($(BUILD_IOCS), YES)
 DIRS := $(DIRS) $(filter-out $(DIRS), $(wildcard iocs))
-iocs_DEPEND_DIRS += adUVCApp
+iocs_DEPEND_DIRS += uvcApp
 endif
 include $(TOP)/configure/RULES_TOP
 
