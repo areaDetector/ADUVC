@@ -20,7 +20,12 @@
 #define ADUVC_MODIFICATION 0
 
 
-#define SUPPORTED_FORMAT_COUNT      7
+// Unless specified during compilation, use 7 as number of supported formats
+#ifndef SUPPORTED_FORMAT_COUNT
+#define SUPPORTED_FORMAT_COUNT 7
+#endif
+
+
 #define SUPPORTED_FORMAT_DESC_BUFF  256
 
 
@@ -86,7 +91,9 @@ class ADUVC : ADDriver{
     public:
 
         // Constructor
-        ADUVC(const char* portName, const char* serial, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize);
+        ADUVC(const char* portName, const char* serial, int productID, 
+			int framerate, int xsize, int ysize, int maxBuffers, 
+			size_t maxMemory, int priority, int stackSize);
 
 
         // ADDriver overrides
@@ -125,84 +132,80 @@ class ADUVC : ADDriver{
 
     private:
 
-        // Some data variables
-        epicsEventId startEventId;
-        epicsEventId endEventId;
-        
-
         // ----------------------------------------
         // UVC Variables
         //-----------------------------------------
 
+	// Connection information
         int connectionType;
         int productID;
         const char* serialNumber;
 
-        // checks uvc device operations status
+        // Checks uvc device operations status
         uvc_error_t deviceStatus;
 
-        //pointer to device
+        // Pointer to uvc device struct
         uvc_device_t* pdevice;
 
-        //pointer to device context. generated when connecting
+        // Pointer to device context. generated when connecting
         uvc_context_t* pdeviceContext;
 
-        //pointer to device handle. used for controlling device. Each UVC device can allow for one handle at a time
+        // Pointer to device handle. 
+	// Used for controlling device. 
+	// Each UVC device can allow for one handle at a time
         uvc_device_handle_t* pdeviceHandle;
 
-        //pointer to device stream controller. used to controll streaming from device
+        // Device stream controller. used to control streaming from device
         uvc_stream_ctrl_t deviceStreamCtrl;
 
-        //pointer containing device info, such as vendor, product id
+        // Pointer to struct containing device info, such as vendor, product id
         uvc_device_descriptor_t* pdeviceInfo;
 
-        //array of supported formats that will allow for easy switching of operating modes.
+        // Array of supported formats that will allow for easy switching of operating modes.
         ADUVC_CamFormat_t supportedFormats[SUPPORTED_FORMAT_COUNT];
 
-        //flag that stores if driver is connected to device
+        // Flag that stores if driver is connected to device
         int connected = 0;
 
         //flag that sees if shutter is on or off
         int withShutter = 0;
 
-        int firstFrame = 0;
-
-        // bool check to see if frame size was validated with selected dtype and color mode
+        // Flag for checking if frame size was validated with selected dtype and color mode
         bool validatedFrameSize = false;
 
         // ----------------------------------------
         // UVC Functions - Logging/Reporting
         //-----------------------------------------
 
-        //function used to report errors in uvc operations
+        // Function used to report errors in uvc operations
         void reportUVCError(uvc_error_t status, const char* functionName);
 
-        // reports device and driver info into a log file
+        // Reports device and driver info into a log file
         void report(FILE* fp, int details);
 
-        // writes to ADStatus PV
+        // Writes to ADStatus PV
         void updateStatus(const char* status);
 
         // ----------------------------------------
         // UVC Functions - Connecting to camera
         //-----------------------------------------
 
-        //function used for connecting to a UVC device and reading supported camera modes.
+        // Function used for connecting to a UVC device and reading supported camera modes.
         asynStatus connectToDeviceUVC();
 
-        //function used to disconnect from UVC device
+        // Function used to disconnect from UVC device
         asynStatus disconnectFromDeviceUVC();
 
         // ----------------------------------------
         // UVC Functions - Camera Format Detection
         //-----------------------------------------
 
-        // functions for reading camera formats, and linking them to the appropriate PVs
+        // Functions for reading camera formats, and linking them to the appropriate PVs
         asynStatus readSupportedCameraFormats();
         void populateCameraFormat(ADUVC_CamFormat_t* camFormat, uvc_format_desc_t* format_desc, uvc_frame_desc_t* frame_desc);
         int selectBestCameraFormats(ADUVC_CamFormat_t* formatBuffer, int numberInterfaces);
         
-        // helper functions
+        // Helper functions
         void initEmptyCamFormat(int arrayIndex);
         bool formatAlreadySaved(ADUVC_CamFormat_t camFormat);
         int compareFormats(ADUVC_CamFormat_t camFormat1, ADUVC_CamFormat_t camFormat2);
@@ -215,7 +218,7 @@ class ADUVC : ADDriver{
         // UVC Functions - Camera functions
         //-----------------------------------------
 
-        //function that sets exposure time
+        // Functions that set different camera variable values
         asynStatus setExposure(int exposureTime);
         asynStatus setGamma(int gamma);
         asynStatus setBacklightCompensation(int backlightCompensation);
@@ -227,25 +230,25 @@ class ADUVC : ADDriver{
         asynStatus setSaturation(int saturation);
         asynStatus setSharpness(int sharpness);
 
-        //function that begins image aquisition
+        // Functions that start/stop image aquisition
         uvc_error_t acquireStart(uvc_frame_format format);
-
-        //function that stops aquisition
         void acquireStop();
 
-        //function that converts a UVC frame into an NDArray
+        // Function that converts a UVC frame into an NDArray
         asynStatus uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, size_t imBytes);
 
-        // function that attempts to fit data type + color mode to frame if size doesn't match
+        // Function that attempts to fit data type + color mode to frame if size doesn't match
         void checkValidFrameSize(uvc_frame_t* frame);
 
-        //function that gets information from a UVC device
+        // Functions that get information about device and image
         void getDeviceImageInformation();
         void getDeviceInformation();
 
+	// Function that converts ADUVC_Format PV value into uvc_frame_format
         uvc_frame_format getFormatFromPV();
 
-        //static wrapper function for callback. Necessary becuase callback in UVC must be static but we want the driver running the callback
+        // Static wrapper function for callback. 
+	// Necessary becuase callback in UVC must be static but we want the driver running the callback
         static void newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr);
 };
 

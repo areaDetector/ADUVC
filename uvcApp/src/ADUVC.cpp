@@ -9,6 +9,7 @@
  *
  */
 
+
 // Standard includes
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,6 +49,7 @@ static const double ONE_BILLION = 1.E9;
 // ADUVC Utility functions
 //---------------------------------------------------------
 
+
 /**
  * External configuration function for ADUVC.
  * Envokes the constructor to create a new ADUVC object
@@ -56,9 +58,14 @@ static const double ONE_BILLION = 1.E9;
  * @params[in]: all passed into constructor
  * @return: status
  */
-extern "C" int ADUVCConfig(const char* portName, const char* serial, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize){
-    new ADUVC(portName, serial, productID, framerate, xsize, ysize, maxBuffers, maxMemory, priority, stackSize);
-    return(asynSuccess);
+extern "C" int ADUVCConfig(const char* portName, const char* serial, 
+		int productID, int framerate, int xsize, int ysize, 
+		int maxBuffers, size_t maxMemory, int priority, int stackSize){
+
+    new ADUVC(portName, serial, productID, framerate, 
+		    xsize, ysize, maxBuffers, maxMemory, priority, stackSize);
+
+    return asynSuccess;
 }
 
 
@@ -84,9 +91,12 @@ static void exitCallbackC(void* pPvt){
 void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s UVC Error: %s\n", 
                 driverName, functionName, uvc_strerror(status));
+
     if(status != UVC_ERROR_OTHER){
         char errorMessage[25];
-        epicsSnprintf(errorMessage, sizeof(errorMessage), "UVC Error: %s", uvc_strerror(status));
+        epicsSnprintf(errorMessage, sizeof(errorMessage), 
+			"UVC Error: %s", uvc_strerror(status));
+
         updateStatus(errorMessage);
     }
 }
@@ -98,6 +108,8 @@ void ADUVC::reportUVCError(uvc_error_t status, const char* functionName){
  * @params[in]: status -> message to write to ADStatus PV
  */
 void ADUVC::updateStatus(const char* status){
+    if(strlen(status) >= 25) return;
+
     char statusMessage[25];
     epicsSnprintf(statusMessage, sizeof(statusMessage), "%s", status);
     setStringParam(ADStatusMessage, statusMessage);
@@ -135,11 +147,13 @@ void ADUVC::updateCameraFormatDesc(){
     const char* functionName = "updateCameraFormatDesc";
     int selectedFormat;
     getIntegerParam(ADUVC_CameraFormat, &selectedFormat);
+
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Updating Format Description\n", driverName, functionName);
     char description[256];
     epicsSnprintf(description, sizeof(description), "%s", this->supportedFormats[selectedFormat].formatDesc);
     setStringParam(ADUVC_FormatDescription, description);
     updateStatus("Updated format Desc.");
+
     callParamCallbacks();
 }
 
@@ -154,6 +168,7 @@ void ADUVC::applyCameraFormat(){
     getIntegerParam(ADUVC_CameraFormat, &selectedFormat);
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Applying Format\n", driverName, functionName);
     ADUVC_CamFormat_t format = this->supportedFormats[selectedFormat];
+
     if( (int) format.frameFormat < 0){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
             "%s::%s Cannot apply format - is not used\n", driverName, functionName);
@@ -166,6 +181,7 @@ void ADUVC::applyCameraFormat(){
         setIntegerParam(ADSizeY, format.ySize);
         setIntegerParam(ADUVC_ImageFormat, format.frameFormat);
     }
+
     setIntegerParam(ADUVC_ApplyFormat, 0);
     updateStatus("Applied format");
     callParamCallbacks();
@@ -185,6 +201,7 @@ asynStatus ADUVC::readSupportedCameraFormats(){
     asynStatus status = asynSuccess;
     ADUVC_CamFormat_t* formatBuffer = (ADUVC_CamFormat_t*) calloc(1, 64 * sizeof(ADUVC_CamFormat_t));
     int bufferIndex = 0;
+
     if(this->pdeviceHandle != NULL){
         uvc_streaming_interface_t* interfaces = this->pdeviceHandle->info->stream_ifs;
         while(interfaces != NULL){
@@ -204,12 +221,15 @@ asynStatus ADUVC::readSupportedCameraFormats(){
     else{
         status = asynError;
     }
+
     int formatIndex = selectBestCameraFormats(formatBuffer, bufferIndex);
     free(formatBuffer);
+
     int i;
     for(i = formatIndex; i < SUPPORTED_FORMAT_COUNT; i++){
         initEmptyCamFormat(i);
     }
+
     return status;
 }
 
@@ -223,8 +243,11 @@ asynStatus ADUVC::readSupportedCameraFormats(){
  * @params[in]:  frame_desc     -> Frame descriptor struct
  * @return: void
  */
-void ADUVC:: populateCameraFormat(ADUVC_CamFormat_t* camFormat, uvc_format_desc_t* format_desc, uvc_frame_desc_t* frame_desc){
+void ADUVC:: populateCameraFormat(ADUVC_CamFormat_t* camFormat, 
+		uvc_format_desc_t* format_desc, uvc_frame_desc_t* frame_desc){
+
     const char* functionName = "populateCameraFormat";
+
     switch(format_desc->bDescriptorSubtype){
         case UVC_VS_FORMAT_MJPEG:
             camFormat->frameFormat  = ADUVC_FrameMJPEG;
@@ -241,6 +264,7 @@ void ADUVC:: populateCameraFormat(ADUVC_CamFormat_t* camFormat, uvc_format_desc_
                 "%s::%s Unsupported format desc.\n", driverName, functionName);
             break;
     }
+
     camFormat->xSize = frame_desc->wWidth;
     camFormat->ySize = frame_desc->wHeight;
     camFormat->framerate = 10000000 / frame_desc->dwDefaultFrameInterval;
@@ -522,6 +546,7 @@ uvc_frame_format ADUVC::getFormatFromPV(){
     int format;
     getIntegerParam(ADUVC_ImageFormat, &format);
     ADUVC_FrameFormat_t frameFormat = (ADUVC_FrameFormat_t) format;
+
     switch(frameFormat){
         case ADUVC_FrameMJPEG:
             return UVC_FRAME_FORMAT_MJPEG;
@@ -560,6 +585,7 @@ uvc_frame_format ADUVC::getFormatFromPV(){
  */
 uvc_error_t ADUVC::acquireStart(uvc_frame_format imageFormat){
     static const char* functionName = "acquireStart";
+
     // get values for image format from PVs set in IOC shell
     int framerate;
     int xsize;
@@ -567,9 +593,14 @@ uvc_error_t ADUVC::acquireStart(uvc_frame_format imageFormat){
     getIntegerParam(ADUVC_Framerate, &framerate);
     getIntegerParam(ADSizeX, &xsize);
     getIntegerParam(ADSizeY, &ysize);
-    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Starting acquisition: x-size: %d, y-size %d, framerate %d\n", driverName, functionName, xsize, ysize, framerate);
+
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
+		    "%s::%s Starting acquisition: x-size: %d, y-size %d, framerate %d\n", 
+		    driverName, functionName, xsize, ysize, framerate);
         
-    deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, imageFormat, xsize, ysize, framerate);
+    deviceStatus = uvc_get_stream_ctrl_format_size(pdeviceHandle, &deviceStreamCtrl, 
+		    imageFormat, xsize, ysize, framerate);
+
     if(imageFormat == UVC_FRAME_FORMAT_UNCOMPRESSED) printf("opening stream for uncompressed\n");
 
     if(deviceStatus<0){
@@ -584,10 +615,14 @@ uvc_error_t ADUVC::acquireStart(uvc_frame_format imageFormat){
     else{
         setIntegerParam(ADNumImagesCounter, 0);
         callParamCallbacks();
-        //Here is where we initialize the stream and set the callback function to the static wrapper and pass 'this' as the void pointer.
-        //This function is in the form uvc_start_streaming(device_handle, device_stream_ctrl*, Callback Function* , void*, int)
+    
+    	// Here is where we initialize the stream and set the callback function 
+	// to the static wrapper and pass 'this' as the void pointer.
+        // This function is in the form:
+	// uvc_start_streaming(device_handle, device_stream_ctrl*, Callback Function* , void*, int)
         deviceStatus = uvc_start_streaming(pdeviceHandle, &deviceStreamCtrl, ADUVC::newFrameCallbackWrapper, this, 0);
-        if(deviceStatus<0){
+    
+    	if(deviceStatus<0){
             reportUVCError(deviceStatus, functionName);
             setIntegerParam(ADAcquire, 0);
             setIntegerParam(ADStatus, ADStatusIdle);
@@ -596,10 +631,14 @@ uvc_error_t ADUVC::acquireStart(uvc_frame_format imageFormat){
         }
         else{
             setIntegerParam(ADStatus, ADStatusAcquire);
-            asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, "%s::%s Image aquisition start\n", driverName, functionName);
-            callParamCallbacks();
+
+	    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
+			    "%s::%s Image aquisition start\n", driverName, functionName);
+
+	    callParamCallbacks();
         }
     }
+
     updateStatus("Started acquisition");
     return deviceStatus;
 }
@@ -615,7 +654,7 @@ void ADUVC::acquireStop(){
 
     static const char* functionName = "acquireStop";
 
-    //stop_streaming will block until last callback is processed.
+    // stop_streaming will block until last callback is processed.
     uvc_stop_streaming(pdeviceHandle);
 
     // reset the validatedFrameSize flag
@@ -626,7 +665,9 @@ void ADUVC::acquireStop(){
     setIntegerParam(ADAcquire, 0);
     callParamCallbacks();
     updateStatus("Stopped acquisition");
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Stopping aquisition\n", driverName, functionName);
+
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+		    "%s::%s Stopping aquisition\n", driverName, functionName);
 }
 
 
@@ -648,16 +689,19 @@ void ADUVC::checkValidFrameSize(uvc_frame_t* frame){
     // if user has auto adjust toggled off, skip this.
     int adjust;
     getIntegerParam(ADUVC_AutoAdjust, &adjust);
+
     if(adjust == 0){
         this->validatedFrameSize = true;
         return;
     }
+
     const char* functionName = "checkValidFrameSize";
     int reg_sizex, reg_sizey, colorMode, dataType;
     getIntegerParam(NDColorMode, &colorMode);
     getIntegerParam(NDDataType, &dataType);
     getIntegerParam(ADSizeX, &reg_sizex);
     getIntegerParam(ADSizeY, &reg_sizey);
+
     int computedBytes = reg_sizex * reg_sizey;
     if((NDDataType_t) dataType == NDUInt16 || (NDDataType_t) dataType == NDInt16)
         computedBytes = computedBytes * 2;
@@ -669,13 +713,15 @@ void ADUVC::checkValidFrameSize(uvc_frame_t* frame){
         this->validatedFrameSize = true;
         return;
     }
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-        "%s::%s Selected dtype and color mode incompatible, attempting to auto-adjust.\n", driverName, functionName);
 
-    int xsize       = frame->width;
-    int ysize       = frame->height;
-    int res         = num_bytes / xsize;
-    res             = res / ysize;
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+        "%s::%s Selected dtype and color mode incompatible, attempting to auto-adjust.\n", 
+	driverName, functionName);
+
+    int xsize = frame->width;
+    int ysize = frame->height;
+    int res   = num_bytes / xsize;
+    res       = res / ysize;
     switch(res) {
         case 2:
             // num bytes / (xsize * ysize) = 2 means a 16 bit mono image. 2 bytes per pixel
@@ -696,6 +742,7 @@ void ADUVC::checkValidFrameSize(uvc_frame_t* frame){
             asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Couldn't validate frame size.\n", driverName, functionName);
             return;
     }
+
     this->validatedFrameSize = true;
 }
 
@@ -730,17 +777,25 @@ void ADUVC::newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr){
  * @params[in]:  imBytes     -> number of bytes in the image
  * @return: void, but output into pArray
  */
-asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t dataType, NDColorMode_t colorMode, size_t imBytes){
+asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, 
+		NDDataType_t dataType, NDColorMode_t colorMode, size_t imBytes){
+
     static const char* functionName = "uvc2NDArray";
     asynStatus status = asynSuccess;
     // if data is grayscale, we do not need to convert it, we just copy over the data.
+    
     if(colorMode == NDColorModeMono){
         if(frame->data_bytes != imBytes){
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Error invalid frame size. Frame has %d bytes and array has %d bytes\n", driverName, functionName, (int) frame->data_bytes, (int) imBytes);
-            status = asynError;
+		asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+			    "%s::%s Error invalid frame size. Frame has %d bytes and array has %d bytes\n", 
+			    driverName, functionName, (int) frame->data_bytes, (int) imBytes);
+
+	    status = asynError;
         }
         else{
-            if(dataType == NDUInt8 || dataType == NDInt8) memcpy((unsigned char*) pArray->pData,(unsigned char*) frame->data, imBytes);
+            if(dataType == NDUInt8 || dataType == NDInt8){
+	        memcpy((unsigned char*) pArray->pData,(unsigned char*) frame->data, imBytes);
+	    }
             else memcpy((uint16_t*) pArray->pData, (uint16_t*) frame->data, imBytes);
         }
     }
@@ -748,12 +803,15 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
     else{
         // non grayscale images have 3 channels, so frame size * 3
         uvc_frame_t* rgb = uvc_allocate_frame(frame->width * frame->height *3);
-        if(!rgb){
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unable to allocate frame\n", driverName, functionName);
+        
+	if(!rgb){
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+			    "%s::%s ERROR: Unable to allocate frame\n", driverName, functionName);
+
             status = asynError;
         }
         else{
-            // convert any uvc frame format to rgb (to simplify the converson to NDArray, since area detector supports the rgb format)
+            // convert any uvc frame format to rgb
             uvc_frame_format frameFormat = frame->frame_format;
             switch(frameFormat){
                 case UVC_FRAME_FORMAT_YUYV:
@@ -769,18 +827,24 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
                     deviceStatus = uvc_any2rgb(frame, rgb);
                     break;
                 default:
-                    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported UVC format\n", driverName, functionName);
-                    uvc_free_frame(rgb);
+                    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+				    "%s::%s ERROR: Unsupported UVC format\n", driverName, functionName);
+                    
+		    uvc_free_frame(rgb);
                     status = asynError;
             }
-            if(status != asynError){
+        
+	    if(status != asynError){
                 if(deviceStatus<0){
                     reportUVCError(deviceStatus, functionName);
                     status = asynError;
                 }
                 else{
                     if(rgb->data_bytes != imBytes){
-                        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Error invalid frame sizeFrame has %d bytes and array has %d bytes\n", driverName, functionName, (int) rgb->data_bytes, (int) imBytes);
+                        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+					"%s::%s Error invalid frame sizeFrame has %d bytes and array has %d bytes\n", 
+					driverName, functionName, (int) rgb->data_bytes, (int) imBytes);
+
                         status = asynError;
                     }
                     else{
@@ -791,21 +855,23 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray, NDDataType_t 
             }
         }
     }
+
     // only push image if the data transfer was successful
     if(status == asynSuccess){
-        //pArray->pAttributeList->add("DataType", "Data Type", NDAttrInt32, &dataType);
         pArray->pAttributeList->add("ColorMode", "Color Mode", NDAttrInt32, &colorMode);
-        //increment the array counter
+        
+	//increment the array counter
         int arrayCounter;
         getIntegerParam(NDArrayCounter, &arrayCounter);
         arrayCounter++;
         setIntegerParam(NDArrayCounter, arrayCounter);
-        //refresh PVs
+        
+	//refresh PVs
         callParamCallbacks();
-        //Sends image to the ArrayDataPV
+        
+	//Sends image to the ArrayDataPV
         getAttributes(pArray->pAttributeList);
         doCallbacksGenericPointer(pArray, NDArrayData, 0);
-        //frees up memory
     }
     
     // Always free array whether successful or not
@@ -836,7 +902,8 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     //epicsTimeStamp currentTime;
     static const char* functionName = "newFrameCallback";
 
-    // check to see if frame size matches, if not, adjust color mode and data type to try and fit frame.
+    // Check to see if frame size matches.
+    // If not, adjust color mode and data type to try and fit frame.
     // **ONLY FOR UNCOMPRESSED FRAMES - otherwise byte sizes will not match **
     if(!this->validatedFrameSize && getFormatFromPV() == UVC_FRAME_FORMAT_UNCOMPRESSED)
         checkValidFrameSize(frame);
@@ -846,6 +913,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 
     if((NDColorMode_t) colorMode == NDColorModeMono) ndims = 2;
     else ndims = 3;
+    
     size_t dims[ndims];
     if(ndims == 2){
         dims[0] = frame->width;
@@ -861,12 +929,14 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 
     // allocate memory for a new NDArray, and set pArray to a pointer for this memory
     this->pArrays[0] = pNDArrayPool->alloc(ndims, dims, (NDDataType_t) dataType, 0, NULL);
+    
     if(this->pArrays[0]!=NULL){ 
         pArray = this->pArrays[0];   
     }
     else{
         this->pArrays[0]->release();
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Unable to allocate array\n", driverName, functionName);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+			"%s::%s Unable to allocate array\n", driverName, functionName);
         return;
     }
 
@@ -883,6 +953,8 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     numImages++;
     setIntegerParam(ADNumImagesCounter, numImages);
     pArray->uniqueId = numImages;
+    
+    // Copy data from our uvc frame into our NDArray
     uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, arrayInfo.totalBytes);
 
     //single shot mode stops after one images
@@ -902,8 +974,10 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 
     // Otherwise, if continuous mode, just keep looping, if not then we have an unsupported mode
     else if(operatingMode != ADImageContinuous){
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported operating mode\n", driverName, functionName);
-        acquireStop();
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+			"%s::%s ERROR: Unsupported operating mode\n", driverName, functionName);
+
+	acquireStop();
     }
     
 }
@@ -914,6 +988,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 // Base UVC Camera functionality
 //---------------------------------------------------------
 
+
 /**
  * Function that sets exposure time in seconds
  * 
@@ -921,15 +996,20 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
  * @return: status
  */
 asynStatus ADUVC::setExposure(int exposureTime){
+
     if(this->pdevice == NULL) return asynError;
+
     const char* functionName = "setExposure";
     asynStatus status = asynSuccess;
     updateStatus("Set Exposure");
+    
     deviceStatus = uvc_set_exposure_abs(pdeviceHandle, exposureTime);
+    
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
         status = asynError;
     }
+
     return status;
 }
 
@@ -941,35 +1021,46 @@ asynStatus ADUVC::setExposure(int exposureTime){
  * @return: status
  */
 asynStatus ADUVC::setGamma(int gamma){
+
     if(this->pdevice == NULL) return asynError;
+    
     const char* functionName = "setGamma";
     asynStatus status = asynSuccess;
     updateStatus("Set Gamma");
+    
     deviceStatus = uvc_set_gamma(pdeviceHandle, gamma);
+    
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
         status = asynError;
+    
     }
     return status;
 }
 
 
 /**
- * Function that sets backlight compensation. Used when camera has a light behind it that oversaturates image
+ * Function that sets backlight compensation. 
+ * Used when camera has a light behind it that oversaturates image
  * 
  * @params[in]: backlightCompensation -> degree of backlight comp.
  * @return: status
  */
 asynStatus ADUVC::setBacklightCompensation(int backlightCompensation){
+    
     if(this->pdevice == NULL) return asynError;
+    
     const char* functionName = "setBacklightCompensation";
     asynStatus status = asynSuccess;
     updateStatus("Set Backlight Comp.");
+    
     deviceStatus = uvc_set_backlight_compensation(pdeviceHandle, backlightCompensation);
+    
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
         status = asynError;
     }
+
     return status;
 }
 
@@ -981,35 +1072,46 @@ asynStatus ADUVC::setBacklightCompensation(int backlightCompensation){
  * @return: status
  */
 asynStatus ADUVC::setBrightness(int brightness){
+    
     if(this->pdevice == NULL) return asynError;
+    
     const char* functionName = "setBrightness";
     asynStatus status = asynSuccess;
     updateStatus("Set Brightness");
+    
     deviceStatus = uvc_set_brightness(pdeviceHandle, brightness);
+    
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
         status = asynError;
     }
+    
     return status;
 }
 
 
 /**
- * Function that sets value for contrast. Higher value increases difference between whites and blacks
+ * Function that sets value for contrast.
+ * Higher value increases difference between whites and blacks
  * 
  * @params[in]: contrast -> level of contrast
  * @return: status
  */
 asynStatus ADUVC::setContrast(int contrast){
+    
     if(this->pdevice == NULL) return asynError;
+    
     const char* functionName = "setContrast";
     asynStatus status = asynSuccess;
     updateStatus("Set Contrast");
+    
     deviceStatus = uvc_set_contrast(pdeviceHandle, contrast);
+    
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
         status = asynError;
     }
+    
     return status;
 }
 
@@ -1021,56 +1123,74 @@ asynStatus ADUVC::setContrast(int contrast){
  * @return: status
  */
 asynStatus ADUVC::setGain(int gain){
+    
     if(this->pdevice == NULL) return asynError;
+    
     const char* functionName = "setGain";
     asynStatus status = asynSuccess;
     updateStatus("Set Gain");
+    
     deviceStatus = uvc_set_gain(pdeviceHandle, gain);
+    
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
         status = asynError;
     }
+    
     return status;
 }
 
 
 /**
- * Function that sets Power line frequency. Used to avoid camera flicker when signal is not correct
+ * Function that sets Power line frequency. 
+ * Used to avoid camera flicker when signal is not correct
  * 
  * @params[in]: powerLineFrequency -> frequency value (50Hz, 60Hz etc.)
  * @return status
  */
 asynStatus ADUVC::setPowerLineFrequency(int powerLineFrequency){
+    
     if(this->pdevice == NULL) return asynError;
+    
     const char* functionName = "setPowerLineFrequency";
     asynStatus status = asynSuccess;
     updateStatus("Set Power Line Freq.");
+    
     deviceStatus = uvc_set_power_line_frequency(pdeviceHandle, powerLineFrequency);
+    
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
         status = asynError;
     }
+    
     return status;
 }
 
 
 /**
- * Function that sets camera Hue. For example, a hue of 240 will result in a blue shifted image,
+ * Function that sets camera Hue. 
+ * For example, a hue of 240 will result in a blue shifted image,
  * while 0 will result in red-shifted
  * 
  * @params[in]: hue -> value for image hue or tint
  * @return: status
  */
 asynStatus ADUVC::setHue(int hue){
+    
     if(this->pdevice == NULL) return asynError;
+    
     const char* functionName = "setHue";
     asynStatus status = asynSuccess;
+    
     updateStatus("Set Hue");
+    
     deviceStatus = uvc_set_hue(pdeviceHandle, hue);
+    
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
         status = asynError;
     }
+    
     return status;
 }
 
@@ -1082,15 +1202,20 @@ asynStatus ADUVC::setHue(int hue){
  * @return status
  */
 asynStatus ADUVC::setSaturation(int saturation){
+    
     if(this->pdevice == NULL) return asynError;
+    
     const char* functionName = "setSaturation";
     asynStatus status = asynSuccess;
     updateStatus("Set Saturation");
+    
     deviceStatus = uvc_set_saturation(pdeviceHandle, saturation);
+    
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
         status = asynError;
     }
+    
     return status;
 }
 
@@ -1102,15 +1227,20 @@ asynStatus ADUVC::setSaturation(int saturation){
  * @return: status
  */
 asynStatus ADUVC::setSharpness(int sharpness){
+    
     if(this->pdevice == NULL) return asynError;
+    
     const char* functionName = "setSharpness";
     asynStatus status = asynSuccess;
     updateStatus("Set Sharpness");
+    
     deviceStatus = uvc_set_sharpness(pdeviceHandle, sharpness);
+    
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
         status = asynError;
     }
+    
     return status;
 }
 
@@ -1118,6 +1248,7 @@ asynStatus ADUVC::setSharpness(int sharpness){
 //-------------------------------------------------------------------------
 // ADDriver function overwrites
 //-------------------------------------------------------------------------
+
 
 /*
  * Function overwriting ADDriver base function.
@@ -1132,19 +1263,20 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
     int acquiring;
     int status = asynSuccess;
     static const char* functionName = "writeInt32";
+
     getIntegerParam(ADAcquire, &acquiring);
 
     status = setIntegerParam(function, value);
     // start/stop acquisition
     if(function == ADAcquire){
-        if(value && !acquiring){
-            //asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Entering aquire\n", driverName, functionName);
+        if(value && !acquiring){ 
             deviceStatus = acquireStart(getFormatFromPV());
-            if(deviceStatus < 0){
+	    if(deviceStatus < 0){
                 reportUVCError(deviceStatus, functionName);
                 return asynError;
             }
         }
+
         if(!value && acquiring){
             acquireStop();
         }
@@ -1152,7 +1284,8 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
     else if(function == ADUVC_ApplyFormat && value == 1){
         if(acquiring)
             acquireStop();
-        applyCameraFormat();
+        
+	applyCameraFormat();
     }
     else if(function == ADUVC_CameraFormat) updateCameraFormatDesc();
     //switch image mode
@@ -1160,9 +1293,11 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
         if(acquiring == 1) acquireStop();
         if(value == ADImageSingle) setIntegerParam(ADNumImages, 1);
         else if(value == ADImageMultiple) setIntegerParam(ADNumImages, 300);
-        else if(value == ADImageContinuous) setIntegerParam(ADNumImages, 3000);
         else{
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR: Unsupported camera operating mode\n", driverName, functionName);
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+			    "%s::%s ERROR: Unsupported camera operating mode\n", 
+			    driverName, functionName);
+
             return asynError;
         }
     }
@@ -1184,13 +1319,20 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
             status = ADDriver::writeInt32(pasynUser, value);
         }
     }
+
     callParamCallbacks();
 
     if(status){
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR status=%d, function=%d, value=%d\n", driverName, functionName, status, function, value);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+			"%s::%s ERROR status=%d, function=%d, value=%d\n", 
+			driverName, functionName, status, function, value);
+
         return asynError;
     }
-    else asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s function=%d value=%d\n", driverName, functionName, function, value);
+    else asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+		    "%s::%s function=%d value=%d\n", 
+		    driverName, functionName, function, value);
+    
     return asynSuccess;
 }
 
@@ -1209,6 +1351,7 @@ asynStatus ADUVC::writeFloat64(asynUser* pasynUser, epicsFloat64 value){
     int acquiring;
     int status = asynSuccess;
     static const char* functionName = "writeFloat64";
+
     getIntegerParam(ADAcquire, &acquiring);
 
     status = setDoubleParam(function, value);
@@ -1223,13 +1366,20 @@ asynStatus ADUVC::writeFloat64(asynUser* pasynUser, epicsFloat64 value){
             status = ADDriver::writeFloat64(pasynUser, value);
         }
     }
+
     callParamCallbacks();
 
     if(status){
-        asynPrint(this-> pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s ERROR status = %d, function =%d, value = %f\n", driverName, functionName, status, function, value);
+        asynPrint(this-> pasynUserSelf, ASYN_TRACE_ERROR, 
+			"%s::%s ERROR status = %d, function =%d, value = %f\n", 
+			driverName, functionName, status, function, value);
+
         return asynError;
     }
-    else asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s function=%d value=%f\n", driverName, functionName, function, value);
+    else asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+		    "%s::%s function=%d value=%f\n", 
+		    driverName, functionName, function, value);
+
     return asynSuccess;
 }
 
@@ -1248,28 +1398,44 @@ void ADUVC::report(FILE* fp, int details){
     int framerate;
     int height;
     int width;
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s reporting to external log file\n",driverName, functionName);
+
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
+		    "%s::%s reporting to external log file\n", 
+		    driverName, functionName);
+
     if(details > 0){
-        fprintf(fp, " LIBUVC Version        ->      %d.%d.%d\n", LIBUVC_VERSION_MAJOR, LIBUVC_VERSION_MINOR, LIBUVC_VERSION_PATCH);
-        fprintf(fp, " -------------------------------------------------------------------\n");
-        if(!connected){
+        fprintf(fp, " LIBUVC Version        ->      %d.%d.%d\n", 
+			LIBUVC_VERSION_MAJOR, LIBUVC_VERSION_MINOR, LIBUVC_VERSION_PATCH);
+        fprintf(fp, " -----------------------------------------------------\n");
+        
+	if(!connected){
             fprintf(fp, " No connected devices\n");
             ADDriver::report(fp, details);
             return;
         }
-        fprintf(fp, " Connected Device Information\n");
-        fprintf(fp, " Serial number         ->      %s\n", pdeviceInfo->serialNumber);
-        fprintf(fp, " VendorID              ->      %d\n", pdeviceInfo->idVendor);
-        fprintf(fp, " ProductID             ->      %d\n", pdeviceInfo->idProduct);
-        fprintf(fp, " UVC Compliance Level  ->      %d\n", pdeviceInfo->bcdUVC);
+        
+	fprintf(fp, " Connected Device Information\n");
+        fprintf(fp, " Serial number         ->      %s\n", 
+			pdeviceInfo->serialNumber);
+        fprintf(fp, " VendorID              ->      %d\n", 
+			pdeviceInfo->idVendor);
+        fprintf(fp, " ProductID             ->      %d\n", 
+			pdeviceInfo->idProduct);
+        fprintf(fp, " UVC Compliance Level  ->      %d\n", 
+			pdeviceInfo->bcdUVC);
+
         getIntegerParam(ADUVC_Framerate, &framerate);
         getIntegerParam(ADSizeX, &width);
         getIntegerParam(ADSizeY, &height);
-        fprintf(fp, " Camera Framerate      ->      %d\n", framerate);
-        fprintf(fp, " Image Width           ->      %d\n", width);
-        fprintf(fp, " Image Height          ->      %d\n", height);
-        fprintf(fp, " -------------------------------------------------------------------\n");
-        fprintf(fp, "\n");
+        
+	fprintf(fp, " Camera Framerate      ->      %d\n", 
+			framerate);
+        fprintf(fp, " Image Width           ->      %d\n", 
+			width);
+        fprintf(fp, " Image Height          ->      %d\n", 
+			height);
+
+        fprintf(fp, " --------------------------------------------\n\n");
         
         ADDriver::report(fp, details);
     }
@@ -1280,6 +1446,7 @@ void ADUVC::report(FILE* fp, int details){
 //----------------------------------------------------------------------------
 // ADUVC Constructor/Destructor
 //----------------------------------------------------------------------------
+
 
 /*
  * Constructor for ADUVC driver. Most params are passed to the parent ADDriver constructor.
@@ -1294,11 +1461,16 @@ void ADUVC::report(FILE* fp, int details){
  * @params[in]: priority    -> what thread priority this driver will execute with
  * @params[in]: stackSize   -> size of the driver on the stack
  */
-ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize)
-    : ADDriver(portName, 1, (int)NUM_UVC_PARAMS, maxBuffers, maxMemory, asynEnumMask, asynEnumMask, ASYN_CANBLOCK, 1, priority, stackSize){
+ADUVC::ADUVC(const char* portName, const char* serial, int productID, 
+		int framerate, int xsize, int ysize, int maxBuffers, 
+		size_t maxMemory, int priority, int stackSize)
+    : ADDriver(portName, 1, (int)NUM_UVC_PARAMS, maxBuffers, 
+		    maxMemory, asynEnumMask, asynEnumMask, 
+		    ASYN_CANBLOCK, 1, priority, stackSize){
+
     static const char* functionName = "ADUVC";
 
-    // create PV Params
+    // Create PV Params
     createParam(ADUVC_UVCComplianceLevelString,     asynParamInt32,     &ADUVC_UVCComplianceLevel);
     createParam(ADUVC_ReferenceCountString,         asynParamInt32,     &ADUVC_ReferenceCount);
     createParam(ADUVC_FramerateString,              asynParamInt32,     &ADUVC_Framerate);
@@ -1316,12 +1488,12 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
     createParam(ADUVC_BacklightCompensationString,  asynParamInt32,     &ADUVC_BacklightCompensation);
     createParam(ADUVC_SharpnessString,              asynParamInt32,     &ADUVC_Sharpness);
 
-    // set initial size and framerate params
+    // Set initial size and framerate params
     setIntegerParam(ADUVC_Framerate, framerate);
     setIntegerParam(ADSizeX, xsize);
     setIntegerParam(ADSizeY, ysize);
 
-    //sets serial number and productID
+    // Sets serial number and productID
     if(strcmp(serial, "") == 0) setStringParam(ADSerialNumber, "No Serial Detected");
     else setStringParam(ADSerialNumber, serial);
 
@@ -1331,41 +1503,47 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
 
     //sets libuvc version
     char uvcVersionString[25];
-    epicsSnprintf(uvcVersionString, sizeof(uvcVersionString), "%d.%d.%d", LIBUVC_VERSION_MAJOR, LIBUVC_VERSION_MINOR, LIBUVC_VERSION_PATCH);
+    epicsSnprintf(uvcVersionString, sizeof(uvcVersionString), 
+		    "%d.%d.%d", LIBUVC_VERSION_MAJOR, 
+		    LIBUVC_VERSION_MINOR, LIBUVC_VERSION_PATCH);
+
     setStringParam(ADSDKVersion, uvcVersionString);
 
     //sets driver version
     char versionString[25];
-    epicsSnprintf(versionString, sizeof(versionString), "%d.%d.%d", ADUVC_VERSION, ADUVC_REVISION, ADUVC_MODIFICATION);
+    epicsSnprintf(versionString, sizeof(versionString), 
+		    "%d.%d.%d", ADUVC_VERSION, ADUVC_REVISION, ADUVC_MODIFICATION);
+
     setStringParam(NDDriverVersion, versionString);
     
+    // Begin to establish connection
     asynStatus connected;
 
     this->serialNumber = serial;
     this->productID = productID;
 
     // decide if connecting with serial number or productID
-    if(strlen(serial)!=0){
+    if(strlen(serial) != 0){
         this->connectionType = 0;
     }
     else{
         this->connectionType = 1;
     }
+
     connected = connect(this->pasynUserSelf);
 
-    // check if connected successfully, and if so, get the device information
+    // Check if connected successfully, and if so, get the device information
     if(connected == asynError){
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Connection failed, abort\n", driverName, functionName);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
+			"%s::%s Connection failed, abort\n", 
+			driverName, functionName);
     }
     else{
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s Acquiring device information\n", driverName, functionName);
-        readSupportedCameraFormats();
-        /*
-        int i;
-        for(i = 0; i< SUPPORTED_FORMAT_COUNT; i++){
-            printf("%s\n", this->supportedFormats[i].formatDesc);
-        }
-        */
+        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
+			"%s::%s Acquiring device information\n", 
+			driverName, functionName);
+
+	readSupportedCameraFormats();
         getDeviceInformation();
     }
 
@@ -1380,15 +1558,18 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID, int framer
  */
 ADUVC::~ADUVC(){
     static const char* functionName = "~ADUVC";
-    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,"%s::%s ADUVC driver exiting\n", driverName, functionName);
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
+		    "%s::%s ADUVC driver exiting\n", 
+		    driverName, functionName);
+
     disconnect(this->pasynUserSelf);
 }
-
 
 
 //-------------------------------------------------------------
 // ADUVC ioc shell registration
 //-------------------------------------------------------------
+
 
 /* UVCConfig -> These are the args passed to the constructor in the epics config function */
 static const iocshArg UVCConfigArg0 = { "Port name",        iocshArgString };
@@ -1412,8 +1593,9 @@ static const iocshArg * const UVCConfigArgs[] =
 
 /* what function to call at config */
 static void configUVCCallFunc(const iocshArgBuf *args) {
-    ADUVCConfig(args[0].sval, args[1].sval, args[2].ival, args[3].ival,
-            args[4].ival, args[5].ival, args[6].ival, args[7].ival, args[8].ival, args[9].ival);
+        ADUVCConfig(args[0].sval, args[1].sval, args[2].ival, args[3].ival,
+            args[4].ival, args[5].ival, args[6].ival, 
+	    args[7].ival, args[8].ival, args[9].ival);
 }
 
 
@@ -1431,3 +1613,4 @@ static void UVCRegister(void) {
 extern "C" {
     epicsExportRegistrar(UVCRegister);
 }
+
