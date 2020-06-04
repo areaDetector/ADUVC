@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>ADUVC Documentation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" media="screen" href="adUVCdoc.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="uvcDoc.css" />
 </head>
 <body>
     <h1>ADUVC</h1>
@@ -35,18 +35,18 @@
     <hr />
     <h4>Driver Contents:</h4>
     <ul>
-        <li>installlibuvc.sh    ->  Installation script for libuvc and its dependancies.</li>
+        <li>install-libuvc.sh    ->  Installation script for libuvc and its dependancies.</li>
         <li>cameraDetector      ->  C++ program that detects all connected UVC devices. Useful for finding serial/product number for IOC</li>
         <li>imageCaptureTest    ->  C++ program that uses OpenCV to capture 200 frames from the camera to test if libuvc has been installed and the 
             camera is connected.
         </li>
-        <li>ADUVC driver        ->  The source code for the area detector driver itself in the adUVCApp/src directory.</li>
-        <li>iocADUVC            ->  Example ioc for use with the ADUVC driver. Shows how to connect to a camera in the EPICS IOC shell</li>
+        <li>ADUVC driver        ->  The source code for the area detector driver itself in the uvcApp/src directory.</li>
+        <li>iocUVC            ->  Example ioc for use with the ADUVC driver. Shows how to connect to a camera in the EPICS IOC shell</li>
     </ul>
     <hr />
     <h4>Usage:</h4>
     <p class="text-section-local">
-        Once the driver is installed, you may start the ioc by entering the IOC folder and running 'sudo ./startEPICS.sh'. Sudo access is important
+        Once the driver is installed, you may start the ioc by entering the IOC folder and running 'sudo ./st.cmd'. Sudo access is important
         because access to UVC devices is limited to users with root permissions. You may then integrate ADUVC into your area detector screen setup.
         Below is an image of the ADUVC base control screen. It extends the standard ADBase screen with UVC controls for various camera functionality,
         such as brightness, exposure, backlight compenstation, saturation, etc. The driver supports a variety of UVC formats, though the two that are used
