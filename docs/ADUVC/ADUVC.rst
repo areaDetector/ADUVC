@@ -77,7 +77,7 @@ To find vendorID and supported modes use lsusb (see lsbusb output file entitled 
 Driver Contents
 ---------------
 
--  installlibuvc.sh -> Installation script for libuvc_ and its
+-  install-libuvc.sh -> Installation script for libuvc_ and its
    dependancies.
 -  cameraDetector -> C++ program that detects all connected UVC devices.
    Useful for finding serial/product number for IOC
@@ -85,8 +85,8 @@ Driver Contents
    frames from the camera to test if libuvc_ has been installed and the
    camera is connected.
 -  ADUVC_ driver -> The source code for the area detector driver itself
-   in the adUVCApp/src directory.
--  iocADUVC -> Example ioc for use with the ADUVC_ driver. Shows how to
+   in the uvcApp/src directory.
+-  iocUVC -> Example ioc for use with the ADUVC_ driver. Shows how to
    connect to a camera in the EPICS IOC shell
 
 --------------

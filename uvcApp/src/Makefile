@@ -12,12 +12,12 @@ USR_CPPFLAGS += -std=c++11
 #UVC_HOME = /epics/support/areaDetector-3-2/ADUVC
 #USR_INCLUDES += -I$(UVC_HOME)/include/libuvc
 
-LIBRARY_IOC = adUVC
+LIBRARY_IOC = ADUVC
 LIB_SRCS += ADUVC.cpp
 LIB_LIBS += uvc
 #SYS_PROD_LIBS += boost_system
 
-DBD += adUVCSupport.dbd
+DBD += uvcSupport.dbd
 
 include $(ADCORE)/ADApp/commonLibraryMakefile
 
