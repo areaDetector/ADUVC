@@ -2,8 +2,8 @@
 TOP = .
 include $(TOP)/configure/CONFIG
 DIRS := $(DIRS) configure
-DIRS := $(DIRS) uvcApp
 DIRS := $(DIRS) uvcSupport
+DIRS := $(DIRS) uvcApp
 
 uvcApp_DEPEND_DIRS += uvcSupport
 ifeq ($(BUILD_IOCS), YES)

@@ -15,11 +15,12 @@ $(PROD_NAME)_SRCS += $(PROD_NAME)_registerRecordDeviceDriver.cpp $(PROD_NAME)Mai
 
 # Add locally compiled object code
 $(PROD_NAME)_LIBS += ADUVC
-# We use SYS_LIBS here because liblambda is only built dynamically but we want to be able to build
-# either statically or dynamically
+
+#$(PROD_NAME)_LIBS += uvc
+
+# If using a system version of libuvc (i.e. make install) use the below line instead.
 $(PROD_NAME)_SYS_LIBS += uvc
 
-#LIB_LIBS_Linux += boost_system-mt
 include $(ADCORE)/ADApp/commonDriverMakefile
 
 #=============================
