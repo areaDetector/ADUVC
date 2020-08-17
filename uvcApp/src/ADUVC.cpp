@@ -1,11 +1,13 @@
 /*
  * Main source code for ADUVC EPICS driver.
  *
- * This file contains the code for all functions, destrucot/constructor for ADUVC
+ * This file contains the code for the implementation of the
+ * destructor, constructor, and methods for ADUVC
  *
  * Author: Jakub Wlodek
  * Created: July 2018
- * Copyright (c): 2018 Brookhaven National Laboratory
+ * Last Edited: August 2020
+ * Copyright (c): 2018-2020 Brookhaven National Laboratory
  *
  */
 
@@ -26,7 +28,7 @@
 #include <epicsExport.h>
 
 
-// Area Detector include
+// Local ADUVC include
 #include "ADUVC.h"
 
 
@@ -34,8 +36,10 @@
 #include <libuvc/libuvc.h>
 #include <libuvc/libuvc_config.h>
 
+
 // standard namespace
 using namespace std;
+
 
 // define driver name for logging
 static const char* driverName = "ADUVC";
