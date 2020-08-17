@@ -2,8 +2,9 @@
 
 #### Dependencies:
 
-Libuvc depends on libusb.1.*, which can be installed from your linux distribution, or from 
+Libuvc depends on libusb.1.0, which can be installed from your linux distribution, or from 
 source.
+
 ```
 sudo apt install libusb.1.0
 sudo apt install libusb-dev
@@ -11,28 +12,36 @@ sudo apt install libusb-dev
 
 #### Installation:
 
-Provided is a script that can be used for easily installing libuvc on a debain based machine. 
+Provided is a script that can be used for easily installing libuvc on a linux. 
+
 ```
-bash installlibuvc.sh
+./install-libuvc.sh
 ```
 
-It clones the github repository containing the library, runs cmake, and installs the libs into the 
-appropriate folder. Once this script has been run, simply compile the driver from the top level
+It clones the github repository containing the library, runs cmake, and installs the include files and built libraries into the 
+appropriate folders. Once this script has been run, simply compile the driver from the top level
 ADUVC directory.
+
+Optionally, you may also edit the script to uncomment the `sudo make install` command, which will install
+libuvc to a system location.
 
 #### Additional tools:
 
-Also included in this directory is a folder titled cameraDetector.
-Within this directory is a helper .cpp file that contains code for discovering UVC devices connected
-to the specific machine.
+This directory contains two additional simple tools for helping with setting up your ADUVC IOC.
 
-The README.md file in said directory contains information on compiling and running the tool.
-Make sure to first install libuvc and then run the tool, prior to booting the IOC,
-as there are several values that must be passed to the IOC in the configuration.  
-  
+For both, you will need to install libuvc with the script as described above. See the README files
+in the appropriate directories for more details.
+
+The first utility is a camera detector program, which is used to find supported operating modes
+and connection attributes for cameras. The second is a simple program that tests image acquisition using
+libuvc and OpenCV for a specified camera.
+
+Before creating an IOC for the device, use the camera detector program to find the following 
+information that will be required for the configuration later on.
+
 These include:
 
-* Serial Number (really a const char*)
+* Serial Number
 * Framerate
 * Resolution (X and Y)
 * Video Format

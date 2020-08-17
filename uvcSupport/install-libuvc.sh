@@ -3,6 +3,17 @@
 EPICS_HOST_ARCH=linux-x86_64
 #EPICS_HOST_ARCH=linux-arm
 
+echo "Building libuvc with expected EPICS target $EPICS_HOST_ARCH..."
+
+
+if [ -d 'libuvc' ];
+then
+    echo "Removing existing libuvc build artefacts..."
+    rm -rf libuvc
+fi
+
+
+echo "Grabbing libuvc..."
 # Install libuvc by cloning from github and running cmake
 git clone https://github.com/jwlodek/libuvc.git
 cd libuvc
@@ -20,7 +31,7 @@ then
     rm -rf include
 fi
 
-
+echo "Copying and updating include files..."
 # Copy the library include files
 cp -r libuvc/include .
 
@@ -36,6 +47,9 @@ sed -i "s/#include <libusb.h>/#include <libusb-1.0\/libusb.h>/g" include/libuvc/
 
 # This line will compile the program and place a copy of the libs in /usr/local. 
 # It is recommended to keep it uncommented to compile the helper programs.
+# This is also required if using dynamic linking, and moving the executable.
+#
+#echo "Installing libuvc to system location..."
 #sudo make install
 
 
@@ -47,13 +61,12 @@ then
 fi
 
 
+echo "Copying compiled library files..."
 mkdir os
 mkdir os/$EPICS_HOST_ARCH
 cp libuvc/build/libuvc.a os/$EPICS_HOST_ARCH/.
-cp libuvc/build/libuvc.so os/$EPICS_HOST_ARCH/.
-cp libuvc/build/libuvc.so.0 os/$EPICS_HOST_ARCH/.
-cp libuvc/build/libuvc.so.0.0.6 os/$EPICS_HOST_ARCH/.
+cp libuvc/build/libuvc.so* os/$EPICS_HOST_ARCH/.
 
 # Remove build artefacts.
 rm -rf libuvc
-echo "Finished installing libuvc"
+echo "Finished installing libuvc."
