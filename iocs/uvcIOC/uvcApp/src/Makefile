@@ -16,10 +16,12 @@ $(PROD_NAME)_SRCS += $(PROD_NAME)_registerRecordDeviceDriver.cpp $(PROD_NAME)Mai
 # Add locally compiled object code
 $(PROD_NAME)_LIBS += ADUVC
 
-#$(PROD_NAME)_LIBS += uvc
+$(PROD_NAME)_LIBS += uvc
+
 
 # If using a system version of libuvc (i.e. make install) use the below line instead.
-$(PROD_NAME)_SYS_LIBS += uvc
+#$(PROD_NAME)_SYS_LIBS += uvc
+$(PROD_NAME)_SYS_LIBS += usb-1.0
 
 include $(ADCORE)/ADApp/commonDriverMakefile
 
