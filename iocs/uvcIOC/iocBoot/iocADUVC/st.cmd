@@ -1,9 +1,11 @@
+#!../../bin/linux-x86_64/uvcApp
+
 errlogInit(20000)
 
 < envPaths
 #epicsThreadSleep(20)
-dbLoadDatabase("$(TOP)/dbd/adUVCApp.dbd")
-adUVCApp_registerRecordDeviceDriver(pdbbase) 
+dbLoadDatabase("$(TOP)/dbd/uvcApp.dbd")
+uvcApp_registerRecordDeviceDriver(pdbbase) 
 
 # Prefix for all records
 epicsEnvSet("PREFIX", "XF:10IDC-BI{UVC-Cam:1}")
@@ -69,7 +71,7 @@ dbLoadRecords("$(ADCORE)/db/NDStdArrays.template", "P=$(PREFIX),R=image1:,PORT=I
 # Load all other plugins using commonPlugins.cmd
 < $(ADCORE)/iocBoot/commonPlugins.cmd
 
-set_requestfile_path("$(ADUVC)/adUVCApp/Db")
+set_requestfile_path("$(ADUVC)/uvcApp/Db")
 
 #asynSetTraceMask($(PORT),0,0x09)
 #asynSetTraceMask($(PORT),0,0x11)

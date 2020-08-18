@@ -7,43 +7,61 @@ critical information about them.
 
 #### Compilation:
 
-To compile the helper program, switch to a root account, and compile using:
+To compile this helper program, you must first compile libuvc. The easiest way to do this is to use the
+installation script in the `uvcSupport` directory:
 
 ```
-sudo su
+./install-libuvc.sh
+```
+
+This should use CMake to compile the library, and copy the necessary build artefacts into the correct
+locations for compilation.
+
+Once this completes successfully, you can compile the program by just running:
+
+```
 make
 ```
 
-**NOTE:** make sure that libuvc is in your library path. if you used the script in
-adUVCSupport to install it, it should have been placed there automatically.
-
+**NOTE:** This will link against pthread, libusb-1.0. You must have these installed to
+compile libuvc, along with these helper programs.
 
 #### Usage:
 
-To use the helper, run it as root. These are the possible commands:
+To use the locater, you can run it with these possible commands:
 
 ```
 ./uvc_locater -h 
 ```
+
 OR
+
 ```
 ./uvc_locater --help
 ```
+
 will list some help information about the helper program.
+
 
 ```
 ./uvc_locater
 ```
 
-will list all of the uvc devices connected to the machine, and some basic properties.
+will list all of the uvc devices connected to the machine, and some basic properties. Certain properties
+are locked behind root access, and so will require running the program as root.
+
 From here, you can get a UVC camera's serial number, which can be used in the following way:
+
 ```
 ./uvc_locater -s $SERIAL_NUMBER
 ```
+
 OR
+
 ```
 ./uvc_locater --serial $SERIAL_NUMBER
 ```
+
 This will print out detailed information about the camera, including supported video
 formats, framerates, and resolutions, all of which must be used in the st.cmd ioc
 startup script.
@@ -51,10 +69,13 @@ startup script.
 ```
 ./uvc_locater -p $PRODUCT_ID
 ```
+
 OR
+
 ```
 ./uvc_locater --product $PRODUCT_ID
 ```
+
 This will print the same information as the search by serial, but will search by product ID.
 
 #### Finding supported data types:

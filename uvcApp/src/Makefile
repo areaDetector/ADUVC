@@ -9,16 +9,19 @@ endif
 
 USR_CPPFLAGS += -std=c++11
 
-#UVC_HOME = /epics/support/areaDetector-3-2/ADUVC
-#USR_INCLUDES += -I$(UVC_HOME)/include/libuvc
+# Define our IOC library as libADUVC
+LIBRARY_IOC = ADUVC
 
-LIBRARY_IOC = adUVC
+# Define our source code file
 LIB_SRCS += ADUVC.cpp
+
+# Link against libuvc
 LIB_LIBS += uvc
-#SYS_PROD_LIBS += boost_system
 
-DBD += adUVCSupport.dbd
+# Define DBD file for ioc shell command registration
+DBD += uvcSupport.dbd
 
+# Include top level Library Makefile
 include $(ADCORE)/ADApp/commonLibraryMakefile
 
 #=============================

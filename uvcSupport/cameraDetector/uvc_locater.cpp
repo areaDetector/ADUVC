@@ -9,7 +9,7 @@
  */
 
 #include <stdlib.h>
-#include <libuvc/libuvc.h>
+#include "libuvc/libuvc.h"
 #include <stdio.h>
 #include <cstddef>
 #include <string.h>
