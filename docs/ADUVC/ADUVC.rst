@@ -121,6 +121,28 @@ Release Notes
 .. rubric:: Release Notes
    :name: release-notes-1
 
+.. rubric:: R1-4 (18-August-2020)
+   :name: r1-4-18-august-2020
+
+- Features Added
+
+    - Added ReST based documentation for new areaDetector doc format
+    - Static build support (for libuvc)
+
+- Fixes/Improvement
+
+    - Fix segmentation fault caused by disconnect
+    - Libuvc install script fixed to support include files from build
+    - Minor fixes to build system to allow for static building
+    - Folder + file name changes to better follow AD naming standard
+    - Many code readability improvements
+    - Allow for helper utilities to compile with non-system installed libuvc
+
+- Known Issues
+    
+    - libuvc relies on libusb-1.0, not libusb.
+    - When camera is not connected, driver segmentation faults; should be handled more gracefully.
+
 .. rubric:: R1-3 (06-September-2019)
    :name: r1-3-06-september-2019
 

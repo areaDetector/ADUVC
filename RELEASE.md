@@ -8,6 +8,25 @@ ADUVC requires libusb, libuvc, epics-base, epics-modules, ADCore, and ADSupport.
 Release Notes
 =============
 
+R1-4 (18-August-2020)
+----
+* Features Added
+    * Added ReST based documentation for new areaDetector doc format
+    * Static build support (for libuvc)
+
+* Fixes/Improvement
+    * Fix segmentation fault caused by disconnect
+    * Libuvc install script fixed to support include files from build
+    * Minor fixes to build system to allow for static building
+    * Folder + file name changes to better follow AD naming standard
+    * Many code readability improvements
+    * Allow for helper utilities to compile with non-system installed libuvc
+
+* Known Issues
+    * `libuvc` relies on `libusb-1.0`, not `libusb`. 
+    * When camera is not connected, driver segmentation faults - should be handled more gracefully.
+    
+
 R1-3 (06-September-2019)
 -----
 * Key detector features implemented:
