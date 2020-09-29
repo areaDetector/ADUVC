@@ -315,3 +315,52 @@ record(ai, "$(P)$(R)UVCSharpness_RBV"){
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_SHARPNESS")
     field(SCAN, "I/O Intr")
 }
+
+
+######################################
+# Stores the Pan value
+######################################
+record(ao, "$(P)$(R)UVCPan"){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_PAN")
+}
+
+record(ai, "$(P)$(R)UVCPan_RBV"){
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_PAN")
+    field(SCAN, "I/O Intr")
+}
+
+
+######################################
+# Stores the Tilt value
+######################################
+record(ao, "$(P)$(R)UVCTilt"){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_TILT")
+}
+
+record(ai, "$(P)$(R)UVCTilt_RBV"){
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_TILT")
+    field(SCAN, "I/O Intr")
+}
+
+
+######################################
+# Stores the Zoom value
+######################################
+record(ao, "$(P)$(R)UVCZoom"){
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_ZOOM")
+}
+
+record(ai, "$(P)$(R)UVCZoom_RBV"){
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_ZOOM")
+    field(SCAN, "I/O Intr")
+}
+
