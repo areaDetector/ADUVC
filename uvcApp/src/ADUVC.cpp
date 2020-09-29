@@ -1491,6 +1491,10 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID,
     createParam(ADUVC_GammaString,                  asynParamInt32,     &ADUVC_Gamma);
     createParam(ADUVC_BacklightCompensationString,  asynParamInt32,     &ADUVC_BacklightCompensation);
     createParam(ADUVC_SharpnessString,              asynParamInt32,     &ADUVC_Sharpness);
+    createParam(ADUVC_PanString,                    asynParamInt32,     &ADUVC_Pan);
+    createParam(ADUVC_TiltString,                   asynParamInt32,     &ADUVC_Tilt);
+    createParam(ADUVC_ZoomString,                   asynParamInt32,     &ADUVC_Zoom);
+
 
     // Set initial size and framerate params
     setIntegerParam(ADUVC_Framerate, framerate);

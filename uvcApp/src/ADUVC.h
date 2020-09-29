@@ -54,7 +54,10 @@ extern "C" {
 #define ADUVC_PowerLineString                   "UVC_POWER"                 //asynInt32
 #define ADUVC_HueString                         "UVC_HUE"                   //asynInt32
 #define ADUVC_SaturationString                  "UVC_SATURATION"            //asynInt32
-#define ADUVC_SharpnessString                   "UVC_SHARPNESS"             //asynInt32    
+#define ADUVC_SharpnessString                   "UVC_SHARPNESS"             //asynInt32
+#define ADUVC_PanString                         "UVC_PAN"                   //asynInt32
+#define ADUVC_TiltString                        "UVC_TILT"                  //asynInt32
+#define ADUVC_ZoomString                        "UVC_ZOOM"                  //asynInt32
 
 
 /* enum for getting format from PV */
@@ -131,7 +134,10 @@ class ADUVC : ADDriver{
         int ADUVC_Hue;
         int ADUVC_Saturation;
         int ADUVC_Sharpness;
-        #define ADUVC_LAST_PARAM ADUVC_Sharpness
+        int ADUVC_Pan;
+        int ADUVC_Tilt;
+        int ADUVC_Zoom;
+        #define ADUVC_LAST_PARAM ADUVC_Zoom
 
     private:
 
@@ -221,7 +227,7 @@ class ADUVC : ADDriver{
         // UVC Functions - Camera functions
         //-----------------------------------------
 
-        // Functions that set different camera variable values
+        // Functions that set image processing and acquisiton controls
         asynStatus setExposure(int exposureTime);
         asynStatus setGamma(int gamma);
         asynStatus setBacklightCompensation(int backlightCompensation);
@@ -232,6 +238,12 @@ class ADUVC : ADDriver{
         asynStatus setHue(int hue);
         asynStatus setSaturation(int saturation);
         asynStatus setSharpness(int sharpness);
+
+        // Functions that allow for PTZ (Pan/Tilt/Zoom) control for supported devices
+        asynStatus setPan(int relativePan);
+        asynStatus setTilt(int relativeTilt);
+        asynStatus setZoom(int relativeZoom);
+
 
         // Functions that start/stop image aquisition
         uvc_error_t acquireStart(uvc_frame_format format);
