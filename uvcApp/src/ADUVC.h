@@ -139,7 +139,7 @@ class ADUVC : ADDriver{
         // UVC Variables
         //-----------------------------------------
 
-	// Connection information
+        // Connection information
         int connectionType;
         int productID;
         const char* serialNumber;
@@ -154,8 +154,8 @@ class ADUVC : ADDriver{
         uvc_context_t* pdeviceContext;
 
         // Pointer to device handle. 
-	// Used for controlling device. 
-	// Each UVC device can allow for one handle at a time
+        // Used for controlling device. 
+        // Each UVC device can allow for one handle at a time
         uvc_device_handle_t* pdeviceHandle;
 
         // Device stream controller. used to control streaming from device
@@ -247,11 +247,11 @@ class ADUVC : ADDriver{
         void getDeviceImageInformation();
         void getDeviceInformation();
 
-	// Function that converts ADUVC_Format PV value into uvc_frame_format
+        // Function that converts ADUVC_Format PV value into uvc_frame_format
         uvc_frame_format getFormatFromPV();
 
         // Static wrapper function for callback. 
-	// Necessary becuase callback in UVC must be static but we want the driver running the callback
+        // Necessary becuase callback in UVC must be static but we want the driver running the callback
         static void newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr);
 };
 
