@@ -95,8 +95,8 @@ class ADUVC : ADDriver{
 
         // Constructor
         ADUVC(const char* portName, const char* serial, int productID, 
-			int framerate, int xsize, int ysize, int maxBuffers, 
-			size_t maxMemory, int priority, int stackSize);
+            int framerate, int xsize, int ysize, int maxBuffers, 
+            size_t maxMemory, int priority, int stackSize);
 
 
         // ADDriver overrides
