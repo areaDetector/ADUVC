@@ -16,7 +16,7 @@
 
 // version numbers
 #define ADUVC_VERSION      1
-#define ADUVC_REVISION     4
+#define ADUVC_REVISION     5
 #define ADUVC_MODIFICATION 0
 
 
@@ -55,10 +55,15 @@ extern "C" {
 #define ADUVC_HueString                         "UVC_HUE"                   //asynInt32
 #define ADUVC_SaturationString                  "UVC_SATURATION"            //asynInt32
 #define ADUVC_SharpnessString                   "UVC_SHARPNESS"             //asynInt32
-#define ADUVC_PanString                         "UVC_PAN"                   //asynInt32
-#define ADUVC_TiltString                        "UVC_TILT"                  //asynInt32
+#define ADUVC_PanLeftString                         "UVC_PAN_LEFT"                   //asynInt32
+#define ADUVC_PanRightString                         "UVC_PAN_RIGHT"                   //asynInt32
+#define ADUVC_TiltUpString                        "UVC_TILT_UP"                  //asynInt32
+#define ADUVC_TiltDownString                        "UVC_TILT_DOWN"                  //asynInt32
 #define ADUVC_ZoomString                        "UVC_ZOOM"                  //asynInt32
-
+#define ADUVC_PanSpeedString                    "UVC_PAN_SPEED"             //asynInt32
+#define ADUVC_TiltSpeedString                   "UVC_TILT_SPEED"            //asynInt32
+#define ADUVC_ZoomSpeedString                   "UVC_ZOOM_SPEED"            //asynInt32
+#define ADUVC_DigitalZoomString                 "UVC_DIGITAL_ZOOM"          //asynInt32
 
 /* enum for getting format from PV */
 typedef enum {
@@ -134,10 +139,16 @@ class ADUVC : ADDriver{
         int ADUVC_Hue;
         int ADUVC_Saturation;
         int ADUVC_Sharpness;
-        int ADUVC_Pan;
-        int ADUVC_Tilt;
+        int ADUVC_PanLeft;
+        int ADUVC_PanRight;
+        int ADUVC_TiltUp;
+        int ADUVC_TiltDown;
         int ADUVC_Zoom;
-        #define ADUVC_LAST_PARAM ADUVC_Zoom
+        int ADUVC_PanSpeed;
+        int ADUVC_TiltSpeed;
+        int ADUVC_ZoomSpeed;
+        int ADUVC_DigitalZoom;
+        #define ADUVC_LAST_PARAM ADUVC_DigitalZoom
 
     private:
 
@@ -240,9 +251,8 @@ class ADUVC : ADDriver{
         asynStatus setSharpness(int sharpness);
 
         // Functions that allow for PTZ (Pan/Tilt/Zoom) control for supported devices
-        asynStatus setPan(int relativePan);
-        asynStatus setTilt(int relativeTilt);
-        asynStatus setZoom(int relativeZoom);
+        asynStatus processPanTilt(int panDirection, int tiltDirection);
+        asynStatus setZoom(int zoomLevel, int digitalZoom);
 
 
         // Functions that start/stop image aquisition

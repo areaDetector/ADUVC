@@ -484,7 +484,8 @@ void ADUVC::getDeviceImageInformation(){
     uint32_t exposure;
     uint16_t gamma, backlightCompensation, contrast, gain,  saturation, sharpness;
     int16_t brightness, hue;
-    uint8_t powerLineFrequency;
+    uint8_t powerLineFrequency, panSpeed, tiltSpeed, zoomSpeed, digitalZoom;
+    int8_t pan, tilt, zoom;
 
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Populating camera function PVs.\n", driverName, functionName);
 
@@ -499,6 +500,8 @@ void ADUVC::getDeviceImageInformation(){
     uvc_get_hue(pdeviceHandle, &hue, UVC_GET_CUR);
     uvc_get_saturation(pdeviceHandle, &saturation, UVC_GET_CUR);
     uvc_get_sharpness(pdeviceHandle, &sharpness, UVC_GET_CUR);
+    uvc_get_pantilt_rel(pdeviceHandle, &pan, &panSpeed, &tilt, &tiltSpeed, UVC_GET_CUR);
+    uvc_get_zoom_rel(pdeviceHandle, &zoom, &zoomSpeed, &digitalZoom, UVC_GET_CUR);
 
     //put values into appropriate PVs
     setDoubleParam(ADAcquireTime, (double) exposure);
@@ -511,6 +514,11 @@ void ADUVC::getDeviceImageInformation(){
     setIntegerParam(ADUVC_Hue, (int) hue);
     setIntegerParam(ADUVC_Saturation, (int) saturation);
     setIntegerParam(ADUVC_Sharpness, (int) sharpness);
+    setIntegerParam(ADUVC_Zoom, (int) zoom);
+    setIntegerParam(ADUVC_PanSpeed, (int) panSpeed);
+    setIntegerParam(ADUVC_TiltSpeed, (int) tiltSpeed);
+    setIntegerParam(ADUVC_ZoomSpeed, (int) zoomSpeed);
+    setIntegerParam(ADUVC_DigitalZoom, (int) digitalZoom);
     
     //refresh PV values
     callParamCallbacks();
@@ -530,8 +538,8 @@ void ADUVC::getDeviceInformation(){
     uvc_get_device_descriptor(pdevice, &pdeviceInfo);
     if(pdeviceInfo->manufacturer!=NULL) setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
     if(pdeviceInfo->serialNumber!=NULL) setStringParam(ADSerialNumber, pdeviceInfo->serialNumber);
-    sprintf(modelName, "Vendor: %d, Product: %d", pdeviceInfo->idVendor, pdeviceInfo->idProduct);
-    setIntegerParam(ADUVC_UVCComplianceLevel, pdeviceInfo->bcdUVC);
+    sprintf(modelName, "%s", pdeviceInfo->product);
+    setIntegerParam(ADUVC_UVCComplianceLevel, (int) pdeviceInfo->bcdUVC);
     setStringParam(ADModel, modelName);
     callParamCallbacks();
     uvc_free_device_descriptor(pdeviceInfo);
@@ -1249,6 +1257,77 @@ asynStatus ADUVC::setSharpness(int sharpness){
 }
 
 
+/**
+ * Function that sets the degree of sharpening. Too high will cause oversharpening
+ * 
+ * @params[in]: sharpness -> degree of sharpening
+ * @return: status
+ */
+asynStatus ADUVC::processPanTilt(int panDirection, int tiltDirection){
+    
+    int panSpeed, tiltSpeed;
+    getIntegerParam(ADUVC_PanSpeed, &panSpeed);
+    getIntegerParam(ADUVC_TiltSpeed, &tiltSpeed);
+
+    if(this->pdevice == NULL) return asynError;
+    
+    const char* functionName = "processPanTilt";
+    asynStatus status = asynSuccess;
+    
+    deviceStatus = uvc_set_pantilt_rel(pdeviceHandle, (int8_t) panDirection, (uint8_t) panSpeed,
+                                                        (int8_t) tiltDirection, (uint8_t) tiltSpeed);
+    
+    if(deviceStatus < 0){
+        reportUVCError(deviceStatus, functionName);
+        status = asynError;
+    }
+
+    else{
+        epicsThreadSleep(0.25);
+        deviceStatus = uvc_set_pantilt_rel(pdeviceHandle, 0, (uint8_t) panSpeed,
+                                                    0, (uint8_t) tiltSpeed);
+    
+
+        if(deviceStatus == UVC_SUCCESS) updateStatus("Processed Pan/Tilt");
+        else{
+            reportUVCError(deviceStatus, functionName);
+            status = asynError;
+        }
+    }
+
+    return status;
+}
+
+
+/**
+ * Function that sets the degree of sharpening. Too high will cause oversharpening
+ * 
+ * @params[in]: sharpness -> degree of sharpening
+ * @return: status
+ */
+asynStatus ADUVC::setZoom(int zoom, int digitalZoom){
+
+    if(this->pdevice == NULL) return asynError;
+    
+    const char* functionName = "setZoom";
+    asynStatus status = asynSuccess;
+    updateStatus("Set Zoom");
+
+    int speed;
+    getIntegerParam(ADUVC_ZoomSpeed, &speed);
+    
+    deviceStatus = uvc_set_zoom_rel(pdeviceHandle, (int8_t) zoom, (uint8_t) digitalZoom, (uint8_t) speed);
+    
+    if(deviceStatus < 0){
+        reportUVCError(deviceStatus, functionName);
+        status = asynError;
+    }
+    
+    return status;
+}
+
+
+
 //-------------------------------------------------------------------------
 // ADDriver function overwrites
 //-------------------------------------------------------------------------
@@ -1318,6 +1397,20 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
     else if(function == ADUVC_PowerLine) setPowerLineFrequency(value);
     else if(function == ADUVC_Saturation) setSaturation(value);
     else if(function == ADUVC_Sharpness) setSharpness(value);
+    else if(function == ADUVC_PanLeft) processPanTilt(-1, 0);
+    else if(function == ADUVC_PanRight) processPanTilt(1, 0);
+    else if(function == ADUVC_TiltUp) processPanTilt(0, 1);
+    else if(function == ADUVC_TiltDown) processPanTilt(0, -1);
+    else if(function == ADUVC_Zoom){
+        int digitalZoom;
+        getIntegerParam(ADUVC_DigitalZoom, &digitalZoom);
+        setZoom(value, digitalZoom);
+    }
+    else if(function == ADUVC_DigitalZoom){
+        int zoom;
+        getIntegerParam(ADUVC_Zoom, &zoom);
+        setZoom(zoom, value);
+    }
     else{
         if (function < ADUVC_FIRST_PARAM) {
             status = ADDriver::writeInt32(pasynUser, value);
@@ -1419,25 +1512,18 @@ void ADUVC::report(FILE* fp, int details){
         }
         
         fprintf(fp, " Connected Device Information\n");
-        fprintf(fp, " Serial number         ->      %s\n", 
-                pdeviceInfo->serialNumber);
-        fprintf(fp, " VendorID              ->      %d\n", 
-                pdeviceInfo->idVendor);
-        fprintf(fp, " ProductID             ->      %d\n", 
-                pdeviceInfo->idProduct);
-        fprintf(fp, " UVC Compliance Level  ->      %d\n", 
-                pdeviceInfo->bcdUVC);
+        fprintf(fp, " Serial number         ->      %s\n", pdeviceInfo->serialNumber);
+        fprintf(fp, " VendorID              ->      %d\n", pdeviceInfo->idVendor);
+        fprintf(fp, " ProductID             ->      %d\n", pdeviceInfo->idProduct);
+        fprintf(fp, " UVC Compliance Level  ->      %d\n", pdeviceInfo->bcdUVC);
 
         getIntegerParam(ADUVC_Framerate, &framerate);
         getIntegerParam(ADSizeX, &width);
         getIntegerParam(ADSizeY, &height);
         
-        fprintf(fp, " Camera Framerate      ->      %d\n", 
-                framerate);
-        fprintf(fp, " Image Width           ->      %d\n", 
-                width);
-        fprintf(fp, " Image Height          ->      %d\n", 
-                height);
+        fprintf(fp, " Camera Framerate      ->      %d\n", framerate);
+        fprintf(fp, " Image Width           ->      %d\n", width);
+        fprintf(fp, " Image Height          ->      %d\n", height);
 
         fprintf(fp, " --------------------------------------------\n\n");
         
@@ -1491,9 +1577,15 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID,
     createParam(ADUVC_GammaString,                  asynParamInt32,     &ADUVC_Gamma);
     createParam(ADUVC_BacklightCompensationString,  asynParamInt32,     &ADUVC_BacklightCompensation);
     createParam(ADUVC_SharpnessString,              asynParamInt32,     &ADUVC_Sharpness);
-    createParam(ADUVC_PanString,                    asynParamInt32,     &ADUVC_Pan);
-    createParam(ADUVC_TiltString,                   asynParamInt32,     &ADUVC_Tilt);
+    createParam(ADUVC_PanLeftString,                    asynParamInt32,     &ADUVC_PanLeft);
+    createParam(ADUVC_PanRightString,                    asynParamInt32,     &ADUVC_PanRight);
+    createParam(ADUVC_TiltUpString,                   asynParamInt32,     &ADUVC_TiltUp);
+    createParam(ADUVC_TiltDownString,                   asynParamInt32,     &ADUVC_TiltDown);
     createParam(ADUVC_ZoomString,                   asynParamInt32,     &ADUVC_Zoom);
+    createParam(ADUVC_PanSpeedString,               asynParamInt32,     &ADUVC_PanSpeed);
+    createParam(ADUVC_TiltSpeedString,              asynParamInt32,     &ADUVC_TiltSpeed);
+    createParam(ADUVC_ZoomSpeedString,              asynParamInt32,     &ADUVC_ZoomSpeed);
+    createParam(ADUVC_DigitalZoomString,            asynParamInt32,     &ADUVC_DigitalZoom);
 
 
     // Set initial size and framerate params
