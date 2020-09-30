@@ -21,18 +21,18 @@ Next, run the resulting program supplying a movement direction and the camera id
 For example, for a camera with a serial number B56C90EF that we wish to move left, run:
 
 ```
-./ptz_test left -s B56C90EF
+./pt_test left -s B56C90EF
 ```
 
 OR
 
 ```
-./ptz_test -s B56C90EF left
+./pt_test -s B56C90EF left
 ```
 
 Note that you can give either the direction or the connection parameter first. For more help, run with the `-h` flag:
 
 
 ```
-./ptz_test -h
+./pt_test -h
 ```
