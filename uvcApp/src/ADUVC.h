@@ -64,6 +64,7 @@ extern "C" {
 #define ADUVC_TiltSpeedString                   "UVC_TILT_SPEED"            //asynInt32
 #define ADUVC_ZoomSpeedString                   "UVC_ZOOM_SPEED"            //asynInt32
 #define ADUVC_DigitalZoomString                 "UVC_DIGITAL_ZOOM"          //asynInt32
+#define ADUVC_PanTiltStepString                 "UVC_PAN_TILT_STEP"         //asynFloat64
 
 /* enum for getting format from PV */
 typedef enum {
@@ -148,7 +149,8 @@ class ADUVC : ADDriver{
         int ADUVC_TiltSpeed;
         int ADUVC_ZoomSpeed;
         int ADUVC_DigitalZoom;
-        #define ADUVC_LAST_PARAM ADUVC_DigitalZoom
+        int ADUVC_PanTiltStep;
+        #define ADUVC_LAST_PARAM ADUVC_PanTiltStep
 
     private:
 

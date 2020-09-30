@@ -1266,8 +1266,10 @@ asynStatus ADUVC::setSharpness(int sharpness){
 asynStatus ADUVC::processPanTilt(int panDirection, int tiltDirection){
     
     int panSpeed, tiltSpeed;
+    double panTiltStepTime;
     getIntegerParam(ADUVC_PanSpeed, &panSpeed);
     getIntegerParam(ADUVC_TiltSpeed, &tiltSpeed);
+    getDoubleParam(ADUVC_PanTiltStep, &panTiltStepTime);
 
     if(this->pdevice == NULL) return asynError;
     
@@ -1283,7 +1285,7 @@ asynStatus ADUVC::processPanTilt(int panDirection, int tiltDirection){
     }
 
     else{
-        epicsThreadSleep(0.25);
+        epicsThreadSleep(panTiltStepTime);
         deviceStatus = uvc_set_pantilt_rel(pdeviceHandle, 0, (uint8_t) panSpeed,
                                                     0, (uint8_t) tiltSpeed);
     
@@ -1586,6 +1588,7 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID,
     createParam(ADUVC_TiltSpeedString,              asynParamInt32,     &ADUVC_TiltSpeed);
     createParam(ADUVC_ZoomSpeedString,              asynParamInt32,     &ADUVC_ZoomSpeed);
     createParam(ADUVC_DigitalZoomString,            asynParamInt32,     &ADUVC_DigitalZoom);
+    createParam(ADUVC_PanTiltStepString,            asynParamFloat64,   &ADUVC_PanTiltStep);
 
 
     // Set initial size and framerate params
