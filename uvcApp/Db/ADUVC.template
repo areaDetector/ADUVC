@@ -410,48 +410,14 @@ record(ai, "$(P)$(R)UVCPanTiltStep_RBV"){
 ######################################
 # Stores the Zoom value
 ######################################
-record(ao, "$(P)$(R)UVCZoom"){
-    field(PINI, "YES")
+record(ao, "$(P)$(R)UVCZoomIn"){
     field(DTYP, "asynInt32")
-    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_ZOOM")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_ZOOM_IN")
 }
 
-record(ai, "$(P)$(R)UVCZoom_RBV"){
+record(ao, "$(P)$(R)UVCZoomOut"){
     field(DTYP, "asynInt32")
-    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_ZOOM")
-    field(SCAN, "I/O Intr")
-}
-
-
-######################################
-# Stores the ZoomSpeed value
-######################################
-record(ao, "$(P)$(R)UVCZoomSpeed"){
-    field(PINI, "YES")
-    field(DTYP, "asynInt32")
-    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_ZOOM_SPEED")
-}
-
-record(ai, "$(P)$(R)UVCZoomSpeed_RBV"){
-    field(DTYP, "asynInt32")
-    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_ZOOM_SPEED")
-    field(SCAN, "I/O Intr")
-}
-
-
-######################################
-# Stores the DigitalZoom value
-######################################
-record(ao, "$(P)$(R)UVCDigitalZoom"){
-    field(PINI, "YES")
-    field(DTYP, "asynInt32")
-    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_DIGITAL_ZOOM")
-}
-
-record(ai, "$(P)$(R)UVCDigitalZoom_RBV"){
-    field(DTYP, "asynInt32")
-    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_DIGITAL_ZOOM")
-    field(SCAN, "I/O Intr")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_ZOOM_OUT")
 }
 
 

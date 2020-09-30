@@ -13,4 +13,6 @@ $(P)$(R)UVCSharpness
 $(P)$(R)UVCCameraFormat
 $(P)$(R)UVCFormatDescription_RBV
 $(P)$(R)UVCApplyFormat
-
+$(P)$(R)UVCPanTiltStep
+$(P)$(R)UVCPanSpeed
+$(P)$(R)UVCTiltSpeed

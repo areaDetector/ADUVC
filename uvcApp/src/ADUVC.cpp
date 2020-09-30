@@ -484,8 +484,8 @@ void ADUVC::getDeviceImageInformation(){
     uint32_t exposure;
     uint16_t gamma, backlightCompensation, contrast, gain,  saturation, sharpness;
     int16_t brightness, hue;
-    uint8_t powerLineFrequency, panSpeed, tiltSpeed, zoomSpeed, digitalZoom;
-    int8_t pan, tilt, zoom;
+    uint8_t powerLineFrequency, panSpeed, tiltSpeed;
+    int8_t pan, tilt;
 
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Populating camera function PVs.\n", driverName, functionName);
 
@@ -501,7 +501,11 @@ void ADUVC::getDeviceImageInformation(){
     uvc_get_saturation(pdeviceHandle, &saturation, UVC_GET_CUR);
     uvc_get_sharpness(pdeviceHandle, &sharpness, UVC_GET_CUR);
     uvc_get_pantilt_rel(pdeviceHandle, &pan, &panSpeed, &tilt, &tiltSpeed, UVC_GET_CUR);
-    uvc_get_zoom_rel(pdeviceHandle, &zoom, &zoomSpeed, &digitalZoom, UVC_GET_CUR);
+    uvc_get_zoom_abs(pdeviceHandle, &(this->zoomMin), UVC_GET_MIN);
+    uvc_get_zoom_abs(pdeviceHandle, &(this->zoomMax), UVC_GET_MAX);
+    this->zoomStepSize = (int) ((this->zoomMax - this->zoomMin) / this->zoomSteps);
+    this->currentZoom = this->zoomMin;
+
 
     //put values into appropriate PVs
     setDoubleParam(ADAcquireTime, (double) exposure);
@@ -514,11 +518,8 @@ void ADUVC::getDeviceImageInformation(){
     setIntegerParam(ADUVC_Hue, (int) hue);
     setIntegerParam(ADUVC_Saturation, (int) saturation);
     setIntegerParam(ADUVC_Sharpness, (int) sharpness);
-    setIntegerParam(ADUVC_Zoom, (int) zoom);
     setIntegerParam(ADUVC_PanSpeed, (int) panSpeed);
     setIntegerParam(ADUVC_TiltSpeed, (int) tiltSpeed);
-    setIntegerParam(ADUVC_ZoomSpeed, (int) zoomSpeed);
-    setIntegerParam(ADUVC_DigitalZoom, (int) digitalZoom);
     
     //refresh PV values
     callParamCallbacks();
@@ -1258,9 +1259,10 @@ asynStatus ADUVC::setSharpness(int sharpness){
 
 
 /**
- * Function that sets the degree of sharpening. Too high will cause oversharpening
+ * Function that adjust camera pan/tilt options if supported
  * 
- * @params[in]: sharpness -> degree of sharpening
+ * @params[in]: panDirection -> -1, 0, 1 - left, stay, right
+ * @params[in]: tiltDirection -> -1, 0, 1 - up stay down
  * @return: status
  */
 asynStatus ADUVC::processPanTilt(int panDirection, int tiltDirection){
@@ -1307,22 +1309,33 @@ asynStatus ADUVC::processPanTilt(int panDirection, int tiltDirection){
  * @params[in]: sharpness -> degree of sharpening
  * @return: status
  */
-asynStatus ADUVC::setZoom(int zoom, int digitalZoom){
+asynStatus ADUVC::processZoom(int zoomDirection){
 
     if(this->pdevice == NULL) return asynError;
     
-    const char* functionName = "setZoom";
+    const char* functionName = "processZoom";
+    
     asynStatus status = asynSuccess;
-    updateStatus("Set Zoom");
 
-    int speed;
-    getIntegerParam(ADUVC_ZoomSpeed, &speed);
+    if(zoomDirection == 1){
+        currentZoom += zoomStepSize;
+        if(currentZoom > zoomMax) currentZoom = zoomMax;
+    }
+    else{
+        currentZoom -= zoomStepSize;
+        if(currentZoom < zoomMin) currentZoom = zoomMin;
+    }
     
-    deviceStatus = uvc_set_zoom_rel(pdeviceHandle, (int8_t) zoom, (uint8_t) digitalZoom, (uint8_t) speed);
-    
+    //deviceStatus = uvc_set_zoom_rel(pdeviceHandle, 1, , 10);
+    deviceStatus = uvc_set_zoom_abs(pdeviceHandle, currentZoom);
+
+
     if(deviceStatus < 0){
         reportUVCError(deviceStatus, functionName);
         status = asynError;
+    }
+    else{
+        updateStatus("Processed Zoom");
     }
     
     return status;
@@ -1403,16 +1416,8 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
     else if(function == ADUVC_PanRight) processPanTilt(1, 0);
     else if(function == ADUVC_TiltUp) processPanTilt(0, 1);
     else if(function == ADUVC_TiltDown) processPanTilt(0, -1);
-    else if(function == ADUVC_Zoom){
-        int digitalZoom;
-        getIntegerParam(ADUVC_DigitalZoom, &digitalZoom);
-        setZoom(value, digitalZoom);
-    }
-    else if(function == ADUVC_DigitalZoom){
-        int zoom;
-        getIntegerParam(ADUVC_Zoom, &zoom);
-        setZoom(zoom, value);
-    }
+    else if(function == ADUVC_ZoomIn) processZoom(1);
+    else if(function == ADUVC_ZoomOut) processZoom(-1);
     else{
         if (function < ADUVC_FIRST_PARAM) {
             status = ADDriver::writeInt32(pasynUser, value);
@@ -1583,11 +1588,10 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID,
     createParam(ADUVC_PanRightString,                    asynParamInt32,     &ADUVC_PanRight);
     createParam(ADUVC_TiltUpString,                   asynParamInt32,     &ADUVC_TiltUp);
     createParam(ADUVC_TiltDownString,                   asynParamInt32,     &ADUVC_TiltDown);
-    createParam(ADUVC_ZoomString,                   asynParamInt32,     &ADUVC_Zoom);
+    createParam(ADUVC_ZoomInString,                   asynParamInt32,     &ADUVC_ZoomIn);
+    createParam(ADUVC_ZoomOutString,                   asynParamInt32,     &ADUVC_ZoomOut);
     createParam(ADUVC_PanSpeedString,               asynParamInt32,     &ADUVC_PanSpeed);
     createParam(ADUVC_TiltSpeedString,              asynParamInt32,     &ADUVC_TiltSpeed);
-    createParam(ADUVC_ZoomSpeedString,              asynParamInt32,     &ADUVC_ZoomSpeed);
-    createParam(ADUVC_DigitalZoomString,            asynParamInt32,     &ADUVC_DigitalZoom);
     createParam(ADUVC_PanTiltStepString,            asynParamFloat64,   &ADUVC_PanTiltStep);
 
 
