@@ -390,6 +390,7 @@ record(ao, "$(P)$(R)UVCPanTiltStep"){
     field(LOW, "0.01")
     field(HSV, "INVALID")
     field(LSV, "INVALID")
+    field(PREC, "3")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_PAN_TILT_STEP")
 }
 
@@ -401,6 +402,7 @@ record(ai, "$(P)$(R)UVCPanTiltStep_RBV"){
     field(LOW, "0.01")
     field(HSV, "INVALID")
     field(LSV, "INVALID")
+    field(PREC, "3")
     field(SCAN, "I/O Intr")
 }
 
