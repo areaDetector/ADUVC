@@ -16,7 +16,7 @@
 
 // version numbers
 #define ADUVC_VERSION      1
-#define ADUVC_REVISION     4
+#define ADUVC_REVISION     5
 #define ADUVC_MODIFICATION 0
 
 
@@ -54,8 +54,16 @@ extern "C" {
 #define ADUVC_PowerLineString                   "UVC_POWER"                 //asynInt32
 #define ADUVC_HueString                         "UVC_HUE"                   //asynInt32
 #define ADUVC_SaturationString                  "UVC_SATURATION"            //asynInt32
-#define ADUVC_SharpnessString                   "UVC_SHARPNESS"             //asynInt32    
-
+#define ADUVC_SharpnessString                   "UVC_SHARPNESS"             //asynInt32
+#define ADUVC_PanLeftString                     "UVC_PAN_LEFT"              //asynInt32
+#define ADUVC_PanRightString                    "UVC_PAN_RIGHT"             //asynInt32
+#define ADUVC_TiltUpString                      "UVC_TILT_UP"               //asynInt32
+#define ADUVC_TiltDownString                    "UVC_TILT_DOWN"             //asynInt32
+#define ADUVC_ZoomInString                      "UVC_ZOOM_IN"               //asynInt32
+#define ADUVC_ZoomOutString                     "UVC_ZOOM_OUT"              //asynInt32
+#define ADUVC_PanSpeedString                    "UVC_PAN_SPEED"             //asynInt32
+#define ADUVC_TiltSpeedString                   "UVC_TILT_SPEED"            //asynInt32
+#define ADUVC_PanTiltStepString                 "UVC_PAN_TILT_STEP"         //asynFloat64
 
 /* enum for getting format from PV */
 typedef enum {
@@ -95,8 +103,8 @@ class ADUVC : ADDriver{
 
         // Constructor
         ADUVC(const char* portName, const char* serial, int productID, 
-			int framerate, int xsize, int ysize, int maxBuffers, 
-			size_t maxMemory, int priority, int stackSize);
+            int framerate, int xsize, int ysize, int maxBuffers, 
+            size_t maxMemory, int priority, int stackSize);
 
 
         // ADDriver overrides
@@ -131,7 +139,16 @@ class ADUVC : ADDriver{
         int ADUVC_Hue;
         int ADUVC_Saturation;
         int ADUVC_Sharpness;
-        #define ADUVC_LAST_PARAM ADUVC_Sharpness
+        int ADUVC_PanLeft;
+        int ADUVC_PanRight;
+        int ADUVC_TiltUp;
+        int ADUVC_TiltDown;
+        int ADUVC_ZoomIn;
+        int ADUVC_ZoomOut;
+        int ADUVC_PanSpeed;
+        int ADUVC_TiltSpeed;
+        int ADUVC_PanTiltStep;
+        #define ADUVC_LAST_PARAM ADUVC_PanTiltStep
 
     private:
 
@@ -139,7 +156,7 @@ class ADUVC : ADDriver{
         // UVC Variables
         //-----------------------------------------
 
-	// Connection information
+        // Connection information
         int connectionType;
         int productID;
         const char* serialNumber;
@@ -154,8 +171,8 @@ class ADUVC : ADDriver{
         uvc_context_t* pdeviceContext;
 
         // Pointer to device handle. 
-	// Used for controlling device. 
-	// Each UVC device can allow for one handle at a time
+        // Used for controlling device. 
+        // Each UVC device can allow for one handle at a time
         uvc_device_handle_t* pdeviceHandle;
 
         // Device stream controller. used to control streaming from device
@@ -221,7 +238,7 @@ class ADUVC : ADDriver{
         // UVC Functions - Camera functions
         //-----------------------------------------
 
-        // Functions that set different camera variable values
+        // Functions that set image processing and acquisiton controls
         asynStatus setExposure(int exposureTime);
         asynStatus setGamma(int gamma);
         asynStatus setBacklightCompensation(int backlightCompensation);
@@ -232,6 +249,13 @@ class ADUVC : ADDriver{
         asynStatus setHue(int hue);
         asynStatus setSaturation(int saturation);
         asynStatus setSharpness(int sharpness);
+
+        // Functions that allow for PTZ (Pan/Tilt/Zoom) control for supported devices
+        asynStatus processPanTilt(int panDirection, int tiltDirection);
+        asynStatus processZoom(int zoomDirection);
+
+        uint16_t zoomMin, zoomMax, currentZoom, zoomStepSize;
+        int zoomSteps = 10;
 
         // Functions that start/stop image aquisition
         uvc_error_t acquireStart(uvc_frame_format format);
@@ -247,11 +271,11 @@ class ADUVC : ADDriver{
         void getDeviceImageInformation();
         void getDeviceInformation();
 
-	// Function that converts ADUVC_Format PV value into uvc_frame_format
+        // Function that converts ADUVC_Format PV value into uvc_frame_format
         uvc_frame_format getFormatFromPV();
 
         // Static wrapper function for callback. 
-	// Necessary becuase callback in UVC must be static but we want the driver running the callback
+        // Necessary becuase callback in UVC must be static but we want the driver running the callback
         static void newFrameCallbackWrapper(uvc_frame_t* frame, void* ptr);
 };
 

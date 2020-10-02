@@ -22,3 +22,6 @@ debug.*
 *.jpg
 OLD_FILES/
 *_BAK.adl
+ptz_test
+pt_test
+zoom_test
