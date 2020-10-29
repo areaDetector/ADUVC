@@ -17,7 +17,7 @@ An EPICS driver for USB Video Class (UVC) devices
 ..  _libuvc:       https://github.com/ktossell/libuvc
 ..  _ADUVC:        https://github.com/epicsNSLS2-areaDetector/ADUVC
 ..  _areaDetector: https://github.com/areaDetector
-	      
+         
 Overview
 --------
 
@@ -120,6 +120,20 @@ Release Notes
 
 .. rubric:: Release Notes
    :name: release-notes-1
+
+.. rubric:: R1-5 (29-October-2020)
+   :name: r1-5-29-october-2020
+
+- Features Added
+
+    - Pan/Tilt/Zoom control (PTZ)
+    - Improved static build control
+    - Improved helper tools
+    - Improved script for building libuvc
+
+- Fixes/Improvement
+
+   - Minor code changes to remove tabs and replace with spaces
 
 .. rubric:: R1-4 (18-August-2020)
    :name: r1-4-18-august-2020

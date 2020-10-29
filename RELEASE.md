@@ -8,6 +8,17 @@ ADUVC requires libusb, libuvc, epics-base, epics-modules, ADCore, and ADSupport.
 Release Notes
 =============
 
+R1-5 (29-October-2020)
+----
+* Features Added
+    * Pan/Tilt/Zoom control (PTZ)
+    * Improved static build control
+    * Improved helper tools
+    * Improved script for building libuvc
+
+* Fixes/Improvements
+    * Minor code changes to remove tabs and replace with spaces
+
 R1-4 (18-August-2020)
 ----
 * Features Added
