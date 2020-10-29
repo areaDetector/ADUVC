@@ -1,120 +1,94 @@
 # ADUVC
 
+An EPICS Driver for USB Video Class (UVC) devices
+
 Author: Jakub Wlodek  
 Corresponding Author: Kazimierz Gofron  
 Created: July 19, 2018  
-Last Updated: January 18, 2019   
+Last Updated: October 29, 2020  
 Copyright (c): 2018-2019 Brookhaven National Laboratory  
 
-### An EPICS Driver for USB Video Class (UVC) devices
-
-Release versions of this driver are available on Github. Release notes are available on https://jwlodek.github.io/ADUVC. Please report any problems or feature requests on the issues page on https://github.com/areaDetector/ADUVC.
+Release versions of this driver are available on Github. Release notes are available [here](https://jwlodek.github.io/ADUVC). Please report any problems or feature requests on the issues page [here](https://github.com/areaDetector/ADUVC/issues).
 
 ### Installation
 
-**Note - ADUVC has only been tested on linux-x86_64**
+**Note - ADUVC has only been tested on linux**
 
-Prior to installing the ADUVC area detector driver, there are several dependencies that must be met. First, libusb, libjpeg, and cmake and their development packages must be installed. On a debian based linux machine, this can be done with the following command:
+Prior to installing the ADUVC install the required dependencies via your package manager:
 
 ```
 sudo apt install libusb-dev libusub-1.0-0-dev libjpeg-dev cmake
 ```
-If you wish to use the libjpeg version included with ADSupport, it is important to specifiy that during the build of libuvc, because otherwise there will be a conflict when building ADUVC. The simplest solution is to set JPEG_EXTERNAL=YES in the CONFIG_SITE.local file in the configure directory at the top level of areaDetector, and rebuild ADSupport, ADCore, and then ADUVC.
 
-After libusb and the other dependencies have been installed, libuvc, the library for connecting to USB Video Class (UVC) devices must be installed. The easiest way to do this is to enter the uvcSupport directory, and run the install-libuvc.sh script:
+If you wish to use the libjpeg version included with ADSupport, it is important to specifiy that during the build of libuvc - since `cmake` will by default link against the system version, which will cause a run-time conflict with the version with ADSupport. Otherwise, set `JPEG_EXTERNAL=YES` in the `areaDetector/configure/CONFIG_SITE.local` file, and rebuild ADSupport, ADCore, and then ADUVC, which will simply use the system version of the library for everything.
+
+After the other dependencies have been installed, libuvc, the library for connecting to USB Video Class (UVC) devices must be built. The easiest way to do this is to enter the `uvcSupport` directory, and run the provided script, followed by `make`:
+
 ```
+cd uvcSupport
 ./install-libuvc.sh
-```
-This script will start by cloning the github repository for the libuvc library, and then build it with cmake. The resulting library and include files are then placed in the appropriate locations in the epics build path, as well as in the /usr/local directory, so that libuvc can be accessed in the other support functions. Once libuvc is installed, and epics-base, epics-modules, ADCore, and ADSupport have all been built as well, enter the top ADUVC directory, and simply run:
-```
+cd ..
 make
 ```
-The driver is now compiled and ready to be configured. Use the example IOC configuration found in `iocs/uvcIOC/iocBoot/iocUVC` to get started.
 
+You may need to edit the `EPICS_HOST_ARCH` variable in the `install-libuvc.sh` script prior to running it.
 
 In the event that you do not wish to use the supplied helper script for building libuvc, you may build from [source](https://github.com/libuvc/libuvc.git) yourself.
 Documentation for the library can be found [here](https://int80k.com/libuvc/doc/)
 
+### IOC Setup
 
-### Initial IOC Configuration
+Start by identifying connected cameras to your system, using the provided `cameraDetector` program in `uvcSupport` (`libuvc` must be installed using the provided script first):
 
-Once the driver is compiled, the ADUVC IOC must be configured. There are some important things to keep in mind when using ADUVC:
-* Every UVC camera has either a serial number or a product ID. Either can be used to connect to the camera
-    * The UVC device control is locked behind root privelages. Run the IOC as root, or configure udev rules (below) to allow for non-root access. 
-    * The product ID will not be present for all cameras, and two identical cameras will have the same product ID, meaning they cannot be running concurrently. Use serial numbers instead.
-* ADUVC requires sole access to the camera. I.E. each camera can only run one IOC and cannot be connected to any external software
-* UVC cameras generally don't have many acquisition modes, Usually sticking to 8-bit RGB in the form of MJPEG streams. The ADUVC driver also has support for Uncompressed formats and also YUYV, Grayscale, and RGB color modes in 8 or 16 bit. If an illegal combination of color mode, data type, and/or image size is selected that is not supported by the camera, acquisition will fail to start.
-
-To begin the ADUVC setup process, there are two included helper .cpp programs included in the uvcSupport directory: cameraDetector, and imageCaptureTest. The first of these two, will use libuvc to detect all UVC cameras connected to the system, while the second will use OpenCV highgui with libuvc to test image acquisition. It is recommended to run both programs prior to using the ADUVC driver to make sure that the camera is detected correctly.  
-
-#### Camera Detector
-
-The cameraDetector program lists device information for each of the UVC cameras connected to the system, including their serial number and/or product number if they exist. One of these two values is necessary to connect to the camera. Note that the serial number is actually passed as a string to the IOC, so should be placed in quotation marks, while the product number is an integer. More information on running the cameraDetector program can be found in the README file in the appropriate directory.  
-
-#### Capture Test
-
-Once a serial number or a product number has been discovered using the Camera Detector program, you may want to test image acquisition. Installation and run instructions are found in the appropriate README file. Make sure to compile and run as root as required. You should see 200 frames captured by the camera displayed in an OpenCV highgui window.
-
-#### Configuring IOC Startup
-
-To set up the ADUVC ioc, you will need either the device product ID or the serial number. In the st.cmd file in the `iocs/uvcIOC/iocBoot/iocUVC` directory, locate the ADUVCConfig function call. There are two options for this function, one where the serial number is passed and product ID is set 0, and one where the productID is passed and the serial number is an empty string "". Simply uncomment the way you wish to connect to the device, and place the serial or productID in the appropriate parameter spot. From here the driver IOC is ready to be started with:
 ```
-sudo ./st.cmd
+cd  uvcSupport/cameraDetector
+make
+./uvc_locater
 ```
 
-Note that running as sudo is not required if connecting via product ID.
+You will get output similar to the following:
+
+```
+UVC initialized successfully
+-------------------------------------------------------------
+Serial Number:      1275BB10
+Vendor ID:          1133
+ProductID:          2085
+Manufacturer:       (null)
+Product:            (null)
+UVC Compliance:     0
+```
+
+You may need to run the program as `sudo` if camera serial number is locked behind root access.
+
+Next, in the st.cmd file in the `iocs/uvcIOC/iocBoot/iocUVC` directory, locate the ADUVCConfig function call. There are two options for this function, one where the serial number is passed and product ID is set 0, and one where the productID is passed and the serial number is an empty string "". Simply uncomment the way you wish to connect to the device, and place the serial or productID in the appropriate parameter spot. From here the driver IOC is ready to be started with:
+
+```
+./st.cmd
+```
+
+Again, note that if usb devices are locked behind root privelages you may need to run the IOC with `sudo`, or adjust `udev` permissions/rules.
 
 Further documentation, including CSS screenshots and usage information, is available at the driver's [website](https://jwlodek.github.io/ADUVC).
 
-### Possible use cases
+### Advantages
 
-Most UVC cameras are cheap and easy to set up, making them perfect for a variety of use cases including:
+There are a few advantages the UVC cameras have over traditional industrial cameras:
 
-* Plugin testing and development -> easy to set up, making them great test benches.
-* Monitoring -> Cheap and small, so can be used as a monitoring device, especially paired up with small devices like Raspberry Pis, or Arduinos.
-* Use in small confined areas -> UVC cameras are available in many configurations including tiny pencil cameras that can be used to view confined areas.
+* **Price** - Cameras can range from 20$ to 500$
+* **Ubiquity** - Almost every consumer usb camera supports the UVC protocol, as well as many enterprise cameras
+* **PTZ** - Built in Pan/Tilt/Zoom control makes certain devices easy all-in-one monitoring cameras
+* **Form Factor** - Huge variety in camera types, including pencil cameras, board cameras, and traditional industrial cameras.
 
-There are also several more traditional industrial cameras that use the UVC standard:
+### Example Devices
 
-* https://www.theimagingsource.com/products/industrial-cameras/usb-3.0-color/
-* https://www.e-consystems.com/8MP-AF-UVC-USB-Camera.asp
-* https://www.framos.com/en/news/videology-introduces-super-speed-uvc-compliant-compact-usb-3.0-board-camera
-* https://www.vision-systems.com/articles/2013/04/usb-30-cameras-are-uvc-compliant.html
-* https://www.theimagingsource.com/products/industrial-cameras/usb-3.0-monochrome/
+Below are some devices and specifications that have been deployed using `ADUVC`. If you have used a different camera with `ADUVC`, please feel free to add it to the list below.
 
-
-### Some Known Issues
-
-* When building libuvc, the system level jpeg library is used in cmake, but once ADSupport is compiled, a different version is used. This causes an error when converting mjpeg to rgb. The solution is to either compile libuvc with the jpeg lib in ADSupport, or to set JPEG_EXTERNAL = YES in the CONFIG_SITE.local file in the top level AD configuration directory.
-* Certain cameras only support one framerate per frame size, so setting the framerate PV may not affect the actual image rate
-* Most cameras have a limited selection of fixed acquisition modes (certain framerates with certain sizes). Use the cameraDetector helper program to identify these modes.
-* In cheaper cameras framerate drops when there is lots of motion. This is due to image processing on the camera itself, not due to the driver.
-* First frame in mjpeg stream can be corrupted, causing a UVC Error, however, the driver continues and each subsequent frame is uncorrupted.
-* If using ADUVC with Virtualbox, you need to passthrough the hold of the camera to the guest OS. Instructions for doing so  can be found on this website: https://scribles.net/using-webcam-in-virtualbox-guest-os-on-windows-host/
-
-
-### Fixing issues with root ownership of UVC devices
-
-* The  USB camera device is typically owned by root, which prevents EPICS IOC from running as a non-root user, and automatic startup using procServer. To grant access to USB camera device by  other users, such as softioc, we wrote udev rules.
-
-```
-kgofron@xf17bm-ioc2:/etc/udev/rules.d$ more usb-cams.rules
-# cam1 f007
-SUBSYSTEM=="usb", ATTRS{idVendor}=="f007", OWNER="softioc", GROUP="softioc", MODE="0666", SYMLINK="cam1"
-# cam2 0c45
-SUBSYSTEM=="usb", ATTRS{idVendor}=="0c45", OWNER="softioc", GROUP="softioc", MODE="0666", SYMLINK="cam2"
-# cam3 2560
-SUBSYSTEM=="usb", ATTRS{idVendor}=="2560", OWNER="softioc", GROUP="softioc", MODE="0666", SYMLINK="cam3"
-# cam4 eb1a (not attached)
-SUBSYSTEM=="usb", ATTRS{idVendor}=="eb1a", OWNER="softioc", GROUP="softioc", MODE="0666", SYMLINK="cam4"
-# cam5 eb1a
-SUBSYSTEM=="usb", ATTRS{idVendor}=="eb1a", OWNER="softioc", GROUP="softioc", MODE="0660", SYMLINK="cam5"
-
-```
-
-* Some inexpensive UVC cameras do not have Serial Numbers written to the device by vendors. In the event that this is the case, the Product ID was available, however, this comes with the limitation that only one camera per product ID can be running in as an IOC at a time. It is possible that this could be circumvented with some expanded udev rules, as below.
-
-```
-# maybe something like this to get the identical vendor/product/serial# cams working simultaneously
-#SUBSYSTEM=="usb", ATTRS{idVendor}=="eb1a", KERNELS=="1-8:1.0", OWNER="softioc", GROUP="softioc", MODE="0660", SYMLINK="cam5"
-```
+Device | Max Resolution | Max Framerate | PTZ | Price ($)
+-------|----------------|---------------|--------|--------
+[E-Con See3Cam_CU55](https://www.e-consystems.com/5mp-low-noise-usb-camera.asp) | 2248x2048 | 60 | No | 120
+[Logitech HD Pro C920](https://www.amazon.com/Logitech-Widescreen-Calling-Recording-Desktop/dp/B006JH8T3S) | 1920x1080 | 60 | No | 129
+[Logitech BCC950](https://www.bhphotovideo.com/c/product/877890-REG/Logitech_960_000866_BCC950_ConferenceCam_Video_Conferencing.html) | 1920x1080 | 30 | Yes | 299
+[Opti-Tekscope microscope](https://www.amazon.com/gp/product/B0184CCOY0/ref=ppx_yo_dt_b_asin_title_o06_s01?ie=UTF8&psc=1) | 1280x720 | 30 | No | 89
+[Fantronics Mobile Snake Cam](https://www.amazon.com/gp/product/B071HYRPND/ref=ppx_yo_dt_b_asin_title_o09_s00?ie=UTF8&psc=1) | 1280x720 | 30 | No | 20
+[USBFHD06H-SFV](https://www.amazon.com/gp/product/B07M7JN595/ref=ppx_yo_dt_b_asin_title_o02_s00?ie=UTF8&psc=1) | 1920x1080 | 30 | No | 75
