@@ -6,7 +6,7 @@ Author: Jakub Wlodek
 Corresponding Author: Kazimierz Gofron  
 Created: July 19, 2018  
 Last Updated: October 29, 2020  
-Copyright (c): 2018-2019 Brookhaven National Laboratory  
+Copyright (c): 2018-2020 Brookhaven National Laboratory  
 
 Release versions of this driver are available on Github. Release notes are available [here](https://jwlodek.github.io/ADUVC). Please report any problems or feature requests on the issues page [here](https://github.com/areaDetector/ADUVC/issues).
 
