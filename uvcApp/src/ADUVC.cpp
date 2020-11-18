@@ -445,6 +445,9 @@ asynStatus ADUVC::connectToDeviceUVC(){
 }
 
 
+/**
+ * Override of base function that simply calls disconnectFromDeviceUVC()
+ */
 asynStatus ADUVC::disconnect(asynUser* pasynUser) {
     return disconnectFromDeviceUVC();
 }
@@ -503,16 +506,17 @@ void ADUVC::getDeviceImageInformation(){
     uvc_get_pantilt_rel(pdeviceHandle, &pan, &panSpeed, &tilt, &tiltSpeed, UVC_GET_CUR);
     uvc_get_zoom_abs(pdeviceHandle, &(this->zoomMin), UVC_GET_MIN);
     uvc_get_zoom_abs(pdeviceHandle, &(this->zoomMax), UVC_GET_MAX);
-    // For the BCC950 camera, zoomMax and Min are incorrectly reported,
-    // so we manually edit step size to be correct.
-#ifndef BCC950
-    this->zoomStepSize = (int) ((this->zoomMax - this->zoomMin) / this->zoomSteps);
-#else
-    // BCC950 reports min 100, max 180, so with 10 steps, our zoom step size should be 8.
-    this->zoomStepSize = (int) (80 / this->zoomSteps);
-#endif
-    this->currentZoom = this->zoomMin;
 
+#ifdef BCC950
+    // BCC950 camera erroneously reports min 100, max 500, rather than 100 - 180
+    // As a result, manually adjust min and max to correct values.
+    this->zoomMax = 180;
+    this->zoomMin = 100;
+#endif
+
+    // Calculate step size for zooming, and specify current zoom value
+    this->zoomStepSize = (int) ((this->zoomMax - this->zoomMin) / this->zoomSteps);
+    this->currentZoom = this->zoomMin;
 
     //put values into appropriate PVs
     setDoubleParam(ADAcquireTime, (double) exposure);
