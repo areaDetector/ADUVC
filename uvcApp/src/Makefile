@@ -9,6 +9,9 @@ endif
 
 USR_CPPFLAGS += -std=c++11
 
+# If compiling for BCC950 camera support, uncomment the below line
+USR_CPPFLAGS += -D BCC950
+
 # Define our IOC library as libADUVC
 LIBRARY_IOC = ADUVC
 

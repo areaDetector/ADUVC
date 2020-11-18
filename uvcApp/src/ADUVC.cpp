@@ -503,7 +503,14 @@ void ADUVC::getDeviceImageInformation(){
     uvc_get_pantilt_rel(pdeviceHandle, &pan, &panSpeed, &tilt, &tiltSpeed, UVC_GET_CUR);
     uvc_get_zoom_abs(pdeviceHandle, &(this->zoomMin), UVC_GET_MIN);
     uvc_get_zoom_abs(pdeviceHandle, &(this->zoomMax), UVC_GET_MAX);
+    // For the BCC950 camera, zoomMax and Min are incorrectly reported,
+    // so we manually edit step size to be correct.
+#ifndef BCC950
     this->zoomStepSize = (int) ((this->zoomMax - this->zoomMin) / this->zoomSteps);
+#else
+    // BCC950 reports min 100, max 180, so with 10 steps, our zoom step size should be 8.
+    this->zoomStepSize = (int) (80 / this->zoomSteps);
+#endif
     this->currentZoom = this->zoomMin;
 
 
