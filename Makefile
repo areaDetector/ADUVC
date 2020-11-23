@@ -3,8 +3,10 @@ TOP = .
 include $(TOP)/configure/CONFIG
 DIRS := $(DIRS) configure
 DIRS := $(DIRS) uvcSupport
+DIRS := $(DIRS) uvcSupport/libuvc
 DIRS := $(DIRS) uvcApp
 
+uvcSupport_DEPEND_DIRS += uvcSupport/libuvc
 uvcApp_DEPEND_DIRS += uvcSupport
 ifeq ($(BUILD_IOCS), YES)
 DIRS := $(DIRS) $(filter-out $(DIRS), $(wildcard iocs))
