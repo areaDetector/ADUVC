@@ -9,24 +9,32 @@ INC += libuvc/libuvc_config.h
 INC += libuvc/libuvc_internal.h
 INC += utlist.h
 
-#DIRS := $(DIRS) uvcSupport/libuvc
-#uvcSupport_DEPEND_DIRS += uvcSupport/libuvc
-
 
 # should be able to compile libuvc on arm
 ifeq (linux-x86_64, $(findstring linux-x86_64, $(T_A)))
-LIB_INSTALLS_Linux += ../libuvc/O.$(EPICS_HOST_ARCH)/libuvc.a
-LIB_INSTALLS_Linux += ../libuvc/O.$(EPICS_HOST_ARCH)/libuvc.so
+LIBRARY = uvc
 endif
 
 # Should be able to compile libuvc on arm
 ifeq (linux-arm, $(findstring linux-arm, $(T_A)))
-LIB_INSTALLS_Linux += ../libuvc/O.$(EPICS_HOST_ARCH)/libuvc.a
-LIB_INSTALLS_Linux += ../libuvc/O.$(EPICS_HOST_ARCH)/libuvc.so
+LIBRARY = uvc
 endif
 
 # TODO: Try building libuvc on windows
 #ifeq (windows-x64, $(findstring windows-x64, $(T_A)))
 #endif
+
+uvc_SRCS += ctrl.c
+uvc_SRCS += ctrl-gen.c
+uvc_SRCS += device.c
+uvc_SRCS += diag.c
+uvc_SRCS += frame.c
+uvc_SRCS += frame-mjpeg.c
+uvc_SRCS += init.c
+uvc_SRCS += misc.c
+uvc_SRCS += stream.c
+
+uvc_LIBS += jpeg
+uvc_SYS_LIBS += usb-1.0
 
 include $(TOP)/configure/RULES
