@@ -106,7 +106,7 @@ R1-0 (7-December-2018)
     * Resolved frame drop due to motion (camera dependant)
 
 
-R0-1 (Beta) (5-November-2018)
+R0-1 (5-November-2018)
 -----
 * Key detector features implemented:  
     * Image Acquisition supported and tested.

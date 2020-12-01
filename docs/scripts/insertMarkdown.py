@@ -51,13 +51,71 @@ def create_updated_doc():
     tempIndex.close()
 
 
+def create_updated_rst_doc():
+    rst_buffer = []
+    rst_fp = open('../ADUVC/ADUVC.rst', 'r')
+    rst_lines = rst_fp.readlines()
+    rst_fp.close()
+    release_fp = open('../../RELEASE.md', 'r')
+    release_lines = release_fp.readlines()
+    release_fp.close()
+    done_release = True
+    in_release = False
+    for line in rst_lines:
+        if ':name: release-notes-1' in line:
+            in_release = True
+            done_release = False
+            rst_buffer.append(line)
+        elif in_release and not done_release:
+            rel_notes = False
+            for rel_line in release_lines:
+                if rel_line.startswith('<!--RELEASE START-->'):
+                    rel_notes = True
+                elif rel_notes:
+                    if rel_line.startswith('R') and not rel_line.startswith('Release Notes'):
+                        print(rel_line)
+                        date = rel_line.split('(')[1].split(')')[0].split('-')
+                        rel_name = 'r{}-{}-{}-{}'.format(rel_line[1:4], date[0], date[1].lower(), date[2])
+                        rst_buffer.append('.. rubric:: {}\n   :name: {}\n'.format(rel_line.strip(), rel_name))
+                    elif rel_line.startswith('*'):
+                        rst_buffer.append('- ' + rel_line[1:] + '\n')
+                    elif rel_line.strip().startswith('*'):
+                        rst_buffer.append('   - ' + rel_line.strip()[1:] + '\n')
+
+                    else:
+                        rst_buffer.append(line)
+            in_release=False
+        elif line.startswith('..raw:: html') and not done_release:
+            done_release=True
+            rst_buffer.append(line)
+        elif not in_release and done_release:
+            rst_buffer.append(line)
+
+    return rst_buffer
+
+
+    
+
 # Main driver function
 def update_release_notes():
     fix_header_sizes()
     create_updated_doc()
+    rst_doc = create_updated_rst_doc()
+    new_rst_fp = open('tempRST.rst', 'w')
+    for line in rst_doc:
+        new_rst_fp.write(line)
+    new_rst_fp.close()
     os.remove("../index.html")
     os.remove("output.html")
     os.rename("../tempIndex.html", "../index.html")
 
 
-update_release_notes()
+#update_release_notes()
+#print(create_updated_rst_doc())
+
+rst_doc = create_updated_rst_doc()
+new_rst_fp = open('tempRST.rst', 'w')
+for line in rst_doc:
+    new_rst_fp.write(line)
+new_rst_fp.close()
+
