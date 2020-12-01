@@ -3,7 +3,6 @@ bin/
 *~
 lib/
 *.so*
-libuvc/
 os/
 configuration/
 uvc_locater
