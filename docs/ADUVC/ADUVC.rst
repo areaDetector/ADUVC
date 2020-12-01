@@ -121,6 +121,13 @@ Release Notes
 .. rubric:: Release Notes
    :name: release-notes-1
 
+.. rubric:: R1-6 (1-December-2020)
+   :name: r1-6-1-december-2020
+
+- Features Added
+
+    - libuvc now builds via the EPICS build system
+
 .. rubric:: R1-5 (29-October-2020)
    :name: r1-5-29-october-2020
 

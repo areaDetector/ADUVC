@@ -8,5 +8,5 @@
 # Created on: January 10, 2019
 #
 
-python -m markdown ../../RELEASE.md > output.html
-python insertMarkdown.py
+python3 -m markdown ../../RELEASE.md > output.html
+python3 insertMarkdown.py
