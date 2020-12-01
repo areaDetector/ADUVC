@@ -7,15 +7,7 @@ critical information about them.
 
 #### Compilation:
 
-To compile this helper program, you must first compile libuvc. The easiest way to do this is to use the
-installation script in the `uvcSupport` directory:
-
-```
-./install-libuvc.sh
-```
-
-This should use CMake to compile the library, and copy the necessary build artefacts into the correct
-locations for compilation.
+To compile this helper program, you must first compile libuvc. The easiest way to do this is to run `make` in the `uvcSupport` directory:
 
 Once this completes successfully, you can compile the program by just running:
 

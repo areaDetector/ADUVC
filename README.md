@@ -17,28 +17,17 @@ Release versions of this driver are available on Github. Release notes are avail
 Prior to installing the ADUVC install the required dependencies via your package manager:
 
 ```
-sudo apt install libusb-dev libusub-1.0-0-dev libjpeg-dev cmake
+sudo apt install libusb-dev libusub-1.0-0-dev
 ```
 
-If you wish to use the libjpeg version included with ADSupport, it is important to specifiy that during the build of libuvc - since `cmake` will by default link against the system version, which will cause a run-time conflict with the version with ADSupport. Otherwise, set `JPEG_EXTERNAL=YES` in the `areaDetector/configure/CONFIG_SITE.local` file, and rebuild ADSupport, ADCore, and then ADUVC, which will simply use the system version of the library for everything.
+As of release R1-6, the `libuvc` helper library is built by default using the EPICS build system. As a result, it will link against the `libjpeg` library included in ADSupport, and building `ADUVC` should only require running `make` in the root directory.
 
-After the other dependencies have been installed, libuvc, the library for connecting to USB Video Class (UVC) devices must be built. The easiest way to do this is to enter the `uvcSupport` directory, and run the provided script, followed by `make`:
-
-```
-cd uvcSupport
-./install-libuvc.sh
-cd ..
-make
-```
-
-You may need to edit the `EPICS_HOST_ARCH` variable in the `install-libuvc.sh` script prior to running it.
-
-In the event that you do not wish to use the supplied helper script for building libuvc, you may build from [source](https://github.com/libuvc/libuvc.git) yourself.
+In the event that you wish to build libuvc yourself, you may use the supplied helper script for building libuvc, or you may build from [source](https://github.com/libuvc/libuvc.git) yourself.
 Documentation for the library can be found [here](https://int80k.com/libuvc/doc/)
 
 ### IOC Setup
 
-Start by identifying connected cameras to your system, using the provided `cameraDetector` program in `uvcSupport` (`libuvc` must be installed using the provided script first):
+Start by identifying connected cameras to your system, using the provided `cameraDetector` program in `uvcSupport`. (You must first build `libuvc` by running `make` in the `uvcSupport` directory):
 
 ```
 cd  uvcSupport/cameraDetector

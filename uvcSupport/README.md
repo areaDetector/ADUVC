@@ -1,43 +1,27 @@
-# Installing libuvc:
+# ADUVC Support
 
-#### Dependencies:
+This directory contains modified sources for [`libuvc`](https://github.com/libuvc/libuvc) for use with `ADUVC`. They have been modifed to build via the EPICS build system. Also included are some helper programs for testing `libuvc`, and for detecting connected camera information.
 
-Libuvc depends on libusb.1.0, which can be installed from your linux distribution, or from 
-source.
+#### Installing libuvc
+
+The `libuvc` library  depends on libusb.1.0, which can be installed from your linux distribution, or from source. It also requires libjpeg, which will be pulled from `ADSupport` by default.
 
 ```
 sudo apt install libusb.1.0
 sudo apt install libusb-dev
 ```
 
-#### Installation:
+As of release `R1-6`, you can build `libuvc` by simply running `make` in this directory. It will install the library binary files to `../lib/EPICS_HOST_ARCH`. You can also install outside the `EPICS` build system, using either the `install-libuvc.sh` script, or manually.
 
-Provided is a script that can be used for easily installing libuvc on a linux. 
+#### Additional tools
 
-```
-./install-libuvc.sh
-```
+This directory contains three additional simple tools for helping with setting up your ADUVC IOC.
 
-It clones the github repository containing the library, runs cmake, and installs the include files and built libraries into the 
-appropriate folders. Once this script has been run, simply compile the driver from the top level
-ADUVC directory.
+For these, you will need to install libuvc to the `../lib/EPICS_HOST_ARCH` location as described above. See the README files in the appropriate directories for more details.
 
-Optionally, you may also edit the script to uncomment the `sudo make install` command, which will install
-libuvc to a system location.
+The first utility is a camera detector program, which is used to find supported operating modes and connection attributes for cameras. The second is a simple program that tests image acquisition using libuvc and OpenCV for a specified camera. The third is a program for testing PTZ support on a connected camera.
 
-#### Additional tools:
-
-This directory contains two additional simple tools for helping with setting up your ADUVC IOC.
-
-For both, you will need to install libuvc with the script as described above. See the README files
-in the appropriate directories for more details.
-
-The first utility is a camera detector program, which is used to find supported operating modes
-and connection attributes for cameras. The second is a simple program that tests image acquisition using
-libuvc and OpenCV for a specified camera.
-
-Before creating an IOC for the device, use the camera detector program to find the following 
-information that will be required for the configuration later on.
+Before creating an IOC for the device, use the camera detector program to find the following information that will be required for the configuration later on.
 
 These include:
 
