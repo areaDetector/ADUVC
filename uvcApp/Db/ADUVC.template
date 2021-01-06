@@ -179,7 +179,7 @@ record(bo, "$(P)$(R)UVCAutoAdjust"){
     field(OUT,  "@asyn($(PORT),$(ADDR=0),$(TIMEOUT=1))UVC_AUTO_ADJUST")
     field(ZNAM, "Disable")
     field(ONAM, "Enable")
-    field(VAL,  "1")
+    field(VAL,  "0")
     field(OSV,  "MINOR")
     info(autosaveFields, "VAL")
 }
