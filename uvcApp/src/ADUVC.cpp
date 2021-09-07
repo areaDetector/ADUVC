@@ -1362,10 +1362,13 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
     int status = asynSuccess;
     static const char* functionName = "writeInt32";
 
+    // Check if we are currently acquiring
     getIntegerParam(ADAcquire, &acquiring);
 
+    // Set the PV value
     status = setIntegerParam(function, value);
-    // start/stop acquisition
+
+    // Start/Stop acquisition if corresponding button is pressed
     if(function == ADAcquire){
         if(value && !acquiring){ 
             deviceStatus = acquireStart(getFormatFromPV());
@@ -1379,30 +1382,23 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
             acquireStop();
         }
     }
+
+    // Stop acquistion and apply selected format if the apply format button is pressed.
     else if(function == ADUVC_ApplyFormat && value == 1){
         if(acquiring)
             acquireStop();
         
         applyCameraFormat();
     }
-    else if(function == ADUVC_CameraFormat) updateCameraFormatDesc();
-    //switch image mode
-    else if(function == ADImageMode){
-        if(acquiring == 1) acquireStop();
-        if(value == ADImageSingle) setIntegerParam(ADNumImages, 1);
-        else if(value == ADImageMultiple) setIntegerParam(ADNumImages, 300);
-        else{
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                    "%s::%s ERROR: Unsupported camera operating mode\n", 
-                    driverName, functionName);
 
-            return asynError;
-        }
-    }
-    //switch image format
-    else if(function == ADUVC_ImageFormat || function == ADUVC_Framerate){
-        if(acquiring == 1) acquireStop();
-    }
+    // Update description if camera format selection is changed
+    else if(function == ADUVC_CameraFormat) updateCameraFormatDesc();
+    
+    // Stop acqusition if image mode is changed
+    else if(function == ADImageMode && acquiring == 1) acquireStop();
+    // Stop acquisition if image format or framerate are changed
+    else if((function == ADUVC_ImageFormat || function == ADUVC_Framerate) && acquiring == 1) acquireStop();
+
     //setting different camera functions
     else if(function == ADUVC_Gamma) setGamma(value);
     else if(function == ADUVC_BacklightCompensation) setBacklightCompensation(value);
@@ -1424,8 +1420,10 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
         }
     }
 
+    // Flush PV values
     callParamCallbacks();
 
+    // Log status updates
     if(status){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
                 "%s::%s ERROR status=%d, function=%d, value=%d\n", 
