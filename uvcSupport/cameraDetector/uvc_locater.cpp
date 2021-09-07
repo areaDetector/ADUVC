@@ -79,8 +79,8 @@ int list_all(){
             }
             printf("-------------------------------------------------------------\n");
             printf("Serial Number:      %s\n", desc->serialNumber);
-            printf("Vendor ID:          %d\n", desc->idVendor);
-            printf("ProductID:          %d\n", desc->idProduct);
+            printf("Vendor ID:          0x%x (%d)\n", desc->idVendor, desc->idVendor);
+            printf("ProductID:          0x%x (%d)\n", desc->idProduct, desc->idProduct);
             printf("Manufacturer:       %s\n", desc->manufacturer);
             printf("Product:            %s\n", desc->product);
             printf("UVC Compliance:     %d\n", desc->bcdUVC);
