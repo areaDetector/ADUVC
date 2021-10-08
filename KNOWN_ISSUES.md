@@ -3,7 +3,6 @@
 
 Below is a list of known issues/fixes found with using `ADUVC` with usb cameras.
 
-* When building libuvc, the system level jpeg library is used in cmake, but once ADSupport is compiled, a different version is used. This causes an error when converting mjpeg to rgb. The solution is to either compile `libuvc` with the jpeg lib in ADSupport, or to set `JPEG_EXTERNAL = YES` in the `areaDetector/configure/CONFIG_SITE.local` file.
 * Certain cameras only support one framerate per frame size, so setting the framerate PV may not affect the actual image rate.
 * Most cameras have a limited selection of fixed acquisition modes (certain framerates with certain sizes). Use the cameraDetector helper program to identify these modes.
 * In cheaper cameras framerate drops when there is lots of motion. This is due to image processing on the camera itself, not due to the driver.
