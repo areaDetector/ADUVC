@@ -64,7 +64,7 @@ Further documentation, including CSS screenshots and usage information, is avail
 
 There are a few advantages the UVC cameras have over traditional industrial cameras:
 
-* **Price** - Cameras can range from 20$ to 500$
+* **Price** - Cameras can range from 20 to 500 dollars
 * **Ubiquity** - Almost every consumer usb camera supports the UVC protocol, as well as many enterprise cameras
 * **PTZ** - Built in Pan/Tilt/Zoom control makes certain devices easy all-in-one monitoring cameras
 * **Form Factor** - Huge variety in camera types, including pencil cameras, board cameras, and traditional industrial cameras.
