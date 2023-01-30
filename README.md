@@ -48,15 +48,15 @@ Product:            (null)
 UVC Compliance:     0
 ```
 
-You may need to run the program as `sudo` if camera serial number is locked behind root access.
+You may need to run the program as `root` if camera serial number is locked behind root access.
 
-Next, in the st.cmd file in the `iocs/uvcIOC/iocBoot/iocUVC` directory, locate the ADUVCConfig function call. There are two options for this function, one where the serial number is passed and product ID is set 0, and one where the productID is passed and the serial number is an empty string "". Simply uncomment the way you wish to connect to the device, and place the serial or productID in the appropriate parameter spot. From here the driver IOC is ready to be started with:
+Next, in the st.cmd file in the `iocs/uvcIOC/iocBoot/iocUVC` directory, locate the ADUVCConfig function call. There are three options for this function, one where the serial number is used, one where the product ID is used, and one where the UVC device index is used. Simply uncomment the way you wish to connect to the device, and pass the appropriate values in for the serial, productID, and deviceIndex parameters. If available, the serial number connection mode is recommended, since it guarantees unique access to the device. The product ID mode is the second best option, with deviceIndex only being a recommended operating mode if you have identical devices with no serial numbers running on the same machine (in which case the product IDs wouldn't be unique). From here the driver IOC is ready to be started with:
 
 ```
 ./st.cmd
 ```
 
-Again, note that if usb devices are locked behind root privelages you may need to run the IOC with `sudo`, or adjust `udev` permissions/rules.
+Again, note that if usb devices are locked behind root privelages you may need to run the IOC as `root`, or adjust `udev` permissions/rules. To simplify this process, there is a python3 script in the support directory - it will run the `uvc_locater` command, and then use the output vendor/product IDs to generate udev rules for each camera. This file will then be installed under `/etc/udev/rules.d/###-usbcams.rules`.
 
 Further documentation, including CSS screenshots and usage information, is available at the driver's [website](https://jwlodek.github.io/ADUVC).
 
