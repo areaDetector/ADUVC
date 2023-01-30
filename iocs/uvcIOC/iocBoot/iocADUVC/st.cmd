@@ -17,8 +17,6 @@ epicsEnvSet("QSIZE",  "20")
 epicsEnvSet("XSIZE",  "640")
 # The maximim image height; used for column profiles in the NDPluginStats plugin
 epicsEnvSet("YSIZE",  "480")
-# The framerate at which the stream will operate
-epicsEnvSet("FRAMERATE", "30");
 # The maximum number of time seried points in the NDPluginStats plugin
 epicsEnvSet("NCHANS", "2048")
 # The maximum number of frames buffered in the NDPluginCircularBuff plugin
@@ -35,8 +33,8 @@ epicsEnvSet("EPICS_CA_MAX_ARRAY_BYTES", 20000000)
 # * 
 # * @params: portName -> port for NDArray recieved from camera
 # * @params: serial -> serial number of device to connect to
-# * @params: productID -> id number for device to connect to
-# * @params: framerate -> framerate at which camera should operate
+# * @params: productID -> Product id number for device to connect to
+# * @params: deviceIndex -> Index of camera in device list, starting with 0
 # * @params: xsize -> width of image
 # * @params: ysize -> height of image
 # * @params: maxBuffers -> max buffer size for NDArrays
@@ -44,14 +42,19 @@ epicsEnvSet("EPICS_CA_MAX_ARRAY_BYTES", 20000000)
 # * @params: priority -> what thread priority this driver will execute with
 # * @params: stackSize -> size of the driver on the stack
 # */
+# ADUVCConfig(const char* portName, const char* serial, int productID, int deviceIndex, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize)
 
-# If searching for device by serial number, put 0 and 0 for vendor/productID
-# ADUVCConfig(const char* portName, const char* serial, int productID, int framerate, int xsize, int ysize, int maxBuffers, size_t maxMemory, int priority, int stackSize)
-#ADUVCConfig("$(PORT)", "10e536e9e4c4ee70", 0, $(FRAMERATE), $(XSIZE), $(YSIZE), 0, 0, 0, 0)
+# If searching for device by serial number, the productID and deviceIndex arguments are ignored
+#ADUVCConfig("$(PORT)", "10e536e9e4c4ee70", 0, 0, $(XSIZE), $(YSIZE), 0, 0, 0, 0)
 #epicsThreadSleep(2)
 
-# If searching for device by product ID put "" or empty string for serial number
-ADUVCConfig("$(PORT)", "", 25344, $(FRAMERATE), $(XSIZE), $(YSIZE), 0, 0, 0, 0)
+# If searching for device by product ID put "" or empty string for serial number. DeviceIndex argument is ignored.
+#ADUVCConfig("$(PORT)", "", 25344, 0, $(XSIZE), $(YSIZE), 0, 0, 0, 0)
+#epicsThreadSleep(2)
+
+# If opening device by index, simply set a an empty string for the serial, and a 0 for productID. An index of 0 will open the first UVC 
+# camera detected. See the output of the uvc_locater command for index values (first -> 0, second -> 1, etc)
+ADUVCConfig("$(PORT)", "", 0, 0, $(XSIZE), $(YSIZE), 0, 0, 0, 0)
 epicsThreadSleep(2)
 
 asynSetTraceIOMask($(PORT), 0, 2)
