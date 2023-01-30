@@ -59,7 +59,7 @@ int list_all(int concise){
         return status;
     }
 
-    if(concise == 1)
+    if(concise == 0)
         printf("UVC initialized successfully\n");
 
     //generates list of available devices
@@ -81,15 +81,15 @@ int list_all(int concise){
             if (concise == 0){
             printf("-------------------------------------------------------------\n");
             printf("Serial Number:      %s\n", desc->serialNumber);
-            printf("Vendor ID:          0x%x (%d)\n", desc->idVendor, desc->idVendor);
             printf("ProductID:          0x%x (%d)\n", desc->idProduct, desc->idProduct);
+            printf("Vendor ID:          0x%x (%d)\n", desc->idVendor, desc->idVendor);
             printf("Manufacturer:       %s\n", desc->manufacturer);
             printf("Product:            %s\n", desc->product);
             printf("UVC Compliance:     %d\n", desc->bcdUVC);
             uvc_free_device_descriptor(desc);
             }
             else{
-                printf("Camera%d:%s,0x%x,0x%x\n", counter, desc->serialNumber, desc->idVendor, desc->idProduct);
+                printf("Camera%d:%s,0x%x,0x%x\n", counter, desc->serialNumber, desc->idProduct, desc->idVendor);
             }
             counter++;
         }
