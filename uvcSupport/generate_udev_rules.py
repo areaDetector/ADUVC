@@ -39,7 +39,7 @@ if __name__ == '__main__':
     if args.install:
         try:
             numbers = []
-            for file in os.path.listdir('/etc/udev/rules.d'):
+            for file in os.listdir('/etc/udev/rules.d'):
                 numbers.append(file.split('-')[0])
             
             udev_file_num = 0
