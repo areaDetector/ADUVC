@@ -160,6 +160,7 @@ class ADUVC : ADDriver{
         int connectionType;
         int productID;
         const char* serialNumber;
+        int deviceIndex;
 
         // Checks uvc device operations status
         uvc_error_t deviceStatus;

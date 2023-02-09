@@ -15,6 +15,7 @@
 record(ao, "$(P)$(R)UVCFramerate"){
     field(PINI, "YES")
     field(DTYP, "asynInt32")
+    field(VAL, "30")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_FRAMERATE")
 }
 

@@ -8,6 +8,18 @@ ADUVC requires libusb, libuvc, epics-base, epics-modules, ADCore, and ADSupport.
 Release Notes
 =============
 
+R1-7 (27-January-2023)
+----
+* Features Added
+    * New option to connect to device by device index - needed for connecting to identical devices with no serial number
+    * Add printing of HEX value of product and vendor IDs to `uvc_locater` - useful for generating udev rules
+    * New flag for `uvc_locater` to print more easily machine readable output
+    * New simple utility script for generating udev rule files from output of `uvc_locater`
+
+* Fixes
+    * Minor bug with continuous acquisition mode fixed
+    * Avoid "Auto Adjust" as default behavior
+    
 
 R1-6 (1-December-2020)
 ----

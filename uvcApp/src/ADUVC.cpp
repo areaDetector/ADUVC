@@ -418,10 +418,25 @@ asynStatus ADUVC::connectToDeviceUVC(){
             "%s::%s Searching for UVC device with serial number: %s\n", driverName, functionName, serialNumber);
         deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, 0, this->serialNumber);
     }
-    else{
+    else if(this->connectionType == 1){
         asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
             "%s::%s Searching for UVC device with Product ID: %d\n", driverName, functionName, this->productID);
         deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, this->productID, NULL);
+    }
+    else {
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+            "%s::%s Opening UVC device with index: %d\n", driverName, functionName, this->deviceIndex);
+        uvc_device_t** deviceList;
+        deviceStatus = uvc_get_device_list(pdeviceContext, &deviceList);
+        if(deviceList[this->deviceIndex] == NULL) {
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+                "%s::%s There are not enough UVC devices to open one with index %d!\n", driverName, functionName, this->deviceIndex);
+            deviceStatus = UVC_ERROR_NO_DEVICE;
+        }
+        else{
+            pdevice = deviceList[this->deviceIndex];
+        }
+        uvc_free_device_list(deviceList, 0);
     }
     if(deviceStatus<0){
         reportUVCError(deviceStatus, functionName);
@@ -1550,14 +1565,14 @@ void ADUVC::report(FILE* fp, int details){
  * @params[in]: portName    -> port for NDArray recieved from camera
  * @params[in]: serial      -> serial number of device to connect to
  * @params[in]: productID   -> id of device used to connect if serial is unavailable
- * @params[in]: framerate   -> framerate at which camera should operate
+ * @params[in]: deviceIndex -> If serial or product ID is not used, use device index in usb device list to open
  * @params[in]: maxBuffers  -> max buffer size for NDArrays
  * @params[in]: maxMemory   -> maximum memory allocated for driver
  * @params[in]: priority    -> what thread priority this driver will execute with
  * @params[in]: stackSize   -> size of the driver on the stack
  */
 ADUVC::ADUVC(const char* portName, const char* serial, int productID, 
-            int framerate, int xsize, int ysize, int maxBuffers, 
+            int deviceIndex, int xsize, int ysize, int maxBuffers, 
             size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, (int)NUM_UVC_PARAMS, maxBuffers, 
                 maxMemory, asynEnumMask, asynEnumMask, 
@@ -1594,7 +1609,7 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID,
 
 
     // Set initial size and framerate params
-    setIntegerParam(ADUVC_Framerate, framerate);
+    //setIntegerParam(ADUVC_Framerate, 30);
     setIntegerParam(ADSizeX, xsize);
     setIntegerParam(ADSizeY, ysize);
 
@@ -1626,13 +1641,17 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID,
 
     this->serialNumber = serial;
     this->productID = productID;
+    this->deviceIndex = deviceIndex;
 
     // decide if connecting with serial number or productID
     if(strlen(serial) != 0){
         this->connectionType = 0;
     }
-    else{
+    else if(productID != 0){
         this->connectionType = 1;
+    }
+    else{
+        this->connectionType = 2;
     }
 
     connected = connect(this->pasynUserSelf);

@@ -11,10 +11,8 @@
 #include <stdlib.h>
 #include "libuvc/libuvc.h"
 #include <stdio.h>
-#include <cstddef>
 #include <string.h>
 
-using namespace std;
 
 
 
@@ -30,6 +28,8 @@ void print_help(){
     printf("NO_ARGS                             -> Gets a list of all devices, and some basic information, such as serial numbers.\n");
     printf("-h or --help                        -> View this help messag.\n");
     printf("-s or --serial + SERIAL_NUMBER      -> To see more detailed information about a specific camera.\n");
+    printf("-p or --product + PRODUCT_ID        -> To see more detailed information about a specific camera.\n");
+    printf("-c or -- concise                    -> To get a more machine readable concise output. Cannot be combined with -s or -p.\n");
     printf("Check the README.md file in this directory for examples of all use cases.\n");
 }
 
@@ -41,7 +41,7 @@ void print_help(){
  *
  * @return: status -> 0 if success, -1 if failure
  */
-int list_all(){
+int list_all(int concise){
     uvc_context_t* ctx;
     uvc_device_t** device_list;
     uvc_device_descriptor_t* desc;
@@ -59,7 +59,8 @@ int list_all(){
         return status;
     }
 
-    puts("UVC initialized successfully");
+    if(concise == 0)
+        printf("UVC initialized successfully\n");
 
     //generates list of available devices
     status = uvc_get_device_list(ctx, &device_list);
@@ -77,14 +78,19 @@ int list_all(){
                 uvc_perror(status, "uvc_get_device_descriptor");
                 return status;
             }
+            if (concise == 0){
             printf("-------------------------------------------------------------\n");
             printf("Serial Number:      %s\n", desc->serialNumber);
-            printf("Vendor ID:          0x%x (%d)\n", desc->idVendor, desc->idVendor);
             printf("ProductID:          0x%x (%d)\n", desc->idProduct, desc->idProduct);
+            printf("Vendor ID:          0x%x (%d)\n", desc->idVendor, desc->idVendor);
             printf("Manufacturer:       %s\n", desc->manufacturer);
             printf("Product:            %s\n", desc->product);
             printf("UVC Compliance:     %d\n", desc->bcdUVC);
             uvc_free_device_descriptor(desc);
+            }
+            else{
+                printf("Camera%d:%s,0x%x,0x%x\n", counter, desc->serialNumber, desc->idProduct, desc->idVendor);
+            }
             counter++;
         }
     }
@@ -152,7 +158,7 @@ int list_detailed_information(const char* serialNumber, int productID){
 int main(int argc, char** argv){
     //if no args, list all devices
     if(argc == 1){
-        int status = list_all();
+        int status = list_all(0);
         return status;
     }
     else{
@@ -164,6 +170,10 @@ int main(int argc, char** argv){
             if(strcmp(arg,"-h")==0 || strcmp(arg,"--help")==0){
                 printf("here\n");
                 print_help();
+                return 0;
+            }
+            else if(strcmp(arg,"-c")== 0 || strcmp(arg, "--concise") == 0) {
+                int status = list_all(1);
                 return 0;
             }
             // otherwise if -s or --serial print detailed info
