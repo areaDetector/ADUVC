@@ -16,13 +16,13 @@
 
 // version numbers
 #define ADUVC_VERSION      1
-#define ADUVC_REVISION     5
+#define ADUVC_REVISION     7
 #define ADUVC_MODIFICATION 0
 
 
-// Unless specified during compilation, use 7 as number of supported formats
+// Unless specified during compilation, use 16 as number of supported formats
 #ifndef SUPPORTED_FORMAT_COUNT
-#define SUPPORTED_FORMAT_COUNT 7
+#define SUPPORTED_FORMAT_COUNT 16
 #endif
 
 
