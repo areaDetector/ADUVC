@@ -920,7 +920,6 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray,
  */
 void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     NDArray* pArray;
-    NDArrayInfo arrayInfo;
     int dataType;
     int operatingMode;
     int colorMode;
@@ -962,7 +961,6 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
         pArray = this->pArrays[0];   
     }
     else{
-        this->pArrays[0]->release();
         asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
                 "%s::%s Unable to allocate array\n", driverName, functionName);
         return;
@@ -970,11 +968,24 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
 
     updateTimeStamp(&pArray->epicsTS);
 
+    int pixelSize = 1;
+    switch(dataType){
+        case NDUInt8:
+        case NDInt8:
+            pixelSize = 1;
+            break;
+        case NDUInt16:
+        case NDInt16:
+            pixelSize = 2;
+            break;
+    }
+
     // Update camera image parameters
-    pArray->getInfo(&arrayInfo);
-    setIntegerParam(NDArraySize, (int)arrayInfo.totalBytes);
-    setIntegerParam(NDArraySizeX, arrayInfo.xSize);
-    setIntegerParam(NDArraySizeY, arrayInfo.ySize);
+    size_t dataSize = dims[0] * dims[1] * pixelSize;
+    if (ndims == 3) dataSize *= dims[2];
+    setIntegerParam(NDArraySize, (int)dataSize);
+    setIntegerParam(NDArraySizeX, frame->width);
+    setIntegerParam(NDArraySizeY, frame->height);
 
     int numImages;
     getIntegerParam(ADNumImagesCounter, &numImages);
@@ -983,7 +994,7 @@ void ADUVC::newFrameCallback(uvc_frame_t* frame, void* ptr){
     pArray->uniqueId = numImages;
     
     // Copy data from our uvc frame into our NDArray
-    uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, arrayInfo.totalBytes);
+    uvc2NDArray(frame, pArray, (NDDataType_t) dataType, (NDColorMode_t) colorMode, dataSize);
 
     //single shot mode stops after one images
     if(operatingMode == ADImageSingle){
