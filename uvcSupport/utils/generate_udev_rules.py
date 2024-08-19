@@ -3,13 +3,13 @@
 
 import argparse
 import os
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, call
 
 
 def get_camera_list():
     cameras = set()
     try:
-        p = Popen(['cameraDetector/uvc_locater', '-c'], stdout=PIPE, stderr=PIPE)
+        p = Popen(['bin/uvc_locater', '-c'], stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         for line in out.decode('utf-8').splitlines():
             cameras.add(line.split(',')[1])
@@ -54,6 +54,8 @@ if __name__ == '__main__':
             with open(f'/etc/udev/rules.d/{udev_file_num}-usbcams.rules', 'w') as fp:
                 fp.write(udev_file_contents)
             print(f'Successfully generated /etc/udev/rules.d/{udev_file_num}-usbcams.rules.')
-            print('Restart your machine or re-trigger udevadm and re-plug your devices for the rules to apply')
+            call(['udevadm', 'control', '--reload-rules'])
+            call(['udevadm', 'trigger'])
+        
         except PermissionError:
             print('ERROR - You do not have permission to generate and install udev files!')

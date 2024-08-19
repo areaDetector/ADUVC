@@ -112,7 +112,7 @@ void newFrameCallback(uvc_frame_t* frame, void* ptr){
 int main(int argc, char** argv){
 
     //argument parsing
-    char* serialNumber = "";
+    const char* serialNumber = "";
     int productID = 0;
     int height = 480;
     int width = 640;

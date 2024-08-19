@@ -2,7 +2,6 @@
 // Standard includes
 #include <stdlib.h>
 #include <stdio.h>
-#include <cstddef>
 #include <string.h>
 #include <inttypes.h>
 #include "unistd.h"
@@ -11,8 +10,6 @@
 // uvc include
 #include <libuvc/libuvc.h>
 
-
-using namespace std;
 
 
 /**
