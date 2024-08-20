@@ -8,6 +8,17 @@ ADUVC requires libusb, libuvc, epics-base, epics-modules, ADCore, and ADSupport.
 Release Notes
 =============
 
+R1-8 (20-Aug-2024)
+----
+* Features Added
+    * Increase max number of auto-configured operating modes to 16
+    * Improved organization of utility programs
+
+* Fixes
+    * Resolve bug with size PVs being incorrect for color images
+    * Cleanup docs
+
+
 R1-7 (27-January-2023)
 ----
 * Features Added
