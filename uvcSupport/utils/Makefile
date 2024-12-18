@@ -1,4 +1,4 @@
-all: listcameras ptz usbreset captest
+all: listcameras ptztest usbreset
 
 listcameras:
 	mkdir -p bin
