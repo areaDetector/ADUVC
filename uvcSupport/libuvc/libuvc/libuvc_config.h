@@ -3,8 +3,8 @@
 
 #define LIBUVC_VERSION_MAJOR 0
 #define LIBUVC_VERSION_MINOR 0
-#define LIBUVC_VERSION_PATCH 6
-#define LIBUVC_VERSION_STR "0.0.6"
+#define LIBUVC_VERSION_PATCH 7
+#define LIBUVC_VERSION_STR "0.0.7"
 #define LIBUVC_VERSION_INT                      \
   ((@libuvc_VERSION_MAJOR@ << 16) |             \
    (@libuvc_VERSION_MINOR@ << 8) |              \
