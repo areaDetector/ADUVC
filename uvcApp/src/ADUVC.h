@@ -88,6 +88,7 @@ typedef enum ADUVC_LOG_LEVEL {
 #define ADUVC_UVCComplianceLevelString          "UVC_COMPLIANCE"            //asynInt32
 #define ADUVC_ReferenceCountString              "UVC_REFCOUNT"              //asynInt32
 #define ADUVC_FramerateString                   "UVC_FRAMERATE"             //asynInt32
+#define ADUVC_LogLevelString                  "UVC_LOG_LEVEL"             //asynInt32
 #define ADUVC_ImageFormatString                 "UVC_FORMAT"                //asynInt32
 #define ADUVC_CameraFormatString                "UVC_CAMERA_FORMAT"         //asynInt32
 #define ADUVC_FormatDescriptionString           "UVC_FORMAT_DESCRIPTION"    //asynOctet
@@ -174,6 +175,7 @@ class ADUVC : ADDriver{
         int ADUVC_Framerate;
         int ADUVC_ImageFormat;
         int ADUVC_CameraFormat;
+        int ADUVC_LogLevel;
         int ADUVC_FormatDescription;
         int ADUVC_ApplyFormat;
         int ADUVC_AutoAdjust;

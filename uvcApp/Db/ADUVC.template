@@ -25,6 +25,39 @@ record(ai, "$(P)$(R)UVCFramerate_RBV"){
     field(SCAN, "I/O Intr")
 }
 
+record(mbbo, "$(P)$(R)UVCLogLevel") {
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_LOG_LEVEL")
+    field(ZRST, "None")
+    field(ZRVL, "0")
+    field(ONST, "Error")
+    field(ONVL, "10")
+    field(TWST, "Warning")
+    field(TWVL, "20")
+    field(THST, "Info")
+    field(THVL, "30")
+    field(FRST, "Debug")
+    field(FRVL, "40")
+    field(VAL,  "40") # Default log level
+}
+
+record(mbbi, "$(P)$(R)UVCLogLevel_RBV") {
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_LOG_LEVEL")
+    field(ZRST, "None")
+    field(ZRVL, "0")
+    field(ONST, "Error")
+    field(ONVL, "10")
+    field(TWST, "Warning")
+    field(TWVL, "20")
+    field(THST, "Info")
+    field(THVL, "30")
+    field(FRST, "Debug")
+    field(FRVL, "40")
+    field(SCAN, "I/O Intr")
+}
+
 ###################################################
 # record that stores to what level of UVC the camera complies
 ################################################

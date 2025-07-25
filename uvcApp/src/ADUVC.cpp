@@ -1031,7 +1031,8 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
 
     // Update description if camera format selection is changed
     else if(function == ADUVC_CameraFormat) updateCameraFormatDesc();
-    
+    else if(function == ADUVC_LogLevel) this->logLevel = (ADUVC_LogLevel_t) value;
+
     // Stop acqusition if image mode is changed
     else if(function == ADImageMode && acquiring == 1) acquireStop();
     // Stop acquisition if image format or framerate are changed
@@ -1192,6 +1193,7 @@ ADUVC::ADUVC(const char* portName, const char* serialOrProductID)
     createParam(ADUVC_FramerateString,              asynParamInt32,     &ADUVC_Framerate);
     createParam(ADUVC_ImageFormatString,            asynParamInt32,     &ADUVC_ImageFormat);
     createParam(ADUVC_CameraFormatString,           asynParamInt32,     &ADUVC_CameraFormat);
+    createParam(ADUVC_LogLevelString,              asynParamInt32,     &ADUVC_LogLevel);
     createParam(ADUVC_FormatDescriptionString,      asynParamOctet,     &ADUVC_FormatDescription);
     createParam(ADUVC_ApplyFormatString,            asynParamInt32,     &ADUVC_ApplyFormat);
     createParam(ADUVC_AutoAdjustString,             asynParamInt32,     &ADUVC_AutoAdjust);
