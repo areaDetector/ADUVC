@@ -749,7 +749,7 @@ asynStatus ADUVC::uvc2NDArray(uvc_frame_t* frame, NDArray* pArray,
                 }
                 else{
                     if(rgb->data_bytes != imBytes){
-                        ERR("Invalid frame sizeFrame has %d bytes and array has %d bytes\n",
+                        ERR_ARGS("Invalid frame sizeFrame has %d bytes and array has %d bytes\n",
                             (int) rgb->data_bytes, (int) imBytes);
 
                         status = asynError;
@@ -998,7 +998,7 @@ asynStatus ADUVC::processZoom(int zoomDirection){
 asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
     int function = pasynUser->reason;
     int acquiring;
-    int status = asynSuccess;
+    asynStatus status = asynSuccess;
     static const char* functionName = "writeInt32";
 
     // Check if we are currently acquiring
@@ -1066,9 +1066,10 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
     callParamCallbacks();
 
     // Log status updates
-    if(status) ERR_ARGS("Failed to write %d to function %d", value, function);
-    else DEBUG_ARGS("Wrote %d to function %d", value, function)
-    
+    if(status) {
+        ERR_ARGS("Failed to write %d to function %d", value, function);
+    } else DEBUG_ARGS("Wrote %d to function %d", value, function);
+
     return status;
 }
 
