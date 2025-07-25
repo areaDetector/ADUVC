@@ -2,7 +2,7 @@
 
 An [EPICS](www.aps.anl.gov/epics) [areaDetector](https://github.com/areaDetector/areaDetector/blob/master/README.md) driver for communicating with USB Video Class (UVC) devices, including consumer webcams and some industrial cameras, using the open source [libuvc library](https://github.com/libuvc/libuvc).
 
-The driver has been tested on 64 bit linux only, but it is possible that it will also work on windows and other architectures as well. 
+The driver has been tested on 64 bit linux only, but it is possible that it will also work on windows and other architectures as well.
 
 It was tested with many devices, including the following:
 

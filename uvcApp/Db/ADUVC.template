@@ -489,5 +489,3 @@ record(ao, "$(P)$(R)UVCZoomOut"){
     field(DTYP, "asynInt32")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))UVC_ZOOM_OUT")
 }
-
-

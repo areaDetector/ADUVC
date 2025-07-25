@@ -5,7 +5,7 @@ errlogInit(20000)
 < envPaths
 #epicsThreadSleep(20)
 dbLoadDatabase("$(TOP)/dbd/uvcApp.dbd")
-uvcApp_registerRecordDeviceDriver(pdbbase) 
+uvcApp_registerRecordDeviceDriver(pdbbase)
 
 # Prefix for all records
 epicsEnvSet("PREFIX", "XF:10IDC-BI{UVC-Cam:1}")
@@ -23,14 +23,14 @@ epicsEnvSet("NCHANS", "2048")
 epicsEnvSet("CBUFFS", "500")
 # The search path for database files
 epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
-# Size of data allowed 
+# Size of data allowed
 epicsEnvSet("EPICS_CA_MAX_ARRAY_BYTES", 20000000)
 #epicsThreadSleep(15)
 
 #/*
-# * Constructor for ADUVC driver. Most params are passed to the parent ADDriver constructor. 
+# * Constructor for ADUVC driver. Most params are passed to the parent ADDriver constructor.
 # * Connects to the camera, then gets device information, and is ready to aquire images.
-# * 
+# *
 # * @params: portName -> port for NDArray recieved from camera
 # * @params: serial -> serial number of device to connect to
 # * @params: productID -> Product id number for device to connect to
@@ -52,7 +52,7 @@ epicsEnvSet("EPICS_CA_MAX_ARRAY_BYTES", 20000000)
 #ADUVCConfig("$(PORT)", "", 25344, 0, $(XSIZE), $(YSIZE), 0, 0, 0, 0)
 #epicsThreadSleep(2)
 
-# If opening device by index, simply set a an empty string for the serial, and a 0 for productID. An index of 0 will open the first UVC 
+# If opening device by index, simply set a an empty string for the serial, and a 0 for productID. An index of 0 will open the first UVC
 # camera detected. See the output of the uvc_locater command for index values (first -> 0, second -> 1, etc)
 ADUVCConfig("$(PORT)", "", 0, 0, $(XSIZE), $(YSIZE), 0, 0, 0, 0)
 epicsThreadSleep(2)

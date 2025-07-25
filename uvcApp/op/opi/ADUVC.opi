@@ -5961,8 +5961,8 @@ $(pv_value)</tooltip>
       <keep_wh_ratio>false</keep_wh_ratio>
     </scale_options>
     <scripts />
-    <text>When Auto Adjust is toggled on, ADUVC will attempt to 
-match Data type and Color mode to frame recieved 
+    <text>When Auto Adjust is toggled on, ADUVC will attempt to
+match Data type and Color mode to frame recieved
 from camera when using Uncompressed acquisition.</text>
     <tooltip></tooltip>
     <transparent>true</transparent>

@@ -8,7 +8,7 @@ include $(TOP)/configure/CONFIG
 #DB_OPT = YES
 
 #-------------------------------------------
-# Create and install (or just install) 
+# Create and install (or just install)
 # databases, templates, subtitutions
 DB += ADUVC.template
 

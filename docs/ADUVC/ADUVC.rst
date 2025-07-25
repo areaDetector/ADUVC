@@ -17,7 +17,7 @@ An EPICS driver for USB Video Class (UVC) devices
 ..  _libuvc:       https://github.com/ktossell/libuvc
 ..  _ADUVC:        https://github.com/epicsNSLS2-areaDetector/ADUVC
 ..  _areaDetector: https://github.com/areaDetector
-         
+
 Overview
 --------
 
@@ -56,7 +56,7 @@ Issues with root ownership of UVC devices
 -----------------------------------------
 
 The USB camera device is typically owned by root, which prevents EPICS IOC from running as softioc user, and automatic startup using procServer. To grant access to USB camera device by other users, such as softioc, we wrote udev rules::
-  
+
   kgofron@xf17bm-ioc2:/etc/udev/rules.d$ more usb-cams.rules
   # cam1 f007
   SUBSYSTEM=="usb", ATTRS{idVendor}=="f007", OWNER="softioc", GROUP="softioc", MODE="0666", SYMLINK="cam1"
@@ -160,7 +160,7 @@ Release Notes
     - Allow for helper utilities to compile with non-system installed libuvc
 
 - Known Issues
-    
+
     - libuvc relies on libusb-1.0, not libusb.
     - When camera is not connected, driver segmentation faults; should be handled more gracefully.
 
@@ -293,9 +293,9 @@ Known Issues and pull requests
 ------------------------------
 
 - To submit an issue or a pull request for ADUVC, please do so at the source fork on `Github <https://github.com/epicsNSLS2-areaDetector/ADUVC>`__.
-- Many low end vendors do not assign Serial Numbers (S/N), and such cameras must be started using Product Number instead. 
+- Many low end vendors do not assign Serial Numbers (S/N), and such cameras must be started using Product Number instead.
 - Some vendors assign same S/N for the same model, and such multiples of such cameras do not work well when connected to same computer USB hub.
-- USB cameras have to be accessed by root, and access by other users is enabled by modifying /etc/udev/rules. 
+- USB cameras have to be accessed by root, and access by other users is enabled by modifying /etc/udev/rules.
 
 Important links
 ---------------
@@ -303,5 +303,3 @@ Important links
 - libuvc_, is a cross-platform library for USB video devices.
 - ADUVC_ driver on Github.
 - areaDetector_ on Github.
-
-
