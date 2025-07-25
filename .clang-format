@@ -1,0 +1,10 @@
+BasedOnStyle: Google
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+
+# pointers/references are aligned to the type
+PointerAlignment: Left
+# Include space after C-style cast
+SpaceAfterCStyleCast: true

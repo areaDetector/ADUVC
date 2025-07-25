@@ -273,18 +273,6 @@ class ADUVC : ADDriver{
         // UVC Functions - Camera functions
         //-----------------------------------------
 
-        // Functions that set image processing and acquisiton controls
-        asynStatus setExposure(int exposureTime);
-        asynStatus setGamma(int gamma);
-        asynStatus setBacklightCompensation(int backlightCompensation);
-        asynStatus setBrightness(int brightness);
-        asynStatus setContrast(int contrast);
-        asynStatus setGain(int gain);
-        asynStatus setPowerLineFrequency(int powerLineFrequency);
-        asynStatus setHue(int hue);
-        asynStatus setSaturation(int saturation);
-        asynStatus setSharpness(int sharpness);
-
         // Functions that allow for PTZ (Pan/Tilt/Zoom) control for supported devices
         asynStatus processPanTilt(int panDirection, int tiltDirection);
         asynStatus processZoom(int zoomDirection);
