@@ -1086,7 +1086,7 @@ asynStatus ADUVC::writeInt32(asynUser* pasynUser, epicsInt32 value){
 asynStatus ADUVC::writeFloat64(asynUser* pasynUser, epicsFloat64 value){
     int function = pasynUser->reason;
     int acquiring;
-    int status = asynSuccess;
+    asynStatus status = asynSuccess;
     static const char* functionName = "writeFloat64";
 
     getIntegerParam(ADAcquire, &acquiring);
@@ -1111,8 +1111,9 @@ asynStatus ADUVC::writeFloat64(asynUser* pasynUser, epicsFloat64 value){
     }
 
     callParamCallbacks();
-    if(status) ERR_ARGS("Failed to write %lf to function %d", value, function);
-    else DEBUG_ARGS("Wrote %lf to function %d", value, function)
+    if(status){
+        ERR_ARGS("Failed to write %lf to function %d", value, function);
+    } else DEBUG_ARGS("Wrote %lf to function %d", value, function);
 
     return status;
 }
