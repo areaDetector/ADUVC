@@ -442,7 +442,14 @@ void ADUVC::getDeviceInformation(){
     
     char modelName[50];
     if(pdeviceInfo->manufacturer!=NULL) setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
-    if(pdeviceInfo->serialNumber!=NULL) setStringParam(ADSerialNumber, pdeviceInfo->serialNumber);
+    if(pdeviceInfo->serialNumber!=NULL) {
+        setStringParam(ADSerialNumber, pdeviceInfo->serialNumber);
+    } else {
+        // If serial number is not available, fall back to product ID
+        char productID[40];
+        epicsSnprintf(productID, sizeof(productID), "Product ID: %d", pdeviceInfo->idProduct);
+        setStringParam(ADSerialNumber, productID);
+    }
 
     sprintf(modelName, "%s", pdeviceInfo->product);
     setStringParam(ADModel, modelName);
@@ -1502,14 +1509,6 @@ ADUVC::ADUVC(const char* portName, const char* serialOrProductID)
     // Set initial size and framerate params
     setIntegerParam(ADSizeX, xsize);
     setIntegerParam(ADSizeY, ysize);
-
-    // Sets serial number and productID
-    if(strcmp(serial, "") == 0) setStringParam(ADSerialNumber, "No Serial Detected");
-    else setStringParam(ADSerialNumber, serial);
-
-    char pIDBuff[32];
-    epicsSnprintf(pIDBuff, 32, "%d", productID);
-    setStringParam(ADSerialNumber, pIDBuff);
 
     //sets libuvc version
     char uvcVersionString[25];
