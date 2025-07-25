@@ -1,6 +1,6 @@
 # ADUVC RELEASES
 
-Author: Jakub Wlodek   
+Author: Jakub Wlodek
 
 ADUVC requires libusb, libuvc, epics-base, epics-modules, ADCore, and ADSupport. Further installation information can be found in the README file.
 
@@ -30,7 +30,7 @@ R1-7 (27-January-2023)
 * Fixes
     * Minor bug with continuous acquisition mode fixed
     * Avoid "Auto Adjust" as default behavior
-    
+
 
 R1-6 (1-December-2020)
 ----
@@ -64,9 +64,9 @@ R1-4 (18-August-2020)
     * Allow for helper utilities to compile with non-system installed libuvc
 
 * Known Issues
-    * `libuvc` relies on `libusb-1.0`, not `libusb`. 
+    * `libuvc` relies on `libusb-1.0`, not `libusb`.
     * When camera is not connected, driver segmentation faults - should be handled more gracefully.
-    
+
 
 R1-3 (06-September-2019)
 -----
@@ -113,7 +113,7 @@ R1-1 (28-January-2019)
     * Updated documentation with params[in]/[out]
     * Added LICENSE
     * Code formatting cleaned up (removed all tab characters)
-    
+
 
 R1-0 (7-December-2018)
 -----
@@ -131,7 +131,7 @@ R1-0 (7-December-2018)
 
 R0-1 (Beta) (5-November-2018)
 -----
-* Key detector features implemented:  
+* Key detector features implemented:
     * Image Acquisition supported and tested.
     * Acquisition mode selection supported and tested
     * Diagnostic information acquisition

@@ -30,4 +30,3 @@ include $(ADCORE)/ADApp/commonDriverMakefile
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
-

@@ -2,13 +2,13 @@
 
   kaz@kaz-VirtualBox:~/src/git/camera/pandac$ lsusb
   Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
-  Bus 001 Device 003: ID 80ee:0030 VirtualBox 
+  Bus 001 Device 003: ID 80ee:0030 VirtualBox
   Bus 001 Device 002: ID 80ee:0021 VirtualBox USB Tablet
   Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 
   kaz@kaz-VirtualBox:~/src/git/camera/pandac$ lsusb -s 001:003 -v
 
-  Bus 001 Device 003: ID 80ee:0030 VirtualBox 
+  Bus 001 Device 003: ID 80ee:0030 VirtualBox
   Couldn't open device, some information will be missing
   Device Descriptor:
     bLength                18
@@ -19,11 +19,11 @@
     bDeviceProtocol         1 Interface Association
     bMaxPacketSize0        16
     idVendor           0x80ee VirtualBox
-    idProduct          0x0030 
+    idProduct          0x0030
     bcdDevice            1.00
-    iManufacturer           1 
-    iProduct                2 
-    iSerial                 3 
+    iManufacturer           1
+    iProduct                2
+    iSerial                 3
     bNumConfigurations      1
     Configuration Descriptor:
       bLength                 9
@@ -31,7 +31,7 @@
       wTotalLength          487
       bNumInterfaces          2
       bConfigurationValue     1
-      iConfiguration          0 
+      iConfiguration          0
       bmAttributes         0x80
         (Bus Powered)
       MaxPower              500mA
@@ -42,8 +42,8 @@
         bInterfaceCount         2
         bFunctionClass         14 Video
         bFunctionSubClass       3 Video Interface Collection
-        bFunctionProtocol       0 
-        iFunction               2 
+        bFunctionProtocol       0
+        iFunction               2
       Interface Descriptor:
         bLength                 9
         bDescriptorType         4
@@ -52,8 +52,8 @@
         bNumEndpoints           1
         bInterfaceClass        14 Video
         bInterfaceSubClass      1 Video Control
-        bInterfaceProtocol      0 
-        iInterface              2 
+        bInterfaceProtocol      0
+        iInterface              2
         VideoControl Interface Descriptor:
           bLength                13
           bDescriptorType        36
@@ -70,7 +70,7 @@
           bTerminalID             1
           wTerminalType      0x0201 Camera Sensor
           bAssocTerminal          0
-          iTerminal               0 
+          iTerminal               0
           wObjectiveFocalLengthMin      0
           wObjectiveFocalLengthMax      0
           wOcularFocalLength            0
@@ -87,7 +87,7 @@
           bControlSize            3
           bmControls     0x00000001
             Brightness
-          iProcessing             0 
+          iProcessing             0
           bmVideoStandards     0x 9
             None
             SECAM - 625/50
@@ -99,7 +99,7 @@
           wTerminalType      0x0101 USB Streaming
           bAssocTerminal          0
           bSourceID               2
-          iTerminal               0 
+          iTerminal               0
         Endpoint Descriptor:
           bLength                 7
           bDescriptorType         5
@@ -118,8 +118,8 @@
         bNumEndpoints           1
         bInterfaceClass        14 Video
         bInterfaceSubClass      2 Video Streaming
-        bInterfaceProtocol      0 
-        iInterface              0 
+        bInterfaceProtocol      0
+        iInterface              0
         VideoStreaming Interface Descriptor:
           bLength                            14
           bDescriptorType                    36

@@ -16,7 +16,7 @@
     <hr/>
     <h4>Introduction:</h4>
     <p class="text-section-local">
-        UVC, or USB Video Class is an open Video connection standard used for USB based cameras and webcams. Almost all consumer webcams support 
+        UVC, or USB Video Class is an open Video connection standard used for USB based cameras and webcams. Almost all consumer webcams support
         UVC, along with a large number of other consumer USB cameras of different form factors, ranging from pencil cameras to micro cameras.
         Some industrial cameras support the format as well. ADUVC is an area detector driver that adds support for UVC based cameras.
         It also includes some useful test programs to check if your UVC device is being recognized correctly.
@@ -28,8 +28,8 @@
         file. To install ADUVC, you must first install libuvc and its dependancies. The simplest way to do this is to run the provided
         bash script in the adUVCSupport directory of the repository. This installs libusub, libjpeg, and cmake, clones the
         <a href="https://github.com/ktossell/libuvc">libuvc repository on github</a>, and then builds it using cmake. The dynamic library files
-        resulting from the build are placed in the /usr/local directory (on Linux), and include files must be placed in adUVCSupport/include. 
-        From here you may compile the support programs or the driver itself by entering the appropriate directory (the top ADUVC dir. for the 
+        resulting from the build are placed in the /usr/local directory (on Linux), and include files must be placed in adUVCSupport/include.
+        From here you may compile the support programs or the driver itself by entering the appropriate directory (the top ADUVC dir. for the
         driver), and compiling by switching to root and typing 'make'. The driver is now installed.
     </p>
     <hr />
@@ -37,7 +37,7 @@
     <ul>
         <li>install-libuvc.sh    ->  Installation script for libuvc and its dependancies.</li>
         <li>cameraDetector      ->  C++ program that detects all connected UVC devices. Useful for finding serial/product number for IOC</li>
-        <li>imageCaptureTest    ->  C++ program that uses OpenCV to capture 200 frames from the camera to test if libuvc has been installed and the 
+        <li>imageCaptureTest    ->  C++ program that uses OpenCV to capture 200 frames from the camera to test if libuvc has been installed and the
             camera is connected.
         </li>
         <li>ADUVC driver        ->  The source code for the area detector driver itself in the uvcApp/src directory.</li>
@@ -286,6 +286,6 @@
         <li><a href="https://github.com/epicsNSLS2-areaDetector/ADUVC">ADUVC on Github</a></li>
         <li><a href="https://github.com/areaDetector">areaDetector on Github</a></li>
     </ul>
-    
+
 </body>
 </html>
