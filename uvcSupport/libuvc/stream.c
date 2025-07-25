@@ -103,9 +103,10 @@ struct format_table_entry *_get_format_entry(enum uvc_frame_format format) {
     ABS_FMT(UVC_FRAME_FORMAT_ANY, 2,
       {UVC_FRAME_FORMAT_UNCOMPRESSED, UVC_FRAME_FORMAT_COMPRESSED})
 
-    ABS_FMT(UVC_FRAME_FORMAT_UNCOMPRESSED, 5,
+    ABS_FMT(UVC_FRAME_FORMAT_UNCOMPRESSED, 8,
       {UVC_FRAME_FORMAT_YUYV, UVC_FRAME_FORMAT_UYVY, UVC_FRAME_FORMAT_GRAY8,
-      UVC_FRAME_FORMAT_GRAY16, UVC_FRAME_FORMAT_NV12})
+       UVC_FRAME_FORMAT_GRAY16, UVC_FRAME_FORMAT_NV12, UVC_FRAME_FORMAT_P010,
+       UVC_FRAME_FORMAT_BGR, UVC_FRAME_FORMAT_RGB})
     FMT(UVC_FRAME_FORMAT_YUYV,
       {'Y',  'U',  'Y',  '2', 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71})
     FMT(UVC_FRAME_FORMAT_UYVY,
@@ -116,6 +117,12 @@ struct format_table_entry *_get_format_entry(enum uvc_frame_format format) {
       {'Y',  '1',  '6',  ' ', 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71})
     FMT(UVC_FRAME_FORMAT_NV12,
       {'N',  'V',  '1',  '2', 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71})
+    FMT(UVC_FRAME_FORMAT_P010,
+      {'P',  '0',  '1',  '0', 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71})
+    FMT(UVC_FRAME_FORMAT_BGR,
+      {0x7d, 0xeb, 0x36, 0xe4, 0x4f, 0x52, 0xce, 0x11, 0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70})
+    FMT(UVC_FRAME_FORMAT_RGB,
+        {0x7e, 0xeb, 0x36, 0xe4, 0x4f, 0x52, 0xce, 0x11, 0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70})
     FMT(UVC_FRAME_FORMAT_BY8,
       {'B',  'Y',  '8',  ' ', 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71})
     FMT(UVC_FRAME_FORMAT_BA81,
@@ -128,10 +135,12 @@ struct format_table_entry *_get_format_entry(enum uvc_frame_format format) {
       {'R',  'G',  'G',  'B', 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71})
     FMT(UVC_FRAME_FORMAT_SBGGR8,
       {'B',  'G',  'G',  'R', 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71})
-    ABS_FMT(UVC_FRAME_FORMAT_COMPRESSED, 1,
-      {UVC_FRAME_FORMAT_MJPEG})
+    ABS_FMT(UVC_FRAME_FORMAT_COMPRESSED, 2,
+      {UVC_FRAME_FORMAT_MJPEG, UVC_FRAME_FORMAT_H264})
     FMT(UVC_FRAME_FORMAT_MJPEG,
       {'M',  'J',  'P',  'G'})
+    FMT(UVC_FRAME_FORMAT_H264,
+      {'H',  '2',  '6',  '4', 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71})
 
     default:
       return NULL;
@@ -583,6 +592,14 @@ uvc_error_t uvc_get_still_ctrl_format_size(
     return uvc_probe_still_ctrl(devh, still_ctrl);
 }
 
+static int _uvc_stream_params_negotiated(
+  uvc_stream_ctrl_t *required,
+  uvc_stream_ctrl_t *actual) {
+    return required->bFormatIndex == actual->bFormatIndex &&
+    required->bFrameIndex == actual->bFrameIndex &&
+    required->dwMaxPayloadTransferSize >= actual->dwMaxPayloadTransferSize;
+}
+
 /** @internal
  * Negotiate streaming parameters with the device
  *
@@ -592,16 +609,16 @@ uvc_error_t uvc_get_still_ctrl_format_size(
 uvc_error_t uvc_probe_stream_ctrl(
     uvc_device_handle_t *devh,
     uvc_stream_ctrl_t *ctrl) {
- 
-  uvc_query_stream_ctrl(
-      devh, ctrl, 1, UVC_SET_CUR
-  );
+  uvc_stream_ctrl_t required_ctrl = *ctrl;
 
-  uvc_query_stream_ctrl(
-      devh, ctrl, 1, UVC_GET_CUR
-  );
+  uvc_query_stream_ctrl( devh, ctrl, 1, UVC_SET_CUR );
+  uvc_query_stream_ctrl( devh, ctrl, 1, UVC_GET_CUR );
 
-  /** @todo make sure that worked */
+  if(!_uvc_stream_params_negotiated(&required_ctrl, ctrl)) {
+    UVC_DEBUG("Unable to negotiate streaming format");
+    return UVC_ERROR_INVALID_MODE;
+  }
+
   return UVC_SUCCESS;
 }
 
@@ -755,19 +772,22 @@ void _uvc_process_payload(uvc_stream_handle_t *strmh, uint8_t *payload, size_t p
       variable_offset += 6;
     }
 
-    if (header_len > variable_offset)
-    {
+    if (header_len > variable_offset) {
         // Metadata is attached to header
-        memcpy(strmh->meta_outbuf + strmh->meta_got_bytes, payload + variable_offset, header_len - variable_offset);
-        strmh->meta_got_bytes += header_len - variable_offset;
+        size_t meta_len = header_len - variable_offset;
+        if (strmh->meta_got_bytes + meta_len > LIBUVC_XFER_META_BUF_SIZE)
+          meta_len = LIBUVC_XFER_META_BUF_SIZE - strmh->meta_got_bytes; /* Avoid overflow. */
+        memcpy(strmh->meta_outbuf + strmh->meta_got_bytes, payload + variable_offset, meta_len);
+        strmh->meta_got_bytes += meta_len;
     }
   }
 
   if (data_len > 0) {
+    if (strmh->got_bytes + data_len > strmh->cur_ctrl.dwMaxVideoFrameSize)
+      data_len = strmh->cur_ctrl.dwMaxVideoFrameSize - strmh->got_bytes; /* Avoid overflow. */
     memcpy(strmh->outbuf + strmh->got_bytes, payload + header_len, data_len);
     strmh->got_bytes += data_len;
-
-    if (header_info & (1 << 1)) {
+    if (header_info & (1 << 1) || strmh->got_bytes == strmh->cur_ctrl.dwMaxVideoFrameSize) {
       /* The EOF bit is set, so publish the complete frame */
       _uvc_swap_buffers(strmh);
     }
@@ -1020,9 +1040,9 @@ uvc_error_t uvc_stream_open_ctrl(uvc_device_handle_t *devh, uvc_stream_handle_t 
 
   // Set up the streaming status and data space
   strmh->running = 0;
-  /** @todo take only what we need */
-  strmh->outbuf = malloc( LIBUVC_XFER_BUF_SIZE );
-  strmh->holdbuf = malloc( LIBUVC_XFER_BUF_SIZE );
+
+  strmh->outbuf = malloc( ctrl->dwMaxVideoFrameSize );
+  strmh->holdbuf = malloc( ctrl->dwMaxVideoFrameSize );
 
   strmh->meta_outbuf = malloc( LIBUVC_XFER_META_BUF_SIZE );
   strmh->meta_holdbuf = malloc( LIBUVC_XFER_META_BUF_SIZE );
@@ -1232,7 +1252,7 @@ uvc_error_t uvc_stream_start(
     }
   }
 
-  if ( ret != UVC_SUCCESS && transfer_id > 0 ) {
+  if ( ret != UVC_SUCCESS && transfer_id >= 0 ) {
     for ( ; transfer_id < LIBUVC_NUM_TRANSFER_BUFS; transfer_id++) {
       free ( strmh->transfers[transfer_id]->buffer );
       libusb_free_transfer ( strmh->transfers[transfer_id]);
@@ -1323,13 +1343,22 @@ void _uvc_populate_frame(uvc_stream_handle_t *strmh) {
   frame->height = frame_desc->wHeight;
   
   switch (frame->frame_format) {
+  case UVC_FRAME_FORMAT_BGR:
+    frame->step = frame->width * 3;
+    break;
   case UVC_FRAME_FORMAT_YUYV:
     frame->step = frame->width * 2;
     break;
   case UVC_FRAME_FORMAT_NV12:
     frame->step = frame->width;
     break;
+  case UVC_FRAME_FORMAT_P010:
+    frame->step = frame->width * 2;
+        break;
   case UVC_FRAME_FORMAT_MJPEG:
+    frame->step = 0;
+    break;
+  case UVC_FRAME_FORMAT_H264:
     frame->step = 0;
     break;
   default:
@@ -1371,7 +1400,6 @@ uvc_error_t uvc_stream_get_frame(uvc_stream_handle_t *strmh,
   time_t add_secs;
   time_t add_nsecs;
   struct timespec ts;
-  struct timeval tv;
 
   if (!strmh->running)
     return UVC_ERROR_INVALID_PARAM;
@@ -1397,6 +1425,7 @@ uvc_error_t uvc_stream_get_frame(uvc_stream_handle_t *strmh,
 #if _POSIX_TIMERS > 0
       clock_gettime(CLOCK_REALTIME, &ts);
 #else
+      struct timeval tv;
       gettimeofday(&tv, NULL);
       ts.tv_sec = tv.tv_sec;
       ts.tv_nsec = tv.tv_usec * 1000;
@@ -1415,13 +1444,10 @@ uvc_error_t uvc_stream_get_frame(uvc_stream_handle_t *strmh,
       int err = pthread_cond_timedwait(&strmh->cb_cond, &strmh->cb_mutex, &ts);
 
       //TODO: How should we handle EINVAL?
-      switch(err){
-      case EINVAL:
-          *frame = NULL;
-          return UVC_ERROR_OTHER;
-      case ETIMEDOUT:
-          *frame = NULL;
-          return UVC_ERROR_TIMEOUT;
+      if (err) {
+        *frame = NULL;
+        pthread_mutex_unlock(&strmh->cb_mutex);
+        return err == ETIMEDOUT ? UVC_ERROR_TIMEOUT : UVC_ERROR_OTHER;
       }
     }
     
@@ -1473,15 +1499,12 @@ uvc_error_t uvc_stream_stop(uvc_stream_handle_t *strmh) {
 
   pthread_mutex_lock(&strmh->cb_mutex);
 
+  /* Attempt to cancel any running transfers, we can't free them just yet because they aren't
+   *   necessarily completed but they will be free'd in _uvc_stream_callback().
+   */
   for(i=0; i < LIBUVC_NUM_TRANSFER_BUFS; i++) {
-    if(strmh->transfers[i] != NULL) {
-      int res = libusb_cancel_transfer(strmh->transfers[i]);
-      if(res < 0 && res != LIBUSB_ERROR_NOT_FOUND ) {
-        free(strmh->transfers[i]->buffer);
-        libusb_free_transfer(strmh->transfers[i]);
-        strmh->transfers[i] = NULL;
-      }
-    }
+    if(strmh->transfers[i] != NULL)
+      libusb_cancel_transfer(strmh->transfers[i]);
   }
 
   /* Wait for transfers to complete/cancel */
