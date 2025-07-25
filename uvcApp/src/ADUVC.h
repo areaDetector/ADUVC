@@ -202,7 +202,7 @@ class ADUVC : ADDriver{
         // UVC Variables
         //-----------------------------------------
 
-        ADUVC_LogLevel_t logLevel = ADUVC_LOG_LEVEL_INFO; // Default log level
+        ADUVC_LogLevel_t logLevel = ADUVC_LOG_LEVEL_DEBUG; // Default log level
 
         // Checks uvc device operations status
         uvc_error_t deviceStatus;

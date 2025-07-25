@@ -1553,6 +1553,7 @@ ADUVC::ADUVC(const char* portName, const char* serialOrProductID)
                         connected = true;
                         break;
                     } else if (deviceStatus == UVC_ERROR_BUSY){
+                        DEBUG("Found device with matching ID, but it was already open!");
                         foundMatchingDeviceButBusy = true;
                     }
                 } else if (atoi(serialOrProductID) == this->pdeviceInfo->idProduct){
@@ -1562,6 +1563,7 @@ ADUVC::ADUVC(const char* portName, const char* serialOrProductID)
                         connectionType = UVC_PRODUCT_ID;
                         break;
                     } else if (deviceStatus == UVC_ERROR_BUSY){
+                        DEBUG("Found device with matching ID, but it was already open!");
                         foundMatchingDeviceButBusy = true;
                     }
                 }
