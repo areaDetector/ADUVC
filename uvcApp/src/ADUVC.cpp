@@ -6,8 +6,8 @@
  *
  * Author: Jakub Wlodek
  * Created: July 2018
- * Last Edited: August 2020
- * Copyright (c): 2018-2020 Brookhaven National Laboratory
+ * Last Edited: July 2025
+ * Copyright (c): 2018-2025 Brookhaven National Laboratory
  *
  */
 

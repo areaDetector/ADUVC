@@ -6,7 +6,7 @@
  * Author: Jakub Wlodek
  * Created: July 2018
  *
- * Copyright (c) : 2018 Brookhaven National Laboratory
+ * Copyright (c) : 2018-2025 Brookhaven National Laboratory
  *
  */
 
@@ -16,7 +16,7 @@
 
 // version numbers
 #define ADUVC_VERSION      1
-#define ADUVC_REVISION     8
+#define ADUVC_REVISION     10
 #define ADUVC_MODIFICATION 0
 
 
