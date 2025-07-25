@@ -62,12 +62,9 @@ static const double ONE_BILLION = 1.E9;
  * @params[in]: all passed into constructor
  * @return: status
  */
-extern "C" int ADUVCConfig(const char* portName, const char* serial, 
-        int productID, int framerate, int xsize, int ysize, 
-        int maxBuffers, size_t maxMemory, int priority, int stackSize){
+extern "C" int ADUVCConfig(const char* portName, const char* serialOrProductID){
 
-    new ADUVC(portName, serial, productID, framerate, 
-            xsize, ysize, maxBuffers, maxMemory, priority, stackSize);
+    new ADUVC(portName, serialOrProductID);
 
     return asynSuccess;
 }
@@ -378,115 +375,6 @@ int ADUVC::selectBestCameraFormats(ADUVC_CamFormat_t* formatBuffer, int numForma
 }
 
 
-//-----------------------------------------------
-// ADUVC connection/disconnection functions
-//-----------------------------------------------
-
-
-/**
- * Ovderride of NDDriver base function, calls connect to camera
- * 
- * @params[in]: pasynUser -> asyn User instance for the driver
- */
-asynStatus ADUVC::connect(asynUser* pasynUser) {
-    return connectToDeviceUVC();
-}
-
-
-/**
- * Function responsible for connecting to the UVC device. First, a device context is created,
- * then the device is identified, then opened.
- * NOTE: this driver must have exclusive access to the device as per UVC standards.
- *
- * @return: asynStatus      -> true if connection is successful, false if failed
- */
-asynStatus ADUVC::connectToDeviceUVC(){
-    static const char* functionName = "connectToDeviceUVC";
-    asynStatus status = asynSuccess;
-    deviceStatus = uvc_init(&pdeviceContext, NULL);
-
-    if(deviceStatus<0){
-        reportUVCError(deviceStatus, functionName);
-        return asynError;
-    }
-    else{
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
-            "%s::%s Initialized UVC context\n", driverName, functionName);
-    }
-    if(this->connectionType == 0){
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
-            "%s::%s Searching for UVC device with serial number: %s\n", driverName, functionName, serialNumber);
-        deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, 0, this->serialNumber);
-    }
-    else if(this->connectionType == 1){
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
-            "%s::%s Searching for UVC device with Product ID: %d\n", driverName, functionName, this->productID);
-        deviceStatus = uvc_find_device(pdeviceContext, &pdevice, 0, this->productID, NULL);
-    }
-    else {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
-            "%s::%s Opening UVC device with index: %d\n", driverName, functionName, this->deviceIndex);
-        uvc_device_t** deviceList;
-        deviceStatus = uvc_get_device_list(pdeviceContext, &deviceList);
-        if(deviceList[this->deviceIndex] == NULL) {
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                "%s::%s There are not enough UVC devices to open one with index %d!\n", driverName, functionName, this->deviceIndex);
-            deviceStatus = UVC_ERROR_NO_DEVICE;
-        }
-        else{
-            pdevice = deviceList[this->deviceIndex];
-        }
-        uvc_free_device_list(deviceList, 0);
-    }
-    if(deviceStatus<0){
-        reportUVCError(deviceStatus, functionName);
-        return asynError;
-    }
-    else{
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
-            "%s::%s Found UVC device\n", driverName, functionName);
-    }
-    deviceStatus = uvc_open(pdevice, &pdeviceHandle);
-    if(deviceStatus<0){
-        reportUVCError(deviceStatus, functionName);
-        return asynError;
-    }
-    else{
-        connected = 1;
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
-            "%s::%s Opened UVC device\n", driverName, functionName);
-    }
-    return status;
-}
-
-
-asynStatus ADUVC::disconnect(asynUser* pasynUser) {
-    return disconnectFromDeviceUVC();
-}
-
-
-/**
- * Function that disconnects from a connected UVC device.
- * Closes device handle and context, and unreferences the device pointer from memory
- * 
- * @return: asynStatus -> success if device existed and was disconnected, error if there was no device connected
- */
-asynStatus ADUVC::disconnectFromDeviceUVC(){
-    const char* functionName = "disconnectFromDeviceUVC";
-    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
-        "%s::%s Calling all free functions for ADUVC\n", driverName, functionName);
-
-    if(connected == 1){
-        uvc_close(pdeviceHandle);
-        uvc_unref_device(pdevice);
-        uvc_exit(pdeviceContext);
-        printf("Disconnected from device.\n");
-        return asynSuccess;
-    }
-    return asynError;
-}
-
-
 /**
  * Function responsible for getting image acquisition information
  * Gets the exposure, gamma, backlight comp, brightness, contrast, gain, hue, power line, saturation, and
@@ -502,7 +390,7 @@ void ADUVC::getDeviceImageInformation(){
     uint8_t powerLineFrequency, panSpeed, tiltSpeed;
     int8_t pan, tilt;
 
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Populating camera function PVs.\n", driverName, functionName);
+    DEBUG("Population camera image information for PVs");
 
     //get values from UVC camera
     uvc_get_exposure_abs(pdeviceHandle, &exposure, UVC_GET_CUR);
@@ -550,17 +438,19 @@ void ADUVC::getDeviceImageInformation(){
  */
 void ADUVC::getDeviceInformation(){
     static const char* functionName = "getDeviceInformation";
+    DEBUG("Getting device information");
+    
     char modelName[50];
-    uvc_get_device_descriptor(pdevice, &pdeviceInfo);
     if(pdeviceInfo->manufacturer!=NULL) setStringParam(ADManufacturer, pdeviceInfo->manufacturer);
     if(pdeviceInfo->serialNumber!=NULL) setStringParam(ADSerialNumber, pdeviceInfo->serialNumber);
+
     sprintf(modelName, "%s", pdeviceInfo->product);
-    setIntegerParam(ADUVC_UVCComplianceLevel, (int) pdeviceInfo->bcdUVC);
     setStringParam(ADModel, modelName);
-    callParamCallbacks();
-    uvc_free_device_descriptor(pdeviceInfo);
+
+    setIntegerParam(ADUVC_UVCComplianceLevel, (int) pdeviceInfo->bcdUVC);
+
     getDeviceImageInformation();
-    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s Finished Getting device information\n", driverName, functionName);
+    callParamCallbacks();
 }
 
 
@@ -1574,20 +1464,10 @@ void ADUVC::report(FILE* fp, int details){
  * Connects to the camera, then gets device information, and is ready to aquire images.
  *
  * @params[in]: portName    -> port for NDArray recieved from camera
- * @params[in]: serial      -> serial number of device to connect to
- * @params[in]: productID   -> id of device used to connect if serial is unavailable
- * @params[in]: deviceIndex -> If serial or product ID is not used, use device index in usb device list to open
- * @params[in]: maxBuffers  -> max buffer size for NDArrays
- * @params[in]: maxMemory   -> maximum memory allocated for driver
- * @params[in]: priority    -> what thread priority this driver will execute with
- * @params[in]: stackSize   -> size of the driver on the stack
+ * @params[in]: serialOrProductID      -> serial number of device to connect to
  */
-ADUVC::ADUVC(const char* portName, const char* serial, int productID, 
-            int deviceIndex, int xsize, int ysize, int maxBuffers, 
-            size_t maxMemory, int priority, int stackSize)
-    : ADDriver(portName, 1, (int)NUM_UVC_PARAMS, maxBuffers, 
-                maxMemory, asynEnumMask, asynEnumMask, 
-                ASYN_CANBLOCK, 1, priority, stackSize){
+ADUVC::ADUVC(const char* portName, const char* serialOrProductID)
+    : ADDriver(portName, 1, 0, 0, 0, 0, 0, 1, 0, 0){
 
     static const char* functionName = "ADUVC";
 
@@ -1620,7 +1500,6 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID,
 
 
     // Set initial size and framerate params
-    //setIntegerParam(ADUVC_Framerate, 30);
     setIntegerParam(ADSizeX, xsize);
     setIntegerParam(ADSizeY, ysize);
 
@@ -1646,40 +1525,78 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID,
                 "%d.%d.%d", ADUVC_VERSION, ADUVC_REVISION, ADUVC_MODIFICATION);
 
     setStringParam(NDDriverVersion, versionString);
-    
+
     // Begin to establish connection
-    asynStatus connected;
+    bool connected = false;
+    bool foundMatchingDeviceButBusy = false;
+    ADUVC_ConnectionType_t connectionType = UVC_SERIAL;
+    this->pdevice = (uvc_device_t*) calloc(1, sizeof(uvc_device_t));
 
-    this->serialNumber = serial;
-    this->productID = productID;
-    this->deviceIndex = deviceIndex;
 
-    // decide if connecting with serial number or productID
-    if(strlen(serial) != 0){
-        this->connectionType = 0;
-    }
-    else if(productID != 0){
-        this->connectionType = 1;
-    }
-    else{
-        this->connectionType = 2;
-    }
+    uvc_error_t deviceStatus;
+    deviceStatus = uvc_init(&pdeviceContext, NULL);
 
-    connected = connect(this->pasynUserSelf);
+    if(deviceStatus == UVC_SUCCESS){
 
-    // Check if connected successfully, and if so, get the device information
-    if(connected == asynError){
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
-                "%s::%s Connection failed, abort\n", 
-                driverName, functionName);
-    }
-    else{
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER, 
-                "%s::%s Acquiring device information\n", 
-                driverName, functionName);
+        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW, 
+            "%s::%s Initialized UVC context\n", driverName, functionName);
 
-        readSupportedCameraFormats();
-        getDeviceInformation();
+        uvc_device_t** deviceList;
+        deviceStatus = uvc_get_device_list(pdeviceContext, &deviceList);
+
+        int deviceIndex = 0;
+        while(*(deviceList + deviceIndex) != NULL){
+            // Create copy of the device struct, so when we free the list we still have the single device available.
+            memcpy(this->pdevice, *(deviceList + deviceIndex), sizeof(uvc_device_t));
+            deviceStatus = uvc_get_device_descriptor(this->pdevice, &pdeviceInfo);
+            if(deviceStatus < 0){
+                reportUVCError(deviceStatus, functionName);
+            } else {
+                // Try checking serial number first, then product ID
+                if(this->pdeviceInfo->serialNumber != NULL && strcmp(this->pdeviceInfo->serialNumber, serialOrProductID) == 0){
+                    deviceStatus = uvc_open(this->pdevice, &pdeviceHandle);
+                    if(deviceStatus == UVC_SUCCESS){
+                        connected = true;
+                        break;
+                    } else if (deviceStatus == UVC_ERROR_BUSY){
+                        foundMatchingDeviceButBusy = true;
+                    }
+                } else if (this->pdeviceInfo->idProduct != NULL && atoi(serialOrProductID) == this->pdeviceInfo->idProduct){
+                    deviceStatus = uvc_open(this->pdevice, &pdeviceHandle);
+                    if(deviceStatus == UVC_SUCCESS) {
+                        connected = true;
+                        connectionType = UVC_PRODUCT_ID;
+                        break;
+                    } else if (deviceStatus == UVC_ERROR_BUSY){
+                        foundMatchingDeviceButBusy = true;
+                    }
+                }
+            }
+            uvc_free_device_descriptor(this->pdeviceInfo);
+            deviceIndex++;
+        }
+        uvc_free_device_list(deviceList, 0);
+        if (connected && connectionType == UVC_SERIAL) {
+            INFO_ARGS("Connected to UVC device with serial number: %s", this->pdeviceInfo->serialNumber);
+        } else if (connected && connectionType == UVC_PRODUCT_ID) {
+            INFO_ARGS("Connected to UVC device with Product ID: %d", this->pdeviceInfo->idProduct);
+        } else if (!connected && foundMatchingDeviceButBusy) {
+            ERR_ARGS("Found UVC device with serial number or Product ID: %s, but it is busy!", serialOrProductID);
+        } else {
+            ERR_ARGS("No UVC device found with serial number or Product ID: %s!", serialOrProductID);
+        }
+
+        if(connected){
+            INFO("Collecting device information and supported acquisition modes...");
+            readSupportedCameraFormats();
+            getDeviceInformation();
+        } else {
+
+            free(this->pdevice);
+            uvc_exit(this->pdeviceContext);
+        }
+    } else{
+        ERR("Failed to initialize UVC context!");
     }
 
     // when epics is exited, delete the instance of this class
@@ -1693,11 +1610,18 @@ ADUVC::ADUVC(const char* portName, const char* serial, int productID,
  */
 ADUVC::~ADUVC(){
     static const char* functionName = "~ADUVC";
-    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-                "%s::%s ADUVC driver exiting\n", 
-                driverName, functionName);
 
-    disconnect(this->pasynUserSelf);
+    INFO("Shutting down ADUVC driver...");
+    if(this->pdevice != NULL){
+        INFO("Disconnecting from UVC device...");
+        uvc_close(pdeviceHandle);
+        uvc_unref_device(pdevice);
+    }
+    if(this->pdeviceContext != NULL){
+        INFO("Exiting UVC context...");
+        uvc_exit(pdeviceContext);
+    }
+    INFO("Done.");
 }
 
 
@@ -1708,34 +1632,21 @@ ADUVC::~ADUVC(){
 
 /* UVCConfig -> These are the args passed to the constructor in the epics config function */
 static const iocshArg UVCConfigArg0 = { "Port name",        iocshArgString };
-static const iocshArg UVCConfigArg1 = { "Serial number",    iocshArgString };
-static const iocshArg UVCConfigArg2 = { "Product ID",       iocshArgInt };
-static const iocshArg UVCConfigArg3 = { "Framerate",        iocshArgInt };
-static const iocshArg UVCConfigArg4 = { "XSize",            iocshArgInt };
-static const iocshArg UVCConfigArg5 = { "YSize",            iocshArgInt };
-static const iocshArg UVCConfigArg6 = { "maxBuffers",       iocshArgInt };
-static const iocshArg UVCConfigArg7 = { "maxMemory",        iocshArgInt };
-static const iocshArg UVCConfigArg8 = { "priority",         iocshArgInt };
-static const iocshArg UVCConfigArg9 = { "stackSize",        iocshArgInt };
-
+static const iocshArg UVCConfigArg1 = { "Serial number/Product ID",    iocshArgString };
 
 /* Array of config args */
 static const iocshArg * const UVCConfigArgs[] =
-        { &UVCConfigArg0, &UVCConfigArg1, &UVCConfigArg2,
-        &UVCConfigArg3, &UVCConfigArg4, &UVCConfigArg5,
-        &UVCConfigArg6, &UVCConfigArg7, &UVCConfigArg8, &UVCConfigArg9 };
+        { &UVCConfigArg0, &UVCConfigArg1};
 
 
 /* what function to call at config */
 static void configUVCCallFunc(const iocshArgBuf *args) {
-        ADUVCConfig(args[0].sval, args[1].sval, args[2].ival, args[3].ival,
-            args[4].ival, args[5].ival, args[6].ival, 
-            args[7].ival, args[8].ival, args[9].ival);
+        ADUVCConfig(args[0].sval, args[1].sval);
 }
 
 
 /* information about the configuration function */
-static const iocshFuncDef configUVC = { "ADUVCConfig", 9, UVCConfigArgs };
+static const iocshFuncDef configUVC = { "ADUVCConfig", 2, UVCConfigArgs };
 
 
 /* IOC register function */

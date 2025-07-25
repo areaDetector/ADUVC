@@ -37,6 +37,52 @@ extern "C" {
 
 #include "ADDriver.h"
 
+typedef enum ADUVC_LOG_LEVEL {
+    ADUVC_LOG_LEVEL_NONE = 0,
+    ADUVC_LOG_LEVEL_ERROR = 10,
+    ADUVC_LOG_LEVEL_WARNING = 20,
+    ADUVC_LOG_LEVEL_INFO = 30,
+    ADUVC_LOG_LEVEL_DEBUG = 40
+} ADUVC_LogLevel_t;
+
+// Error message formatters
+#define ERR(msg)                                  \
+    if (this->logLevel >= ADUVC_LOG_LEVEL_ERROR) \
+        printf("ERROR | %s::%s: %s\n", driverName, functionName, msg);
+
+#define ERR_ARGS(fmt, ...)                        \
+    if (this->logLevel >= ADUVC_LOG_LEVEL_ERROR) \
+        printf("ERROR | %s::%s: " fmt "\n", driverName, functionName, __VA_ARGS__);
+
+// Warning message formatters
+#define WARN(msg)                                   \
+    if (this->logLevel >= ADUVC_LOG_LEVEL_WARNING) \
+        printf("WARNING | %s::%s: %s\n", driverName, functionName, msg);
+
+#define WARN_ARGS(fmt, ...)                         \
+    if (this->logLevel >= ADUVC_LOG_LEVEL_WARNING) \
+        printf("WARNING | %s::%s: " fmt "\n", driverName, functionName, __VA_ARGS__);
+
+// Info message formatters. Because there is no ASYN trace for info messages, we just use `printf`
+// here.
+#define INFO(msg)                                \
+    if (this->logLevel >= ADUVC_LOG_LEVEL_INFO) \
+        printf("INFO | %s::%s: %s\n", driverName, functionName, msg);
+
+#define INFO_ARGS(fmt, ...)                      \
+    if (this->logLevel >= ADUVC_LOG_LEVEL_INFO) \
+        printf("INFO | %s::%s: " fmt "\n", driverName, functionName, __VA_ARGS__);
+
+// Debug message formatters
+#define DEBUG(msg)                                \
+    if (this->logLevel >= ADUVC_LOG_LEVEL_DEBUG) \
+        printf("DEBUG | %s::%s: %s\n", driverName, functionName, msg);
+
+#define DEBUG_ARGS(fmt, ...)                      \
+    if (this->logLevel >= ADUVC_LOG_LEVEL_DEBUG) \
+        printf("DEBUG | %s::%s: " fmt "\n", driverName, functionName, __VA_ARGS__);
+
+
 
 // PV String definitions
 #define ADUVC_UVCComplianceLevelString          "UVC_COMPLIANCE"            //asynInt32
@@ -66,7 +112,7 @@ extern "C" {
 #define ADUVC_PanTiltStepString                 "UVC_PAN_TILT_STEP"         //asynFloat64
 
 /* enum for getting format from PV */
-typedef enum {
+typedef enum ADUVC_FRAME_FORMAT {
     ADUVC_FrameUnsupported      = -1,
     ADUVC_FrameMJPEG            = 0,
     ADUVC_FrameRGB              = 1,
@@ -79,7 +125,7 @@ typedef enum {
 
 
 /* Struct for individual supported camera format - Used to auto read modes into dropdown for easier operation */
-typedef struct ADUVC_CamFormat{
+typedef struct ADUVC_CAM_FORMAT{
     char formatDesc[SUPPORTED_FORMAT_DESC_BUFF];
     size_t xSize;
     size_t ySize;
@@ -90,6 +136,10 @@ typedef struct ADUVC_CamFormat{
 } ADUVC_CamFormat_t;
 
 
+typedef enum ADUVC_CONNECTION_TYPE{
+    UVC_SERIAL = 0,
+    UVC_PRODUCT_ID = 1
+} ADUVC_ConnectionType_t;
 
 /*
  * Class definition of the ADUVC driver. It inherits from the base ADDriver class
@@ -102,16 +152,12 @@ class ADUVC : ADDriver{
     public:
 
         // Constructor
-        ADUVC(const char* portName, const char* serial, int productID, 
-            int framerate, int xsize, int ysize, int maxBuffers, 
-            size_t maxMemory, int priority, int stackSize);
+        ADUVC(const char* portName, const char* serialOrProductID);
 
 
         // ADDriver overrides
         virtual asynStatus writeInt32(asynUser* pasynUser, epicsInt32 value);
         virtual asynStatus writeFloat64(asynUser* pasynUser, epicsFloat64 value);
-        virtual asynStatus connect(asynUser* pasynUser);
-        virtual asynStatus disconnect(asynUser* pasynUser);
 
         // Callback function envoked by the driver object through the wrapper
         void newFrameCallback(uvc_frame_t* frame, void* ptr);
@@ -156,11 +202,7 @@ class ADUVC : ADDriver{
         // UVC Variables
         //-----------------------------------------
 
-        // Connection information
-        int connectionType;
-        int productID;
-        const char* serialNumber;
-        int deviceIndex;
+        ADUVC_LogLevel_t logLevel = ADUVC_LOG_LEVEL_INFO; // Default log level
 
         // Checks uvc device operations status
         uvc_error_t deviceStatus;
@@ -206,16 +248,6 @@ class ADUVC : ADDriver{
 
         // Writes to ADStatus PV
         void updateStatus(const char* status);
-
-        // ----------------------------------------
-        // UVC Functions - Connecting to camera
-        //-----------------------------------------
-
-        // Function used for connecting to a UVC device and reading supported camera modes.
-        asynStatus connectToDeviceUVC();
-
-        // Function used to disconnect from UVC device
-        asynStatus disconnectFromDeviceUVC();
 
         // ----------------------------------------
         // UVC Functions - Camera Format Detection
