@@ -423,7 +423,7 @@ void ADUVC::getDeviceImageInformation(){
     setIntegerParam(ADUVC_Sharpness, (int) sharpness);
     setIntegerParam(ADUVC_PanSpeed, (int) panSpeed);
     setIntegerParam(ADUVC_TiltSpeed, (int) tiltSpeed);
-    
+
     //refresh PV values
     callParamCallbacks();
 }
@@ -1474,7 +1474,7 @@ void ADUVC::report(FILE* fp, int details){
  * @params[in]: serialOrProductID      -> serial number of device to connect to
  */
 ADUVC::ADUVC(const char* portName, const char* serialOrProductID)
-    : ADDriver(portName, 1, 0, 0, 0, 0, 0, 1, 0, 0){
+    : ADDriver(portName, 1, NUM_UVC_PARAMS, 0, 0, 0, 0, 0, 1, 0, 0){
 
     static const char* functionName = "ADUVC";
 
@@ -1504,11 +1504,6 @@ ADUVC::ADUVC(const char* portName, const char* serialOrProductID)
     createParam(ADUVC_PanSpeedString,               asynParamInt32,     &ADUVC_PanSpeed);
     createParam(ADUVC_TiltSpeedString,              asynParamInt32,     &ADUVC_TiltSpeed);
     createParam(ADUVC_PanTiltStepString,            asynParamFloat64,   &ADUVC_PanTiltStep);
-
-
-    // Set initial size and framerate params
-    setIntegerParam(ADSizeX, xsize);
-    setIntegerParam(ADSizeY, ysize);
 
     //sets libuvc version
     char uvcVersionString[25];
@@ -1560,7 +1555,7 @@ ADUVC::ADUVC(const char* portName, const char* serialOrProductID)
                     } else if (deviceStatus == UVC_ERROR_BUSY){
                         foundMatchingDeviceButBusy = true;
                     }
-                } else if (this->pdeviceInfo->idProduct != NULL && atoi(serialOrProductID) == this->pdeviceInfo->idProduct){
+                } else if (atoi(serialOrProductID) == this->pdeviceInfo->idProduct){
                     deviceStatus = uvc_open(this->pdevice, &pdeviceHandle);
                     if(deviceStatus == UVC_SUCCESS) {
                         connected = true;
